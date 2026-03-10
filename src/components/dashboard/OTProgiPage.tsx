@@ -15,6 +15,7 @@ interface OTProgiPageProps {
 export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPageProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedTypeOT, setSelectedTypeOT] = useState<string | null>(null);
+  const [selectedLot, setSelectedLot] = useState<string | null>(null);
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
@@ -43,6 +44,10 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     
     if (selectedTypeOT) {
       data = data.filter(d => d.typeOT === selectedTypeOT);
+    }
+
+    if (selectedLot) {
+      data = data.filter(d => d.lot === selectedLot);
     }
     
     return data;
@@ -153,12 +158,12 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .slice(0, 50);
   }, [filteredLigne]);
 
-  // Lot numbers for grid
+  // Lot numbers for grid - from otLigneData (unfiltered by lot)
   const lots = useMemo(() => {
     const lotSet = new Set<string>();
-    filtered.forEach(d => { if (d.lot && d.lot !== 'x' && d.lot !== 'X') lotSet.add(d.lot); });
-    return Array.from(lotSet).sort().slice(0, 8);
-  }, [filtered]);
+    otLigneData.forEach(d => { if (d.lot && d.lot !== 'x' && d.lot !== 'X') lotSet.add(d.lot); });
+    return Array.from(lotSet).sort();
+  }, [otLigneData]);
 
   return (
     <div className="flex-1 space-y-3 p-3 overflow-auto">
@@ -186,13 +191,22 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           </div>
         </div>
 
-        {/* Lot grid */}
+        {/* Lot grid - clickable filter */}
         <div className="pbi-card p-2">
+          <div className="pbi-section-title mb-1 text-center">Lots</div>
           <div className="grid grid-cols-4 gap-1">
             {lots.map(l => (
-              <div key={l} className="px-2 py-1 text-xs font-mono text-center bg-secondary/50 rounded-sm text-foreground">
+              <button
+                key={l}
+                onClick={() => setSelectedLot(prev => prev === l ? null : l)}
+                className={`px-2 py-1 text-xs font-mono text-center rounded-sm transition-colors cursor-pointer ${
+                  selectedLot === l
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary/50 text-foreground hover:bg-secondary/80'
+                }`}
+              >
                 {l}
-              </div>
+              </button>
             ))}
           </div>
         </div>
