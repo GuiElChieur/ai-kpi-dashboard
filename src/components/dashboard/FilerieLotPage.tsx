@@ -37,8 +37,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       d = d.filter(c => c.cbl.toLowerCase().includes(s) || c.repereCbl.toLowerCase().includes(s));
     }
     if (lotFilter) d = d.filter(c => c.lotMtgApo === lotFilter);
+    if (statusFilter === 'retard') d = d.filter(isEnRetard);
     return d.sort((a, b) => a.lotMtgApo.localeCompare(b.lotMtgApo, 'fr', { numeric: true }));
-  }, [baseData, search, lotFilter]);
+  }, [baseData, search, lotFilter, statusFilter]);
 
   const today = new Date().toISOString().substring(0, 10);
 
