@@ -4,7 +4,7 @@ import { GaugeChart } from './GaugeChart';
 import { PbiKpiCard } from './PbiKpiCard';
 import type { OTData, OTLigneData, PointageData } from '@/lib/csv-parser';
 
-const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT'] as const;
+const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT', 'MONTA', 'MODIF'] as const;
 
 interface OTProgiPageProps {
   otData: OTData[];
