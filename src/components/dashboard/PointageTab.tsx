@@ -296,7 +296,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyData} margin={{ bottom: 20, left: 10, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} angle={-20} textAnchor="end" />
+                  <XAxis dataKey="month" tick={<MonthTick />} interval={0} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                   <Tooltip
                     contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
