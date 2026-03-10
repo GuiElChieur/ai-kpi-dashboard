@@ -64,35 +64,27 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     return { totalCharge, totalVBTR, totalTP, totalHeuresPointees, resultat, avancementBudget, avancementReel, ecartAvancement, rendement, ligneCharge, ligneVBTR, ligneTP };
   }, [filtered, filteredLigne, pointageData]);
 
-  // Bar chart data by type OT - combining DATA_OT (grouped by type) and DATA_OT_LIGNE (grouped by typeOT)
+  // Bar chart data by type OT from DATA_OT_LIGNE (typeOT field: 10_Phase 1 CDC, 30_Phase 2, 35_Filerie, etc.)
   const chartData = useMemo(() => {
     const byType: Record<string, { charge: number; tp: number; vbtr: number }> = {};
     
-    // Aggregate from DATA_OT
-    filtered.forEach(d => {
-      const type = d.type || 'Non défini';
+    filteredLigne.forEach(d => {
+      const type = d.typeOT || 'Non défini';
       if (!byType[type]) byType[type] = { charge: 0, tp: 0, vbtr: 0 };
       byType[type].charge += d.chargePrevisionnelle;
       byType[type].tp += d.tp;
       byType[type].vbtr += d.vbtr;
     });
 
-    // Enrich with DATA_OT_LIGNE (use typeOT field)
-    filteredLigne.forEach(d => {
-      const type = d.typeOT || 'Non défini';
-      if (!byType[type]) byType[type] = { charge: 0, tp: 0, vbtr: 0 };
-      // Only add ligne data if type not already covered by OT data
-    });
-
     return Object.entries(byType)
       .sort((a, b) => b[1].charge - a[1].charge)
       .map(([name, v]) => ({
-        name: name.length > 16 ? name.slice(0, 16) + '…' : name,
+        name: name.length > 18 ? name.slice(0, 18) + '…' : name,
         'Charge prév.': Math.round(v.charge),
         'TP': Math.round(v.tp),
         'VBTR': Math.round(v.vbtr),
       }));
-  }, [filtered, filteredLigne]);
+  }, [filteredLigne]);
 
   // Rendement by lot
   const rendementLots = useMemo(() => {
