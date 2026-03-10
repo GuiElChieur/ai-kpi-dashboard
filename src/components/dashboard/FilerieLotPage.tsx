@@ -152,19 +152,22 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle>
             <Badge className="bg-success/20 text-success border-success/30 text-xs font-mono">{kpis.pctLng}% tiré</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="h-[220px]">
+          <CardContent className="pb-2">
+            <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 50 }}>
+                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={60} interval={0} />
-                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${v}m`} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 7 }} angle={-90} textAnchor="end" height={50} interval={0} />
+                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${v}m`} width={45} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} m`} />
-                  <Legend />
                   <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
                   <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-4 mt-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--success))' }} />Tiré</span>
+              <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--muted-foreground))' }} />Non tiré</span>
             </div>
           </CardContent>
         </Card>
@@ -174,19 +177,22 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle>
             <Badge className="bg-success/20 text-success border-success/30 text-xs font-mono">{kpis.pctQty}% tiré</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="h-[220px]">
+          <CardContent className="pb-2">
+            <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 50 }}>
+                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={60} interval={0} />
-                  <YAxis tick={{ fontSize: 9 }} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 7 }} angle={-90} textAnchor="end" height={50} interval={0} />
+                  <YAxis tick={{ fontSize: 9 }} width={35} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                  <Legend />
                   <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
                   <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-4 mt-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--success))' }} />Tiré</span>
+              <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--muted-foreground))' }} />Non tiré</span>
             </div>
           </CardContent>
         </Card>
