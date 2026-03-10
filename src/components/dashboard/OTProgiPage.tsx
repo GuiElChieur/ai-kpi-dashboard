@@ -80,11 +80,41 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .sort((a, b) => b[1].charge - a[1].charge)
       .map(([name, v]) => ({
         name: name.length > 18 ? name.slice(0, 18) + '…' : name,
+        fullName: name,
         'Charge prév.': Math.round(v.charge),
         'TP': Math.round(v.tp),
         'VBTR': Math.round(v.vbtr),
       }));
   }, [filteredLigne]);
+
+  const handleBarClick = (data: any) => {
+    if (data?.activePayload?.[0]?.payload?.fullName) {
+      const clicked = data.activePayload[0].payload.fullName;
+      setSelectedTypeOT(prev => prev === clicked ? null : clicked);
+    }
+  };
+
+  const CustomXAxisTick = ({ x, y, payload }: any) => {
+    const entry = chartData.find(d => d.name === payload.value);
+    const fullName = entry?.fullName || payload.value;
+    const isSelected = selectedTypeOT === fullName;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0} y={0} dy={8}
+          textAnchor="end"
+          fill={isSelected ? 'hsl(200,80%,65%)' : 'hsl(215,15%,60%)'}
+          fontSize={9}
+          fontWeight={isSelected ? 700 : 400}
+          transform="rotate(-45)"
+          style={{ cursor: 'pointer', textDecoration: isSelected ? 'underline' : 'none' }}
+          onClick={() => setSelectedTypeOT(prev => prev === fullName ? null : fullName)}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   // Rendement by lot
   const rendementLots = useMemo(() => {
