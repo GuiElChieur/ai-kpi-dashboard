@@ -15,6 +15,7 @@ interface OTProgiPageProps {
 export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPageProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedTypeOT, setSelectedTypeOT] = useState<string | null>(null);
+  const [selectedLot, setSelectedLot] = useState<string | null>(null);
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
