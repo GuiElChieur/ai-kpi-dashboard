@@ -26,6 +26,7 @@ function StatusBadge({ cable }: { cable: CableData }) {
 
 export function TirageCablesPage({ allData }: { allData: CableData[] }) {
   const baseData = useMemo(() => getTirageData(allData), [allData]);
+  const tableRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'tire' | 'non-tire' | 'retard'>('all');
   const [zoneFilter, setZoneFilter] = useState<string>('');
