@@ -22,8 +22,10 @@ const PAGE_SIZE = 50;
 
 export function FilerieLotPage({ allData }: { allData: CableData[] }) {
   const baseData = useMemo(() => getFilerieData(allData), [allData]);
+  const tableRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
   const [lotFilter, setLotFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'retard'>('all');
   const [expandedLots, setExpandedLots] = useState<Set<string>>(new Set());
 
   const lots = useMemo(() => [...new Set(baseData.map(c => c.lotMtgApo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true })), [baseData]);
