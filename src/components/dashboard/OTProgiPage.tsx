@@ -42,27 +42,21 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     });
   }, [otLigneData, filtered, activeFilters]);
 
-  // KPIs - combine DATA_OT and DATA_OT_LIGNE
+  // KPIs - from DATA_OT_LIGNE
   const kpis = useMemo(() => {
-    // Use DATA_OT for main KPIs
-    const totalCharge = filtered.reduce((s, d) => s + d.chargePrevisionnelle, 0);
-    const totalVBTR = filtered.reduce((s, d) => s + d.vbtr, 0);
-    const totalTP = filtered.reduce((s, d) => s + d.tp, 0);
+    const totalCharge = filteredLigne.reduce((s, d) => s + d.chargePrevisionnelle, 0);
+    const totalVBTR = filteredLigne.reduce((s, d) => s + d.vbtr, 0);
+    const totalTP = filteredLigne.reduce((s, d) => s + d.tp, 0);
     const totalHeuresPointees = pointageData.reduce((s, d) => s + d.quantite, 0);
     const resultat = totalVBTR - totalTP;
-
-    // Also compute from OT Ligne for detail
-    const ligneCharge = filteredLigne.reduce((s, d) => s + d.chargePrevisionnelle, 0);
-    const ligneVBTR = filteredLigne.reduce((s, d) => s + d.vbtr, 0);
-    const ligneTP = filteredLigne.reduce((s, d) => s + d.tp, 0);
 
     const avancementBudget = totalCharge > 0 ? (totalTP / totalCharge) * 100 : 0;
     const avancementReel = totalCharge > 0 ? (totalVBTR / totalCharge) * 100 : 0;
     const ecartAvancement = avancementReel - avancementBudget;
     const rendement = totalTP > 0 ? (totalVBTR / totalTP) * 100 : 0;
 
-    return { totalCharge, totalVBTR, totalTP, totalHeuresPointees, resultat, avancementBudget, avancementReel, ecartAvancement, rendement, ligneCharge, ligneVBTR, ligneTP };
-  }, [filtered, filteredLigne, pointageData]);
+    return { totalCharge, totalVBTR, totalTP, totalHeuresPointees, resultat, avancementBudget, avancementReel, ecartAvancement, rendement };
+  }, [filteredLigne, pointageData]);
 
   // Bar chart data by type OT from DATA_OT_LIGNE (typeOT field: 10_Phase 1 CDC, 30_Phase 2, 35_Filerie, etc.)
   const chartData = useMemo(() => {
