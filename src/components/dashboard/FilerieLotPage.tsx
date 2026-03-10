@@ -144,16 +144,18 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur totale par lot de montage (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotBarData} layout="vertical" margin={{ left: 40, right: 20 }}>
+                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
-                  <YAxis type="category" dataKey="lot" tick={{ fontSize: 11 }} width={50} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur']} />
-                  <Bar dataKey="longueur" fill="hsl(var(--info))" radius={[0, 4, 4, 0]} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} m`} />
+                  <Legend />
+                  <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
+                  <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -161,16 +163,19 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Répartition câbles par lot</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={2} label={({ name, value }) => `${name}: ${value}`}>
-                    {donutData.map((_, i) => <Cell key={i} fill={LOT_COLORS[i % LOT_COLORS.length]} />)}
-                  </Pie>
+                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                </PieChart>
+                  <Legend />
+                  <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
+                  <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
