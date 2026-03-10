@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KpiCard } from './KpiCard';
 import { computeMatierKpis } from '@/hooks/use-dashboard-data';
-import type { MatierData } from '@/lib/csv-parser';
+import type { MatierData, AchatData } from '@/lib/csv-parser';
 import { Package, TrendingUp, Layers, BarChart3 } from 'lucide-react';
 
 const COLORS = ['hsl(220,70%,50%)', 'hsl(160,60%,45%)', 'hsl(38,92%,50%)', 'hsl(280,60%,55%)', 'hsl(0,72%,51%)'];
 
-export function MatierTab({ data }: { data: MatierData[] }) {
+export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: AchatData[] }) {
   const kpis = useMemo(() => computeMatierKpis(data), [data]);
 
   const statutData = useMemo(() => {
@@ -28,6 +28,38 @@ export function MatierTab({ data }: { data: MatierData[] }) {
       .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
       .map(([lot, v]) => ({ lot, resteSortir: Math.round(v.resteSortir), sortie: Math.round(v.sortie) }));
   }, [data]);
+
+  // Coût des sorties par mois (croisement MATIER_OT × ACHAT2 via referenceInterne)
+  const coutSortieParMois = useMemo(() => {
+    // Construire un lookup prix unitaire moyen par référence interne depuis les achats
+    const prixByRef: Record<string, { totalHT: number; totalQte: number }> = {};
+    achatData.forEach(a => {
+      const ref = a.referenceInterne || '';
+      if (!ref || a.quantite === 0) return;
+      if (!prixByRef[ref]) prixByRef[ref] = { totalHT: 0, totalQte: 0 };
+      prixByRef[ref].totalHT += a.totalHT;
+      prixByRef[ref].totalQte += a.quantite;
+    });
+
+    const prixUnitaire: Record<string, number> = {};
+    Object.entries(prixByRef).forEach(([ref, v]) => {
+      prixUnitaire[ref] = v.totalQte > 0 ? v.totalHT / v.totalQte : 0;
+    });
+
+    // Agréger coût des sorties par mois
+    const byMonth: Record<string, number> = {};
+    data.forEach(d => {
+      const ref = d.referenceInterne || '';
+      const prix = prixUnitaire[ref];
+      if (!prix || d.quantiteSortie === 0) return;
+      const month = d.dateDebut?.substring(0, 7) || 'N/A';
+      byMonth[month] = (byMonth[month] || 0) + d.quantiteSortie * prix;
+    });
+
+    return Object.entries(byMonth)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([mois, cout]) => ({ mois, cout: Math.round(cout * 100) / 100 }));
+  }, [data, achatData]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -53,6 +85,28 @@ export function MatierTab({ data }: { data: MatierData[] }) {
                 <Legend />
                 <Bar dataKey="resteSortir" name="Reste à sortir" stackId="a" fill="hsl(0,72%,60%)" />
                 <Bar dataKey="sortie" name="Sortie" stackId="a" fill="hsl(160,60%,45%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Évolution du coût des sorties par mois (croisement Matière × Achats)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={coutSortieParMois} margin={{ left: 20, right: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+                <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                <Tooltip
+                  contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }}
+                  formatter={(value: number) => [`${value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 'Coût sorties']}
+                />
+                <Bar dataKey="cout" name="Coût sorties (€)" fill="hsl(220,70%,50%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
