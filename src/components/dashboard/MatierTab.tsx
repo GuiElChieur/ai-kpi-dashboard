@@ -31,6 +31,20 @@ export function MatierTab({ data }: { data: MatierData[] }) {
       .map(([name, v]) => ({ name: name.length > 30 ? name.slice(0, 30) + '…' : name, besoin: Math.round(v.besoin), sortie: Math.round(v.sortie) }));
   }, [data]);
 
+  // Répartition par lot (reste à sortir vs sorti)
+  const byLotData = useMemo(() => {
+    const byLot: Record<string, { resteSortir: number; sortie: number }> = {};
+    data.forEach(d => {
+      const lot = d.lot || 'N/A';
+      if (!byLot[lot]) byLot[lot] = { resteSortir: 0, sortie: 0 };
+      byLot[lot].sortie += d.quantiteSortie;
+      byLot[lot].resteSortir += Math.max(0, d.quantiteBesoin - d.quantiteSortie);
+    });
+    return Object.entries(byLot)
+      .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
+      .map(([lot, v]) => ({ lot, resteSortir: Math.round(v.resteSortir), sortie: Math.round(v.sortie) }));
+  }, [data]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
