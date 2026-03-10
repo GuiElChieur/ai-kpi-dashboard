@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useDashboardData, computeOTKpis, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
+import { useCableData } from '@/hooks/use-cable-data';
 import { PbiSidebar } from '@/components/dashboard/PbiSidebar';
 import { OTProgiPage } from '@/components/dashboard/OTProgiPage';
 import { PointageTab } from '@/components/dashboard/PointageTab';
 import { MatierTab } from '@/components/dashboard/MatierTab';
 import { AchatTab } from '@/components/dashboard/AchatTab';
+import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
+import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
 import { AIChat } from '@/components/dashboard/AIChat';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -13,6 +13,8 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'performance', label: 'Performance' },
   { id: 'matiere', label: 'Matière' },
   { id: 'achat', label: 'Achats' },
+  { id: 'tirage-cables', label: 'Tirage Câbles' },
+  { id: 'filerie-lot', label: 'Filerie de Lot' },
   { id: 'ai', label: 'Analyse IA ✨' },
 ];
 
