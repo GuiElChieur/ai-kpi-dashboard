@@ -75,7 +75,7 @@ export function MatierTab({ data }: { data: MatierData[] }) {
         </CardContent>
       </Card>
 
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="glass-card lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Top 10 références (besoin vs sortie)</CardTitle>
