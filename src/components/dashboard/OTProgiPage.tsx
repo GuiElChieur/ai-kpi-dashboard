@@ -293,44 +293,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           </div>
         </div>
 
-        {/* Right: Rendement lots */}
-        <div className="pbi-card p-3 min-w-[280px]">
-          <div className="flex gap-8 mb-2">
-            <span className="pbi-section-title">Rendement Lots</span>
-            <span className="pbi-section-title">Résultat</span>
-          </div>
-          <div className="space-y-1 max-h-[340px] overflow-auto">
-            {rendementLots.map(item => (
-              <div key={item.lot} className="flex items-center gap-2 text-[10px]">
-                <span className="w-8 font-mono text-muted-foreground">{item.lot}</span>
-                <div className="flex-1 h-3 bg-secondary/50 rounded-sm relative overflow-hidden">
-                  <div
-                    className="h-full rounded-sm"
-                    style={{
-                      width: `${Math.min(Math.abs(item.rendement), 200) / 2}%`,
-                      background: item.rendement >= 100 ? 'hsl(142,71%,50%)' : item.rendement >= 80 ? 'hsl(38,92%,50%)' : 'hsl(0,72%,51%)',
-                    }}
-                  />
-                </div>
-                <span className="w-10 text-right font-mono text-muted-foreground">{item.rendement}%</span>
-                <div className="w-12 h-3 relative">
-                  {item.resultat !== 0 && (
-                    <div
-                      className="h-full rounded-sm absolute"
-                      style={{
-                        width: `${Math.min(Math.abs(item.resultat) / 2, 100)}%`,
-                        background: item.resultat >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)',
-                        right: item.resultat < 0 ? 0 : undefined,
-                        left: item.resultat >= 0 ? 0 : undefined,
-                      }}
-                    />
-                  )}
-                </div>
-                <span className="w-8 text-right font-mono text-[9px] text-muted-foreground">{item.resultat}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Bottom: Data table */}
