@@ -180,7 +180,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
 
         {/* Code libre Table filter */}
         <div className="pbi-card p-2">
-          <div className="pbi-section-title mb-1">Code libre Table</div>
+          
           <div className="flex flex-wrap gap-1">
             {codeLibreValues.map(c => (
               <button
