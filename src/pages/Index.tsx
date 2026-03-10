@@ -82,6 +82,14 @@ const Index = () => {
         {activePage === 'achat' && (
           <div className="p-4"><AchatTab data={achatData} /></div>
         )}
+        {activePage === 'tirage-cables' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <TirageCablesPage allData={cableData || []} />
+        )}
+        {activePage === 'filerie-lot' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <FilerieLotPage allData={cableData || []} />
+        )}
         {activePage === 'ai' && (
           <div className="p-4"><AIChat kpiSummary={kpiSummary} /></div>
         )}
