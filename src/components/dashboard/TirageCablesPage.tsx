@@ -226,7 +226,7 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       </div>
 
       {/* Table */}
-      <Card className="glass-card">
+      <Card className="glass-card" ref={tableRef}>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground">Détail des câbles ({sortedFiltered.length})</CardTitle>
           <Button size="sm" variant="outline" onClick={exportCSV} className="h-7 text-xs">Export CSV</Button>
