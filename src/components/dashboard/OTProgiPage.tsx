@@ -16,6 +16,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedTypeOT, setSelectedTypeOT] = useState<string | null>(null);
   const [selectedLot, setSelectedLot] = useState<string | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
@@ -122,22 +123,44 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   };
 
 
-  // Table data - grouped by typeOT + identifiant like PBI (from filteredLigne)
+  const OT_TABLE_COLUMNS: { key: string; label: string; isNumeric?: boolean; style?: React.CSSProperties }[] = [
+    { key: 'typeOT', label: 'Type OT' },
+    { key: 'identifiant', label: 'Identifiant du projet' },
+    { key: 'qtePrev', label: 'Qté Prévue', isNumeric: true },
+    { key: 'qteReal', label: 'Qté Réalisée', isNumeric: true },
+    { key: 'typeMO', label: 'Type M-O' },
+    { key: 'charge', label: 'Charge prév.', isNumeric: true },
+    { key: 'vbtr', label: 'VBTR', isNumeric: true, style: { color: 'hsl(200,80%,55%)' } },
+    { key: 'tp', label: 'TP', isNumeric: true },
+    { key: 'resultat', label: 'Résultat', isNumeric: true },
+  ];
+
   const tableData = useMemo(() => {
-    const byKey: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number }> = {};
+    const byKey: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number; resultat: number }> = {};
     filteredLigne.forEach(d => {
       const key = `${d.typeOT}|${d.identifiantProjet}`;
-      if (!byKey[key]) byKey[key] = { typeOT: d.typeOT, identifiant: d.identifiantProjet, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0 };
+      if (!byKey[key]) byKey[key] = { typeOT: d.typeOT, identifiant: d.identifiantProjet, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0, resultat: 0 };
       byKey[key].qtePrev += d.qtePrevue;
       byKey[key].qteReal += d.qteRealisee;
       byKey[key].charge += d.chargePrevisionnelle;
       byKey[key].vbtr += d.vbtr;
       byKey[key].tp += d.tp;
     });
-    return Object.values(byKey)
-      .sort((a, b) => (b.vbtr - b.tp) - (a.vbtr - a.tp))
+    let rows = Object.values(byKey).map(r => ({ ...r, resultat: r.vbtr - r.tp }));
+    // Apply column filters
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (value.trim()) {
+        const s = value.trim().toLowerCase();
+        rows = rows.filter(r => {
+          const v = (r as any)[key];
+          return v != null && String(v).toLowerCase().includes(s);
+        });
+      }
+    });
+    return rows
+      .sort((a, b) => b.resultat - a.resultat)
       .slice(0, 50);
-  }, [filteredLigne]);
+  }, [filteredLigne, columnFilters]);
 
   // Lot numbers for grid - from otLigneData (unfiltered by lot)
   const lots = useMemo(() => {
@@ -280,38 +303,44 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       <div className="pbi-card overflow-hidden">
         <div className="overflow-auto max-h-[220px]">
           <table className="w-full text-[11px]">
-            <thead className="sticky top-0 bg-card">
+            <thead className="sticky top-0 bg-card z-10">
               <tr className="border-b border-border/50">
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Type OT</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Identifiant du projet</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Qté Prévue</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Qté Réalisée</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Type M-O</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Charge prév.</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">VBTR</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">TP</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Résultat</th>
+                {OT_TABLE_COLUMNS.map(col => (
+                  <th key={col.key} className={`${col.isNumeric ? 'text-right' : 'text-left'} px-3 py-2 font-semibold text-muted-foreground`}>
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+              <tr className="border-b border-border/30">
+                {OT_TABLE_COLUMNS.map(col => (
+                  <th key={col.key} className="px-2 py-1">
+                    <input
+                      type="text"
+                      placeholder="🔍"
+                      value={columnFilters[col.key] || ''}
+                      onChange={e => setColumnFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
+                      className="w-full bg-secondary/50 text-foreground text-[10px] px-1.5 py-0.5 rounded-sm border border-border/30 focus:outline-none focus:border-primary/50 placeholder:text-muted-foreground/50"
+                    />
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {tableData.map((row, i) => {
-                const resultat = row.vbtr - row.tp;
-                return (
-                  <tr key={i} className="border-b border-border/20 hover:bg-secondary/30">
-                    <td className="px-3 py-1.5">{row.typeOT}</td>
-                    <td className="px-3 py-1.5 font-mono text-[10px]">{row.identifiant}</td>
-                    <td className="px-3 py-1.5 text-right font-mono">{row.qtePrev.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-3 py-1.5 text-right font-mono">{row.qteReal.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-3 py-1.5">{row.typeMO}</td>
-                    <td className="px-3 py-1.5 text-right font-mono">{row.charge.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-3 py-1.5 text-right font-mono" style={{ color: 'hsl(200,80%,55%)' }}>{row.vbtr.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-3 py-1.5 text-right font-mono">{row.tp.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-3 py-1.5 text-right font-mono font-semibold" style={{ color: resultat >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)' }}>
-                      {resultat.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-                );
-              })}
+              {tableData.map((row, i) => (
+                <tr key={i} className="border-b border-border/20 hover:bg-secondary/30">
+                  {OT_TABLE_COLUMNS.map(col => {
+                    const val = (row as any)[col.key];
+                    const cellStyle = col.key === 'resultat'
+                      ? { color: val >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)' }
+                      : col.style || {};
+                    return (
+                      <td key={col.key} className={`px-3 py-1.5 ${col.isNumeric ? 'text-right font-mono' : ''} ${col.key === 'identifiant' ? 'font-mono text-[10px]' : ''} ${col.key === 'resultat' ? 'font-semibold' : ''}`} style={cellStyle}>
+                        {col.isNumeric ? val.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) : val}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
             </tbody>
             <tfoot className="border-t border-border bg-secondary/30 font-semibold">
               <tr>
@@ -322,8 +351,8 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
                 <td className="px-3 py-1.5 text-right font-mono">{tableData.reduce((s, r) => s + r.charge, 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                 <td className="px-3 py-1.5 text-right font-mono" style={{ color: 'hsl(200,80%,55%)' }}>{tableData.reduce((s, r) => s + r.vbtr, 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{tableData.reduce((s, r) => s + r.tp, 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                <td className="px-3 py-1.5 text-right font-mono" style={{ color: tableData.reduce((s, r) => s + r.vbtr - r.tp, 0) >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)' }}>
-                  {tableData.reduce((s, r) => s + r.vbtr - r.tp, 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
+                <td className="px-3 py-1.5 text-right font-mono" style={{ color: tableData.reduce((s, r) => s + r.resultat, 0) >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)' }}>
+                  {tableData.reduce((s, r) => s + r.resultat, 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
             </tfoot>
