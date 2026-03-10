@@ -190,7 +190,7 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-4 mt-1 text-xs text-muted-foreground">
+            <div className="flex justify-center gap-4 -mt-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--success))' }} />Tiré</span>
               <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'hsl(var(--muted-foreground))' }} />Non tiré</span>
             </div>
