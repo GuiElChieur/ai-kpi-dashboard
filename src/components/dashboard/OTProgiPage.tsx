@@ -191,13 +191,22 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           </div>
         </div>
 
-        {/* Lot grid */}
+        {/* Lot grid - clickable filter */}
         <div className="pbi-card p-2">
+          <div className="pbi-section-title mb-1 text-center">Lots</div>
           <div className="grid grid-cols-4 gap-1">
             {lots.map(l => (
-              <div key={l} className="px-2 py-1 text-xs font-mono text-center bg-secondary/50 rounded-sm text-foreground">
+              <button
+                key={l}
+                onClick={() => setSelectedLot(prev => prev === l ? null : l)}
+                className={`px-2 py-1 text-xs font-mono text-center rounded-sm transition-colors cursor-pointer ${
+                  selectedLot === l
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary/50 text-foreground hover:bg-secondary/80'
+                }`}
+              >
                 {l}
-              </div>
+              </button>
             ))}
           </div>
         </div>
