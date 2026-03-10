@@ -123,22 +123,44 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   };
 
 
-  // Table data - grouped by typeOT + identifiant like PBI (from filteredLigne)
+  const OT_TABLE_COLUMNS: { key: string; label: string; isNumeric?: boolean; style?: React.CSSProperties }[] = [
+    { key: 'typeOT', label: 'Type OT' },
+    { key: 'identifiant', label: 'Identifiant du projet' },
+    { key: 'qtePrev', label: 'Qté Prévue', isNumeric: true },
+    { key: 'qteReal', label: 'Qté Réalisée', isNumeric: true },
+    { key: 'typeMO', label: 'Type M-O' },
+    { key: 'charge', label: 'Charge prév.', isNumeric: true },
+    { key: 'vbtr', label: 'VBTR', isNumeric: true, style: { color: 'hsl(200,80%,55%)' } },
+    { key: 'tp', label: 'TP', isNumeric: true },
+    { key: 'resultat', label: 'Résultat', isNumeric: true },
+  ];
+
   const tableData = useMemo(() => {
-    const byKey: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number }> = {};
+    const byKey: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number; resultat: number }> = {};
     filteredLigne.forEach(d => {
       const key = `${d.typeOT}|${d.identifiantProjet}`;
-      if (!byKey[key]) byKey[key] = { typeOT: d.typeOT, identifiant: d.identifiantProjet, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0 };
+      if (!byKey[key]) byKey[key] = { typeOT: d.typeOT, identifiant: d.identifiantProjet, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0, resultat: 0 };
       byKey[key].qtePrev += d.qtePrevue;
       byKey[key].qteReal += d.qteRealisee;
       byKey[key].charge += d.chargePrevisionnelle;
       byKey[key].vbtr += d.vbtr;
       byKey[key].tp += d.tp;
     });
-    return Object.values(byKey)
-      .sort((a, b) => (b.vbtr - b.tp) - (a.vbtr - a.tp))
+    let rows = Object.values(byKey).map(r => ({ ...r, resultat: r.vbtr - r.tp }));
+    // Apply column filters
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (value.trim()) {
+        const s = value.trim().toLowerCase();
+        rows = rows.filter(r => {
+          const v = (r as any)[key];
+          return v != null && String(v).toLowerCase().includes(s);
+        });
+      }
+    });
+    return rows
+      .sort((a, b) => b.resultat - a.resultat)
       .slice(0, 50);
-  }, [filteredLigne]);
+  }, [filteredLigne, columnFilters]);
 
   // Lot numbers for grid - from otLigneData (unfiltered by lot)
   const lots = useMemo(() => {
