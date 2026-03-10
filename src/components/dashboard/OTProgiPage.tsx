@@ -121,25 +121,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     );
   };
 
-  // Rendement by lot
-  const rendementLots = useMemo(() => {
-    const byLot: Record<string, { vbtr: number; tp: number }> = {};
-    filtered.forEach(d => {
-      const lot = d.lot || 'x';
-      if (lot === 'x' || lot === 'X') return;
-      if (!byLot[lot]) byLot[lot] = { vbtr: 0, tp: 0 };
-      byLot[lot].vbtr += d.vbtr;
-      byLot[lot].tp += d.tp;
-    });
-    return Object.entries(byLot)
-      .map(([lot, v]) => ({
-        lot,
-        rendement: v.tp > 0 ? Math.round((v.vbtr / v.tp) * 100) : 0,
-        resultat: Math.round(v.vbtr - v.tp),
-      }))
-      .sort((a, b) => a.lot.localeCompare(b.lot))
-      .slice(0, 15);
-  }, [filtered]);
 
   // Table data - grouped by typeOT + identifiant like PBI (from filteredLigne)
   const tableData = useMemo(() => {
@@ -293,44 +274,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           </div>
         </div>
 
-        {/* Right: Rendement lots */}
-        <div className="pbi-card p-3 min-w-[280px]">
-          <div className="flex gap-8 mb-2">
-            <span className="pbi-section-title">Rendement Lots</span>
-            <span className="pbi-section-title">Résultat</span>
-          </div>
-          <div className="space-y-1 max-h-[340px] overflow-auto">
-            {rendementLots.map(item => (
-              <div key={item.lot} className="flex items-center gap-2 text-[10px]">
-                <span className="w-8 font-mono text-muted-foreground">{item.lot}</span>
-                <div className="flex-1 h-3 bg-secondary/50 rounded-sm relative overflow-hidden">
-                  <div
-                    className="h-full rounded-sm"
-                    style={{
-                      width: `${Math.min(Math.abs(item.rendement), 200) / 2}%`,
-                      background: item.rendement >= 100 ? 'hsl(142,71%,50%)' : item.rendement >= 80 ? 'hsl(38,92%,50%)' : 'hsl(0,72%,51%)',
-                    }}
-                  />
-                </div>
-                <span className="w-10 text-right font-mono text-muted-foreground">{item.rendement}%</span>
-                <div className="w-12 h-3 relative">
-                  {item.resultat !== 0 && (
-                    <div
-                      className="h-full rounded-sm absolute"
-                      style={{
-                        width: `${Math.min(Math.abs(item.resultat) / 2, 100)}%`,
-                        background: item.resultat >= 0 ? 'hsl(142,71%,50%)' : 'hsl(0,72%,51%)',
-                        right: item.resultat < 0 ? 0 : undefined,
-                        left: item.resultat >= 0 ? 0 : undefined,
-                      }}
-                    />
-                  )}
-                </div>
-                <span className="w-8 text-right font-mono text-[9px] text-muted-foreground">{item.resultat}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Bottom: Data table */}
