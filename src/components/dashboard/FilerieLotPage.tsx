@@ -113,7 +113,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
         <KpiCard title="Lots distincts" value={kpis.nbLots.toString()} icon={<Layers className="h-5 w-5" />} />
         <KpiCard title="Dans la fenêtre" value={kpis.dansFenetre.toString()} icon={<CalendarClock className="h-5 w-5" />} />
-        <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} />
+        <div className="cursor-pointer" onClick={() => { setStatusFilter(statusFilter === 'retard' ? 'all' : 'retard'); setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
+          <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} className={statusFilter === 'retard' ? 'ring-2 ring-destructive' : ''} />
+        </div>
       </div>
 
       {/* Filters */}
