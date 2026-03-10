@@ -15,22 +15,6 @@ export function MatierTab({ data }: { data: MatierData[] }) {
     return Object.entries(kpis.byStatut).map(([name, value]) => ({ name, value }));
   }, [kpis]);
 
-  // Top references by besoin
-  const topRefs = useMemo(() => {
-    const byRef: Record<string, { besoin: number; sortie: number; prep: number }> = {};
-    data.forEach(d => {
-      const ref = d.designationProduit || d.referenceInterne || 'N/A';
-      if (!byRef[ref]) byRef[ref] = { besoin: 0, sortie: 0, prep: 0 };
-      byRef[ref].besoin += d.quantiteBesoin;
-      byRef[ref].sortie += d.quantiteSortie;
-      byRef[ref].prep += d.quantiteEnPreparation;
-    });
-    return Object.entries(byRef)
-      .sort((a, b) => b[1].besoin - a[1].besoin)
-      .slice(0, 10)
-      .map(([name, v]) => ({ name: name.length > 30 ? name.slice(0, 30) + '…' : name, besoin: Math.round(v.besoin), sortie: Math.round(v.sortie) }));
-  }, [data]);
-
   // Répartition par lot (reste à sortir vs sorti)
   const byLotData = useMemo(() => {
     const byLot: Record<string, { resteSortir: number; sortie: number }> = {};
