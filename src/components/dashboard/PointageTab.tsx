@@ -19,6 +19,18 @@ const PIE_COLORS = [
   'hsl(320,60%,55%)', 'hsl(60,70%,50%)',
 ];
 
+const TABLE_COLUMNS = [
+  { key: 'codeLibreTable', label: 'Code libre Table' },
+  { key: 'intitule', label: 'Intitulé' },
+  { key: 'intituleAffaire', label: "Intitulé de l'affaire" },
+  { key: 'codeLibreAlpha', label: 'Code libre alpha' },
+  { key: 'nomPrenom', label: 'Nom Prenom' },
+  { key: 'employeur', label: 'Employeur' },
+  { key: 'objetTravail', label: 'Objet travail' },
+  { key: 'dateSaisie', label: 'Date saisie' },
+  { key: 'quantite', label: 'Somme de Quantité', isNumeric: true },
+] as const;
+
 export function PointageTab({ data }: { data: PointageData[] }) {
   const [selectedEmployeurs, setSelectedEmployeurs] = useState<string[]>([]);
   const [selectedCodeLibre, setSelectedCodeLibre] = useState<string[]>([]);
@@ -26,6 +38,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const [searchOT, setSearchOT] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   // Extract unique employers
   const employeurs = useMemo(() => {
     const set = new Set<string>();
