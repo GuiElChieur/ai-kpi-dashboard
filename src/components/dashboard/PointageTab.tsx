@@ -69,7 +69,17 @@ export function PointageTab({ data }: { data: PointageData[] }) {
 
   // KPIs
   const totalHeures = useMemo(() => filtered.reduce((s, d) => s + d.quantite, 0), [filtered]);
-  const nbPersonnes = useMemo(() => new Set(filtered.map(d => d.nomPrenom).filter(Boolean)).size, [filtered]);
+  const nbPersonnes = useMemo(() => {
+    // Find the latest date in filtered data, then get J-1
+    const allDates = filtered.map(d => d.dateSaisie).filter(Boolean).sort();
+    if (allDates.length === 0) return 0;
+    const latestDate = allDates[allDates.length - 1];
+    // Get all unique dates sorted, pick the one before latest
+    const uniqueDates = [...new Set(allDates)].sort();
+    const j1 = uniqueDates.length >= 2 ? uniqueDates[uniqueDates.length - 2] : uniqueDates[uniqueDates.length - 1];
+    const personnes = new Set(filtered.filter(d => d.dateSaisie === j1).map(d => d.nomPrenom).filter(Boolean));
+    return personnes.size;
+  }, [filtered]);
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
