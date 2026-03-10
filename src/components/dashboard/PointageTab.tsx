@@ -159,7 +159,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       <div className="flex gap-3 items-start flex-wrap">
         {/* Employer filter buttons */}
         <div className="pbi-card p-2 flex-1 min-w-[200px]">
-          <div className="pbi-section-title mb-1">Employeur</div>
+          
           <div className="flex flex-wrap gap-1 max-h-[60px] overflow-auto">
             {employeurs.map(e => (
               <button
@@ -180,7 +180,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
 
         {/* Code libre Table filter */}
         <div className="pbi-card p-2">
-          <div className="pbi-section-title mb-1">Code libre Table</div>
+          
           <div className="flex flex-wrap gap-1">
             {codeLibreValues.map(c => (
               <button
