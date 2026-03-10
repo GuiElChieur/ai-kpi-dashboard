@@ -73,53 +73,64 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
+  // Helper: parse DD/MM/YYYY date
+  const parseDate = (s: string) => {
+    const parts = s.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const year = parts[2].length === 4 ? parseInt(parts[2]) : 2000 + parseInt(parts[2]);
+      return new Date(year, month, day);
+    }
+    return null;
+  };
+
+  // Get ISO week number
+  const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
   // Stacked bar by month
   const monthlyData = useMemo(() => {
-    const byMonth: Record<string, Record<string, number>> = {};
+    const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+    const byMonth: Record<string, { sortKey: string; label: string; codes: Record<string, number> }> = {};
     filtered.forEach(d => {
-      if (!d.dateSaisie) return;
-      // Parse date - try different formats
-      let monthKey = '';
-      const parts = d.dateSaisie.split('/');
-      if (parts.length === 3) {
-        // DD/MM/YYYY or similar
-        const month = parts[1];
-        const year = parts[2]?.length === 4 ? parts[2] : `20${parts[2]}`;
-        const monthNames = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-        monthKey = `${monthNames[parseInt(month)] || month} ${year}`;
-      } else {
-        monthKey = d.dateSaisie.substring(0, 7);
-      }
-      if (!byMonth[monthKey]) byMonth[monthKey] = {};
+      const date = parseDate(d.dateSaisie);
+      if (!date) return;
+      const sortKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const label = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      if (!byMonth[sortKey]) byMonth[sortKey] = { sortKey, label, codes: {} };
       const code = d.codeLibreTable || 'Autre';
-      byMonth[monthKey][code] = (byMonth[monthKey][code] || 0) + d.quantite;
+      byMonth[sortKey].codes[code] = (byMonth[sortKey].codes[code] || 0) + d.quantite;
     });
 
-    return Object.entries(byMonth)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([month, codes]) => ({ month, ...codes }));
+    return Object.values(byMonth)
+      .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+      .map(({ label, codes }) => ({ month: label, ...codes }));
   }, [filtered]);
 
-  // Daily bar chart
-  const dailyData = useMemo(() => {
-    const byDay: Record<string, Record<string, number>> = {};
+  // Weekly stacked bar chart
+  const weeklyData = useMemo(() => {
+    const byWeek: Record<string, { sortKey: number; label: string; codes: Record<string, number> }> = {};
     filtered.forEach(d => {
-      if (!d.dateSaisie) return;
-      const day = d.dateSaisie;
-      if (!byDay[day]) byDay[day] = {};
+      const date = parseDate(d.dateSaisie);
+      if (!date) return;
+      const week = getWeekNumber(date);
+      const key = `${date.getFullYear()}-S${String(week).padStart(2, '0')}`;
+      const label = `S${week}`;
+      if (!byWeek[key]) byWeek[key] = { sortKey: date.getFullYear() * 100 + week, label, codes: {} };
       const code = d.codeLibreTable || 'Autre';
-      byDay[day][code] = (byDay[day][code] || 0) + d.quantite;
+      byWeek[key].codes[code] = (byWeek[key].codes[code] || 0) + d.quantite;
     });
 
-    // Format short day names
-    return Object.entries(byDay)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .slice(-10) // Last 10 days
-      .map(([date, codes]) => {
-        const parts = date.split('/');
-        const shortDate = parts.length >= 2 ? `${parts[0]} ${['', 'jan', 'fév', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'][parseInt(parts[1])] || parts[1]}` : date;
-        return { date: shortDate, ...codes };
-      });
+    return Object.values(byWeek)
+      .sort((a, b) => a.sortKey - b.sortKey)
+      .slice(-10)
+      .map(({ label, codes }) => ({ semaine: label, ...codes }));
   }, [filtered]);
 
   // Pie chart by employer
@@ -238,13 +249,13 @@ export function PointageTab({ data }: { data: PointageData[] }) {
             </div>
           </div>
 
-          {/* Daily stacked bar */}
+          {/* Weekly stacked bar */}
           <div className="pbi-card p-3">
             <div className="h-[160px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyData} margin={{ bottom: 20, left: 10, right: 10 }}>
+                <BarChart data={weeklyData} margin={{ bottom: 20, left: 10, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
-                  <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} />
+                  <XAxis dataKey="semaine" tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} />
                   <Tooltip
                     contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
