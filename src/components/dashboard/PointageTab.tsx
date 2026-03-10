@@ -177,28 +177,6 @@ export function PointageTab({ data }: { data: PointageData[] }) {
           </div>
         </div>
 
-        {/* Search boxes */}
-        <div className="pbi-card p-2">
-          <div className="pbi-section-title mb-1">Nom prénom</div>
-          <input
-            type="text"
-            value={searchNom}
-            onChange={e => setSearchNom(e.target.value)}
-            placeholder="Rechercher..."
-            className="w-[140px] px-2 py-1 text-[11px] bg-secondary/50 rounded-sm border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
-
-        <div className="pbi-card p-2">
-          <div className="pbi-section-title mb-1">OT</div>
-          <input
-            type="text"
-            value={searchOT}
-            onChange={e => setSearchOT(e.target.value)}
-            placeholder="Rechercher..."
-            className="w-[140px] px-2 py-1 text-[11px] bg-secondary/50 rounded-sm border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
 
         {/* Code libre Table filter */}
         <div className="pbi-card p-2">
