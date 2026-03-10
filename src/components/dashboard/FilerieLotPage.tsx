@@ -169,9 +169,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       </div>
 
       {/* Grouped table */}
-      <Card className="glass-card">
+      <Card className="glass-card" ref={tableRef}>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Câbles par lot ({filtered.length})</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Câbles par lot ({filtered.length}){statusFilter === 'retard' && ' — En retard'}</CardTitle>
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={expandAll} className="h-7 text-xs">Tout déplier</Button>
             <Button size="sm" variant="ghost" onClick={collapseAll} className="h-7 text-xs">Tout replier</Button>
