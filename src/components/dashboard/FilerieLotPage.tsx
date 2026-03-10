@@ -45,11 +45,15 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
   // KPIs
   const kpis = useMemo(() => {
     const total = filtered.length;
+    const tires = filtered.filter(isTire).length;
     const lngTotal = filtered.reduce((s, c) => s + c.lngTotal, 0);
+    const lngTire = filtered.filter(isTire).reduce((s, c) => s + c.lngTotal, 0);
     const nbLots = new Set(filtered.map(c => c.lotMtgApo)).size;
     const dansFenetre = filtered.filter(c => c.dateTirPlusTot && c.dateTirPlusTard && c.dateTirPlusTot <= today && today <= c.dateTirPlusTard).length;
     const retard = filtered.filter(isEnRetard).length;
-    return { total, lngTotal, nbLots, dansFenetre, retard };
+    const pctQty = total ? ((tires / total) * 100).toFixed(1) : '0';
+    const pctLng = lngTotal ? ((lngTire / lngTotal) * 100).toFixed(1) : '0';
+    return { total, tires, lngTotal, lngTire, nbLots, dansFenetre, retard, pctQty, pctLng };
   }, [filtered, today]);
 
   // Bar chart: longueur par lot (tiré vs non tiré)
