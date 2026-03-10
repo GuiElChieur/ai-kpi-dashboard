@@ -32,13 +32,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     return latest.filter(d => activeFilters.some(f => d.natureOT?.toUpperCase().includes(f)));
   }, [latest, activeFilters]);
 
-  // Extract unique typeOT values for the selector
-  const availableTypeOTs = useMemo(() => {
-    const types = new Set<string>();
-    otLigneData.forEach(d => { if (d.typeOT) types.add(d.typeOT); });
-    return Array.from(types).sort();
-  }, [otLigneData]);
-
   // Filter OT Ligne data based on nature filters + typeOT selection
   const filteredLigne = useMemo(() => {
     let data = otLigneData;
@@ -87,11 +80,41 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .sort((a, b) => b[1].charge - a[1].charge)
       .map(([name, v]) => ({
         name: name.length > 18 ? name.slice(0, 18) + '…' : name,
+        fullName: name,
         'Charge prév.': Math.round(v.charge),
         'TP': Math.round(v.tp),
         'VBTR': Math.round(v.vbtr),
       }));
   }, [filteredLigne]);
+
+  const handleBarClick = (data: any) => {
+    if (data?.activePayload?.[0]?.payload?.fullName) {
+      const clicked = data.activePayload[0].payload.fullName;
+      setSelectedTypeOT(prev => prev === clicked ? null : clicked);
+    }
+  };
+
+  const CustomXAxisTick = ({ x, y, payload }: any) => {
+    const entry = chartData.find(d => d.name === payload.value);
+    const fullName = entry?.fullName || payload.value;
+    const isSelected = selectedTypeOT === fullName;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0} y={0} dy={8}
+          textAnchor="end"
+          fill={isSelected ? 'hsl(200,80%,65%)' : 'hsl(215,15%,60%)'}
+          fontSize={9}
+          fontWeight={isSelected ? 700 : 400}
+          transform="rotate(-45)"
+          style={{ cursor: 'pointer', textDecoration: isSelected ? 'underline' : 'none' }}
+          onClick={() => setSelectedTypeOT(prev => prev === fullName ? null : fullName)}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   // Rendement by lot
   const rendementLots = useMemo(() => {
@@ -205,36 +228,19 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
             </div>
           </div>
 
-          {/* Type OT selector */}
-          <div className="pbi-card p-2">
-            <div className="pbi-section-title mb-1">Type de tâche</div>
-            <div className="flex flex-col gap-0.5 max-h-[140px] overflow-auto">
+          {/* Selected type indicator */}
+          {selectedTypeOT && (
+            <div className="pbi-card p-2">
+              <div className="pbi-section-title mb-1">Filtre actif</div>
               <button
                 onClick={() => setSelectedTypeOT(null)}
-                className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left ${
-                  selectedTypeOT === null
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-foreground hover:bg-secondary/80'
-                }`}
+                className="px-2 py-1 text-[10px] font-semibold rounded-sm bg-primary text-primary-foreground w-full text-left truncate"
+                title={selectedTypeOT}
               >
-                Tous
+                ✕ {selectedTypeOT}
               </button>
-              {availableTypeOTs.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedTypeOT(selectedTypeOT === t ? null : t)}
-                  className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left truncate ${
-                    selectedTypeOT === t
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-foreground hover:bg-secondary/80'
-                  }`}
-                  title={t}
-                >
-                  {t}
-                </button>
-              ))}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Center bar chart */}
@@ -256,9 +262,9 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           <div className="text-3xl font-bold text-primary font-mono text-center mb-2">1935</div>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ bottom: 60, left: 10, right: 10 }}>
+              <BarChart data={chartData} margin={{ bottom: 60, left: 10, right: 10 }} onClick={handleBarClick} style={{ cursor: 'pointer' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} angle={-45} textAnchor="end" />
+                <XAxis dataKey="name" tick={<CustomXAxisTick />} />
                 <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
