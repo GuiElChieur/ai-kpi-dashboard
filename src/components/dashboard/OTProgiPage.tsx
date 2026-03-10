@@ -14,6 +14,7 @@ interface OTProgiPageProps {
 
 export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPageProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [selectedTypeOT, setSelectedTypeOT] = useState<string | null>(null);
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
@@ -31,16 +32,28 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     return latest.filter(d => activeFilters.some(f => d.natureOT?.toUpperCase().includes(f)));
   }, [latest, activeFilters]);
 
-  // Filter OT Ligne data based on filtered OT identifiers
+  // Extract unique typeOT values for the selector
+  const availableTypeOTs = useMemo(() => {
+    const types = new Set<string>();
+    otLigneData.forEach(d => { if (d.typeOT) types.add(d.typeOT); });
+    return Array.from(types).sort();
+  }, [otLigneData]);
+
+  // Filter OT Ligne data based on nature filters + typeOT selection
   const filteredLigne = useMemo(() => {
-    if (activeFilters.length === 0) return otLigneData;
-    const filteredIds = new Set(filtered.map(d => d.numOT));
-    // Also filter by typeOT matching type from OT data
-    return otLigneData.filter(d => {
-      // Match by identifiantProjet prefix or typeOT
-      return filteredIds.has(d.identifiantProjet) || activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f));
-    });
-  }, [otLigneData, filtered, activeFilters]);
+    let data = otLigneData;
+    
+    if (activeFilters.length > 0) {
+      const filteredIds = new Set(filtered.map(d => d.numOT));
+      data = data.filter(d => filteredIds.has(d.identifiantProjet) || activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
+    }
+    
+    if (selectedTypeOT) {
+      data = data.filter(d => d.typeOT === selectedTypeOT);
+    }
+    
+    return data;
+  }, [otLigneData, filtered, activeFilters, selectedTypeOT]);
 
   // KPIs - from DATA_OT_LIGNE
   const kpis = useMemo(() => {
@@ -172,8 +185,9 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           <PbiKpiCard label="Résultat" value={Math.round(kpis.resultat)} color={kpis.resultat >= 0 ? 'success' : 'destructive'} />
           <PbiKpiCard label="Heures pointées" value={Math.round(kpis.totalHeuresPointees)} color="info" small />
 
-          {/* Filter buttons */}
+          {/* Filter buttons - Nature OT */}
           <div className="pbi-card p-2">
+            <div className="pbi-section-title mb-1">Nature OT</div>
             <div className="grid grid-cols-2 gap-1">
               {FILTER_CATEGORIES.map(f => (
                 <button
@@ -186,6 +200,37 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
                   }`}
                 >
                   {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Type OT selector */}
+          <div className="pbi-card p-2">
+            <div className="pbi-section-title mb-1">Type de tâche</div>
+            <div className="flex flex-col gap-0.5 max-h-[140px] overflow-auto">
+              <button
+                onClick={() => setSelectedTypeOT(null)}
+                className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left ${
+                  selectedTypeOT === null
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Tous
+              </button>
+              {availableTypeOTs.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTypeOT(selectedTypeOT === t ? null : t)}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left truncate ${
+                    selectedTypeOT === t
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  }`}
+                  title={t}
+                >
+                  {t}
                 </button>
               ))}
             </div>
