@@ -121,25 +121,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     );
   };
 
-  // Rendement by lot
-  const rendementLots = useMemo(() => {
-    const byLot: Record<string, { vbtr: number; tp: number }> = {};
-    filtered.forEach(d => {
-      const lot = d.lot || 'x';
-      if (lot === 'x' || lot === 'X') return;
-      if (!byLot[lot]) byLot[lot] = { vbtr: 0, tp: 0 };
-      byLot[lot].vbtr += d.vbtr;
-      byLot[lot].tp += d.tp;
-    });
-    return Object.entries(byLot)
-      .map(([lot, v]) => ({
-        lot,
-        rendement: v.tp > 0 ? Math.round((v.vbtr / v.tp) * 100) : 0,
-        resultat: Math.round(v.vbtr - v.tp),
-      }))
-      .sort((a, b) => a.lot.localeCompare(b.lot))
-      .slice(0, 15);
-  }, [filtered]);
 
   // Table data - grouped by typeOT + identifiant like PBI (from filteredLigne)
   const tableData = useMemo(() => {
