@@ -146,11 +146,11 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         <Card className="glass-card">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div style={{ height: Math.max(300, lotLngData.length * 28 + 80), overflowX: 'auto' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={70} interval={0} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} m`} />
                   <Legend />
@@ -165,11 +165,11 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         <Card className="glass-card">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div style={{ height: Math.max(300, lotQtyData.length * 28 + 80), overflowX: 'auto' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={70} interval={0} />
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
                   <Legend />
