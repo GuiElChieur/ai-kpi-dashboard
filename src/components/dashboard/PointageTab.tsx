@@ -68,6 +68,48 @@ export function PointageTab({ data }: { data: PointageData[] }) {
     return d;
   }, [data, selectedEmployeurs, selectedCodeLibre, searchNom, searchOT]);
 
+  // Helper functions (before filtered2 which depends on them)
+  const parseDateFn = (s: string) => {
+    if (!s) return null;
+    if (s.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(s);
+    const parts = s.split('/');
+    if (parts.length === 3) {
+      return new Date(parts[2].length === 4 ? parseInt(parts[2]) : 2000 + parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+    return null;
+  };
+
+  const getWeekNumberFn = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
+  const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+  // Apply month/week filters on top of filtered
+  const filteredFinal = useMemo(() => {
+    let d = filtered;
+    if (selectedMonth) {
+      d = d.filter(r => {
+        const date = parseDateFn(r.dateSaisie);
+        if (!date) return false;
+        const label = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+        return label === selectedMonth;
+      });
+    }
+    if (selectedWeek) {
+      d = d.filter(r => {
+        const date = parseDateFn(r.dateSaisie);
+        if (!date) return false;
+        return `S${getWeekNumberFn(date)}` === selectedWeek;
+      });
+    }
+    return d;
+  }, [filtered, selectedMonth, selectedWeek]);
+
   // KPIs
   const totalHeures = useMemo(() => filtered.reduce((s, d) => s + d.quantite, 0), [filtered]);
   const nbPersonnes = useMemo(() => {
