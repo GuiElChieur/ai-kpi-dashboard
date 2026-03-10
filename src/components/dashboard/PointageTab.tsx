@@ -73,9 +73,6 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
-  // Stacked bar by month
-  const monthlyData = useMemo(() => {
-    const byMonth: Record<string, Record<string, number>> = {};
   // Helper: parse DD/MM/YYYY date
   const parseDate = (s: string) => {
     const parts = s.split('/');
