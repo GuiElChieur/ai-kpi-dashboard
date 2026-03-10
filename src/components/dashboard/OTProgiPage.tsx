@@ -45,6 +45,10 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     if (selectedTypeOT) {
       data = data.filter(d => d.typeOT === selectedTypeOT);
     }
+
+    if (selectedLot) {
+      data = data.filter(d => d.lot === selectedLot);
+    }
     
     return data;
   }, [otLigneData, filtered, activeFilters, selectedTypeOT]);
