@@ -32,13 +32,6 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     return latest.filter(d => activeFilters.some(f => d.natureOT?.toUpperCase().includes(f)));
   }, [latest, activeFilters]);
 
-  // Extract unique typeOT values for the selector
-  const availableTypeOTs = useMemo(() => {
-    const types = new Set<string>();
-    otLigneData.forEach(d => { if (d.typeOT) types.add(d.typeOT); });
-    return Array.from(types).sort();
-  }, [otLigneData]);
-
   // Filter OT Ligne data based on nature filters + typeOT selection
   const filteredLigne = useMemo(() => {
     let data = otLigneData;
