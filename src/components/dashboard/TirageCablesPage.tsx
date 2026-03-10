@@ -143,7 +143,8 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
         <KpiCard title="Câbles tirés" value={`${kpis.tires} (${kpis.total ? ((kpis.tires / kpis.total) * 100).toFixed(1) : 0}%)`} icon={<CheckCircle className="h-5 w-5" />} />
         <KpiCard title="Non tirés" value={`${kpis.nonTires}`} icon={<XCircle className="h-5 w-5" />} />
-        <KpiCard title="En retard" value={`${kpis.retard}`} icon={<AlertTriangle className="h-5 w-5" />} />
+        <div className="cursor-pointer" onClick={() => { setStatusFilter('retard'); setPage(0); setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
+          <KpiCard title="En retard" value={`${kpis.retard}`} icon={<AlertTriangle className="h-5 w-5" />} className={statusFilter === 'retard' ? 'ring-2 ring-destructive' : ''} />
         <KpiCard title="Long. restante" value={`${Math.round(kpis.lngRestante).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
       </div>
 
