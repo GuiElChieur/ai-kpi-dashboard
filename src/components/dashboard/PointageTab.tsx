@@ -110,55 +110,24 @@ export function PointageTab({ data }: { data: PointageData[] }) {
     return d;
   }, [filtered, selectedMonth, selectedWeek]);
 
-  // KPIs
-  const totalHeures = useMemo(() => filtered.reduce((s, d) => s + d.quantite, 0), [filtered]);
+  // KPIs - use filteredFinal
+  const totalHeures = useMemo(() => filteredFinal.reduce((s, d) => s + d.quantite, 0), [filteredFinal]);
   const nbPersonnes = useMemo(() => {
-    // Find the latest date in filtered data, then get J-1
-    const allDates = filtered.map(d => d.dateSaisie).filter(Boolean).sort();
+    const allDates = filteredFinal.map(d => d.dateSaisie).filter(Boolean).sort();
     if (allDates.length === 0) return 0;
-    const latestDate = allDates[allDates.length - 1];
-    // Get all unique dates sorted, pick the one before latest
     const uniqueDates = [...new Set(allDates)].sort();
     const j1 = uniqueDates.length >= 2 ? uniqueDates[uniqueDates.length - 2] : uniqueDates[uniqueDates.length - 1];
-    const personnes = new Set(filtered.filter(d => d.dateSaisie === j1).map(d => d.nomPrenom).filter(Boolean));
+    const personnes = new Set(filteredFinal.filter(d => d.dateSaisie === j1).map(d => d.nomPrenom).filter(Boolean));
     return personnes.size;
-  }, [filtered]);
+  }, [filteredFinal]);
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
-  // Helper: parse date (YYYY-MM-DD or DD/MM/YYYY)
-  const parseDate = (s: string) => {
-    if (!s) return null;
-    // YYYY-MM-DD
-    if (s.match(/^\d{4}-\d{2}-\d{2}/)) {
-      return new Date(s);
-    }
-    // DD/MM/YYYY
-    const parts = s.split('/');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0]);
-      const month = parseInt(parts[1]) - 1;
-      const year = parts[2].length === 4 ? parseInt(parts[2]) : 2000 + parseInt(parts[2]);
-      return new Date(year, month, day);
-    }
-    return null;
-  };
-
-  // Get ISO week number
-  const getWeekNumber = (d: Date) => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  };
-
-  // Stacked bar by month
+  // Stacked bar by month (uses `filtered` not `filteredFinal` so all months stay visible)
   const monthlyData = useMemo(() => {
-    const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
     const byMonth: Record<string, { sortKey: string; label: string; codes: Record<string, number> }> = {};
     filtered.forEach(d => {
-      const date = parseDate(d.dateSaisie);
+      const date = parseDateFn(d.dateSaisie);
       if (!date) return;
       const sortKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const label = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
@@ -166,36 +135,34 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       const code = d.codeLibreTable || 'Autre';
       byMonth[sortKey].codes[code] = (byMonth[sortKey].codes[code] || 0) + d.quantite;
     });
-
     return Object.values(byMonth)
       .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
       .map(({ label, codes }) => ({ month: label, ...codes }));
   }, [filtered]);
 
-  // Weekly stacked bar chart
+  // Weekly stacked bar chart (uses `filtered`)
   const weeklyData = useMemo(() => {
     const byWeek: Record<string, { sortKey: number; label: string; codes: Record<string, number> }> = {};
     filtered.forEach(d => {
-      const date = parseDate(d.dateSaisie);
+      const date = parseDateFn(d.dateSaisie);
       if (!date) return;
-      const week = getWeekNumber(date);
+      const week = getWeekNumberFn(date);
       const key = `${date.getFullYear()}-S${String(week).padStart(2, '0')}`;
       const label = `S${week}`;
       if (!byWeek[key]) byWeek[key] = { sortKey: date.getFullYear() * 100 + week, label, codes: {} };
       const code = d.codeLibreTable || 'Autre';
       byWeek[key].codes[code] = (byWeek[key].codes[code] || 0) + d.quantite;
     });
-
     return Object.values(byWeek)
       .sort((a, b) => a.sortKey - b.sortKey)
       .slice(-10)
       .map(({ label, codes }) => ({ semaine: label, ...codes }));
   }, [filtered]);
 
-  // Pie chart by employer
+  // Pie chart by employer - uses filteredFinal
   const pieData = useMemo(() => {
     const byEmp: Record<string, number> = {};
-    filtered.forEach(d => {
+    filteredFinal.forEach(d => {
       const emp = d.employeur || 'Autre';
       byEmp[emp] = (byEmp[emp] || 0) + d.quantite;
     });
@@ -207,7 +174,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
         value: Math.round(value * 100) / 100,
         percent: total > 0 ? Math.round((value / total) * 100) : 0,
       }));
-  }, [filtered]);
+  }, [filteredFinal]);
 
   // All code libre keys for stacked bars
   const allCodeLibreKeys = useMemo(() => {
@@ -216,12 +183,47 @@ export function PointageTab({ data }: { data: PointageData[] }) {
     return Array.from(keys).sort();
   }, [filtered]);
 
-  // Table data
+  // Table data - uses filteredFinal
   const tableData = useMemo(() => {
-    return filtered
+    return filteredFinal
       .sort((a, b) => b.quantite - a.quantite)
       .slice(0, 100);
-  }, [filtered]);
+  }, [filteredFinal]);
+
+  // Custom clickable X axis ticks
+  const MonthTick = ({ x, y, payload }: any) => {
+    const isSelected = selectedMonth === payload.value;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0} y={0} dy={8} textAnchor="end" transform="rotate(-20)"
+          fill={isSelected ? 'hsl(200,80%,65%)' : 'hsl(215,15%,60%)'}
+          fontSize={9} fontWeight={isSelected ? 700 : 400}
+          style={{ cursor: 'pointer', textDecoration: isSelected ? 'underline' : 'none' }}
+          onClick={() => setSelectedMonth(prev => prev === payload.value ? null : payload.value)}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
+
+  const WeekTick = ({ x, y, payload }: any) => {
+    const isSelected = selectedWeek === payload.value;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0} y={0} dy={8} textAnchor="middle"
+          fill={isSelected ? 'hsl(200,80%,65%)' : 'hsl(215,15%,60%)'}
+          fontSize={9} fontWeight={isSelected ? 700 : 400}
+          style={{ cursor: 'pointer', textDecoration: isSelected ? 'underline' : 'none' }}
+          onClick={() => setSelectedWeek(prev => prev === payload.value ? null : payload.value)}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div className="flex-1 space-y-3 p-3 overflow-auto">
