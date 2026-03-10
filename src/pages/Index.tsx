@@ -15,6 +15,7 @@ import { Upload } from 'lucide-react';
 
 const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
+  const { data: cableData, isLoading: cableLoading } = useCableData();
   const [activePage, setActivePage] = useState('ot-progi');
   const [showUpload, setShowUpload] = useState(false);
 
