@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Segoe+UI:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    --background: 222 35% 14%;
+    --foreground: 210 20% 92%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card: 222 30% 18%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover: 222 30% 18%;
+    --popover-foreground: 210 20% 92%;
 
-    --primary: 220 70% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 100% 55%;
+    --primary-foreground: 222 35% 14%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 25% 10%;
+    --secondary: 222 25% 24%;
+    --secondary-foreground: 210 20% 92%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 222 25% 22%;
+    --muted-foreground: 215 15% 60%;
 
     --accent: 160 60% 45%;
     --accent-foreground: 0 0% 100%;
@@ -39,80 +39,26 @@
     --info: 200 80% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 70% 50%;
+    --border: 222 20% 25%;
+    --input: 222 20% 25%;
+    --ring: 45 100% 55%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 38 92% 50%;
+    --chart-1: 200 80% 55%;
+    --chart-2: 0 72% 55%;
+    --chart-3: 142 71% 50%;
     --chart-4: 280 60% 55%;
-    --chart-5: 0 72% 51%;
+    --chart-5: 38 92% 55%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 224 30% 8%;
-    --foreground: 210 20% 92%;
-
-    --card: 224 25% 12%;
-    --card-foreground: 210 20% 92%;
-
-    --popover: 224 25% 12%;
-    --popover-foreground: 210 20% 92%;
-
-    --primary: 220 70% 55%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 210 20% 92%;
-
-    --muted: 220 20% 18%;
-    --muted-foreground: 215 15% 60%;
-
-    --accent: 160 60% 45%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --info: 200 80% 50%;
-    --info-foreground: 0 0% 100%;
-
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 220 70% 55%;
-
-    --chart-1: 220 70% 55%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 60% 55%;
-    --chart-5: 0 72% 51%;
-
-    --sidebar-background: 224 30% 8%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 15%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 222 35% 10%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 45 100% 55%;
+    --sidebar-primary-foreground: 222 35% 14%;
+    --sidebar-accent: 222 30% 16%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 20% 20%;
+    --sidebar-ring: 45 100% 55%;
   }
 }
 
@@ -123,7 +69,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
   }
 
   .font-mono {
@@ -132,7 +78,15 @@
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
+  .pbi-card {
+    @apply bg-card rounded-sm border border-border/30;
+  }
+
+  .pbi-kpi-value {
+    @apply text-2xl font-bold font-mono tracking-tight;
+  }
+
+  .pbi-section-title {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-muted-foreground;
   }
 }
