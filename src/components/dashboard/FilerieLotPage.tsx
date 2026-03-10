@@ -53,22 +53,32 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
     return { total, lngTotal, nbLots, dansFenetre, retard };
   }, [filtered, today]);
 
-  // Bar chart: longueur par lot
-  const lotBarData = useMemo(() => {
-    const byLot: Record<string, number> = {};
-    filtered.forEach(c => { byLot[c.lotMtgApo] = (byLot[c.lotMtgApo] || 0) + c.lngTotal; });
+  // Bar chart: longueur par lot (tiré vs non tiré)
+  const lotLngData = useMemo(() => {
+    const byLot: Record<string, { tire: number; nonTire: number }> = {};
+    filtered.forEach(c => {
+      const lot = c.lotMtgApo || 'N/A';
+      if (!byLot[lot]) byLot[lot] = { tire: 0, nonTire: 0 };
+      if (isTire(c)) byLot[lot].tire += c.lngTotal;
+      else byLot[lot].nonTire += c.lngTotal;
+    });
     return Object.entries(byLot)
       .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
-      .map(([lot, lng]) => ({ lot, longueur: Math.round(lng) }));
+      .map(([lot, v]) => ({ lot, tire: Math.round(v.tire), nonTire: Math.round(v.nonTire) }));
   }, [filtered]);
 
-  // Donut: câbles par lot
-  const donutData = useMemo(() => {
-    const byLot: Record<string, number> = {};
-    filtered.forEach(c => { byLot[c.lotMtgApo] = (byLot[c.lotMtgApo] || 0) + 1; });
+  // Bar chart: quantité câbles par lot (tiré vs non tiré)
+  const lotQtyData = useMemo(() => {
+    const byLot: Record<string, { tire: number; nonTire: number }> = {};
+    filtered.forEach(c => {
+      const lot = c.lotMtgApo || 'N/A';
+      if (!byLot[lot]) byLot[lot] = { tire: 0, nonTire: 0 };
+      if (isTire(c)) byLot[lot].tire += 1;
+      else byLot[lot].nonTire += 1;
+    });
     return Object.entries(byLot)
       .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
-      .map(([lot, count]) => ({ name: `Lot ${lot}`, value: count }));
+      .map(([lot, v]) => ({ lot, tire: v.tire, nonTire: v.nonTire }));
   }, [filtered]);
 
   // Grouped data
