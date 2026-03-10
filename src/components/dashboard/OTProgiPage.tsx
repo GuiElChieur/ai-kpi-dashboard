@@ -114,10 +114,10 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .slice(0, 15);
   }, [filtered]);
 
-  // Table data - OT ligne aggregated
+  // Table data - OT ligne aggregated (uses filtered ligne data)
   const tableData = useMemo(() => {
     const byOT: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number }> = {};
-    otLigneData.forEach(d => {
+    filteredLigne.forEach(d => {
       const key = d.identifiantProjet;
       if (!byOT[key]) byOT[key] = { typeOT: d.typeOT, identifiant: key, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0 };
       byOT[key].qtePrev += d.qtePrevue;
