@@ -159,12 +159,28 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       .map(({ label, codes }) => ({ semaine: label, ...codes }));
   }, [filtered]);
 
-  // Pie chart by employer - uses filteredFinal
+  // Pie chart by employer - uses filtered (not filteredFinal) so all employers stay visible
   const pieData = useMemo(() => {
     const byEmp: Record<string, number> = {};
-    filteredFinal.forEach(d => {
-      const emp = d.employeur || 'Autre';
-      byEmp[emp] = (byEmp[emp] || 0) + d.quantite;
+    // Apply month/week filters but not employer filter for the pie
+    let d = filtered;
+    if (selectedMonth) {
+      d = d.filter(r => {
+        const date = parseDateFn(r.dateSaisie);
+        if (!date) return false;
+        return `${monthNames[date.getMonth()]} ${date.getFullYear()}` === selectedMonth;
+      });
+    }
+    if (selectedWeek) {
+      d = d.filter(r => {
+        const date = parseDateFn(r.dateSaisie);
+        if (!date) return false;
+        return `S${getWeekNumberFn(date)}` === selectedWeek;
+      });
+    }
+    d.forEach(r => {
+      const emp = r.employeur || 'Autre';
+      byEmp[emp] = (byEmp[emp] || 0) + r.quantite;
     });
     const total = Object.values(byEmp).reduce((s, v) => s + v, 0);
     return Object.entries(byEmp)
@@ -174,7 +190,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
         value: Math.round(value * 100) / 100,
         percent: total > 0 ? Math.round((value / total) * 100) : 0,
       }));
-  }, [filteredFinal]);
+  }, [filtered, selectedMonth, selectedWeek]);
 
   // All code libre keys for stacked bars
   const allCodeLibreKeys = useMemo(() => {
