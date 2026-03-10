@@ -19,6 +19,18 @@ const PIE_COLORS = [
   'hsl(320,60%,55%)', 'hsl(60,70%,50%)',
 ];
 
+const TABLE_COLUMNS: { key: string; label: string; isNumeric?: boolean }[] = [
+  { key: 'codeLibreTable', label: 'Code libre Table' },
+  { key: 'intitule', label: 'Intitulé' },
+  { key: 'intituleAffaire', label: "Intitulé de l'affaire" },
+  { key: 'codeLibreAlpha', label: 'Code libre alpha' },
+  { key: 'nomPrenom', label: 'Nom Prenom' },
+  { key: 'employeur', label: 'Employeur' },
+  { key: 'objetTravail', label: 'Objet travail' },
+  { key: 'dateSaisie', label: 'Date saisie' },
+  { key: 'quantite', label: 'Somme de Quantité', isNumeric: true },
+];
+
 export function PointageTab({ data }: { data: PointageData[] }) {
   const [selectedEmployeurs, setSelectedEmployeurs] = useState<string[]>([]);
   const [selectedCodeLibre, setSelectedCodeLibre] = useState<string[]>([]);
@@ -26,6 +38,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const [searchOT, setSearchOT] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   // Extract unique employers
   const employeurs = useMemo(() => {
     const set = new Set<string>();
@@ -201,10 +214,21 @@ export function PointageTab({ data }: { data: PointageData[] }) {
 
   // Table data - uses filteredFinal
   const tableData = useMemo(() => {
-    return filteredFinal
+    let d = filteredFinal;
+    // Apply column filters
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (value.trim()) {
+        const s = value.trim().toLowerCase();
+        d = d.filter(r => {
+          const v = (r as any)[key];
+          return v != null && String(v).toLowerCase().includes(s);
+        });
+      }
+    });
+    return d
       .sort((a, b) => b.quantite - a.quantite)
       .slice(0, 100);
-  }, [filteredFinal]);
+  }, [filteredFinal, columnFilters]);
 
   // Custom clickable X axis ticks
   const MonthTick = ({ x, y, payload }: any) => {
@@ -392,31 +416,38 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       <div className="pbi-card overflow-hidden">
         <div className="overflow-auto max-h-[220px]">
           <table className="w-full text-[11px]">
-            <thead className="sticky top-0 bg-card">
+            <thead className="sticky top-0 bg-card z-10">
               <tr className="border-b border-border/50">
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Code libre Table</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Intitulé</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Intitulé de l'affaire</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Code libre alpha</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Nom Prenom</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Employeur</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Objet travail</th>
-                <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Date saisie</th>
-                <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Somme de Quantité</th>
+                {TABLE_COLUMNS.map(col => (
+                  <th key={col.key} className={`${col.isNumeric ? 'text-right' : 'text-left'} px-3 py-2 font-semibold text-muted-foreground`}>
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+              <tr className="border-b border-border/30">
+                {TABLE_COLUMNS.map(col => (
+                  <th key={col.key} className="px-2 py-1">
+                    <input
+                      type="text"
+                      placeholder="🔍"
+                      value={columnFilters[col.key] || ''}
+                      onChange={e => setColumnFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
+                      className="w-full bg-secondary/50 text-foreground text-[10px] px-1.5 py-0.5 rounded-sm border border-border/30 focus:outline-none focus:border-primary/50 placeholder:text-muted-foreground/50"
+                    />
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {tableData.map((row, i) => (
                 <tr key={i} className="border-b border-border/20 hover:bg-secondary/30">
-                  <td className="px-3 py-1.5">{row.codeLibreTable}</td>
-                  <td className="px-3 py-1.5">{row.intitule}</td>
-                  <td className="px-3 py-1.5 text-[10px]">{row.intituleAffaire}</td>
-                  <td className="px-3 py-1.5 font-mono text-[10px]">{row.codeLibreAlpha}</td>
-                  <td className="px-3 py-1.5">{row.nomPrenom}</td>
-                  <td className="px-3 py-1.5">{row.employeur}</td>
-                  <td className="px-3 py-1.5">{row.objetTravail}</td>
-                  <td className="px-3 py-1.5">{row.dateSaisie}</td>
-                  <td className="px-3 py-1.5 text-right font-mono">{row.quantite.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                  {TABLE_COLUMNS.map(col => (
+                    <td key={col.key} className={`px-3 py-1.5 ${col.isNumeric ? 'text-right font-mono' : ''} ${col.key === 'intituleAffaire' || col.key === 'codeLibreAlpha' ? 'text-[10px]' : ''} ${col.key === 'codeLibreAlpha' ? 'font-mono' : ''}`}>
+                      {col.isNumeric
+                        ? (row as any)[col.key].toLocaleString('fr-FR', { minimumFractionDigits: 2 })
+                        : (row as any)[col.key]}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
