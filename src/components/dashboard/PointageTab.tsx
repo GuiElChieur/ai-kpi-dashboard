@@ -226,9 +226,6 @@ export function PointageTab({ data }: { data: PointageData[] }) {
         {/* Left KPI column */}
         <div className="flex flex-col gap-2 min-w-[160px]">
           <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
-          <div className="pbi-card p-2">
-            <GaugeChart value={budgetTP} label="% Budget TP" max={10000} suffix="%" color={budgetTP > 50 ? 'orange' : 'green'} />
-          </div>
           <PbiKpiCard label="Nbre de personnes à bord" value={nbPersonnes} color="warning" />
         </div>
 
