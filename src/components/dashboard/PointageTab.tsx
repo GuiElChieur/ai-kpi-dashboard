@@ -214,10 +214,21 @@ export function PointageTab({ data }: { data: PointageData[] }) {
 
   // Table data - uses filteredFinal
   const tableData = useMemo(() => {
-    return filteredFinal
+    let d = filteredFinal;
+    // Apply column filters
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (value.trim()) {
+        const s = value.trim().toLowerCase();
+        d = d.filter(r => {
+          const v = (r as any)[key];
+          return v != null && String(v).toLowerCase().includes(s);
+        });
+      }
+    });
+    return d
       .sort((a, b) => b.quantite - a.quantite)
       .slice(0, 100);
-  }, [filteredFinal]);
+  }, [filteredFinal, columnFilters]);
 
   // Custom clickable X axis ticks
   const MonthTick = ({ x, y, payload }: any) => {
