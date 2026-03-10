@@ -185,8 +185,9 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
           <PbiKpiCard label="Résultat" value={Math.round(kpis.resultat)} color={kpis.resultat >= 0 ? 'success' : 'destructive'} />
           <PbiKpiCard label="Heures pointées" value={Math.round(kpis.totalHeuresPointees)} color="info" small />
 
-          {/* Filter buttons */}
+          {/* Filter buttons - Nature OT */}
           <div className="pbi-card p-2">
+            <div className="pbi-section-title mb-1">Nature OT</div>
             <div className="grid grid-cols-2 gap-1">
               {FILTER_CATEGORIES.map(f => (
                 <button
@@ -199,6 +200,37 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
                   }`}
                 >
                   {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Type OT selector */}
+          <div className="pbi-card p-2">
+            <div className="pbi-section-title mb-1">Type de tâche</div>
+            <div className="flex flex-col gap-0.5 max-h-[140px] overflow-auto">
+              <button
+                onClick={() => setSelectedTypeOT(null)}
+                className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left ${
+                  selectedTypeOT === null
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Tous
+              </button>
+              {availableTypeOTs.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTypeOT(selectedTypeOT === t ? null : t)}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors text-left truncate ${
+                    selectedTypeOT === t
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  }`}
+                  title={t}
+                >
+                  {t}
                 </button>
               ))}
             </div>
