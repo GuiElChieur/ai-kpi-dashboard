@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useDashboardData, computeOTKpis, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
+import { useCableData } from '@/hooks/use-cable-data';
 import { PbiSidebar } from '@/components/dashboard/PbiSidebar';
 import { OTProgiPage } from '@/components/dashboard/OTProgiPage';
 import { PointageTab } from '@/components/dashboard/PointageTab';
 import { MatierTab } from '@/components/dashboard/MatierTab';
 import { AchatTab } from '@/components/dashboard/AchatTab';
+import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
+import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
 import { AIChat } from '@/components/dashboard/AIChat';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +15,7 @@ import { Upload } from 'lucide-react';
 
 const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
+  const { data: cableData, isLoading: cableLoading } = useCableData();
   const [activePage, setActivePage] = useState('ot-progi');
   const [showUpload, setShowUpload] = useState(false);
 
@@ -77,6 +81,14 @@ const Index = () => {
         )}
         {activePage === 'achat' && (
           <div className="p-4"><AchatTab data={achatData} /></div>
+        )}
+        {activePage === 'tirage-cables' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <TirageCablesPage allData={cableData || []} />
+        )}
+        {activePage === 'filerie-lot' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <FilerieLotPage allData={cableData || []} />
         )}
         {activePage === 'ai' && (
           <div className="p-4"><AIChat kpiSummary={kpiSummary} /></div>
