@@ -73,8 +73,14 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
-  // Helper: parse DD/MM/YYYY date
+  // Helper: parse date (YYYY-MM-DD or DD/MM/YYYY)
   const parseDate = (s: string) => {
+    if (!s) return null;
+    // YYYY-MM-DD
+    if (s.match(/^\d{4}-\d{2}-\d{2}/)) {
+      return new Date(s);
+    }
+    // DD/MM/YYYY
     const parts = s.split('/');
     if (parts.length === 3) {
       const day = parseInt(parts[0]);
