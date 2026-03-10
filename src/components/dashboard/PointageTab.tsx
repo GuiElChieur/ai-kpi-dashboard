@@ -24,7 +24,8 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const [selectedCodeLibre, setSelectedCodeLibre] = useState<string[]>([]);
   const [searchNom, setSearchNom] = useState('');
   const [searchOT, setSearchOT] = useState('');
-
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   // Extract unique employers
   const employeurs = useMemo(() => {
     const set = new Set<string>();
