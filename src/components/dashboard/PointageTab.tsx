@@ -345,10 +345,21 @@ export function PointageTab({ data }: { data: PointageData[] }) {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${percent}%`}
                   labelLine={{ stroke: 'hsl(215,15%,60%)' }}
-                  style={{ fontSize: 10 }}
+                  style={{ fontSize: 10, cursor: 'pointer' }}
+                  onClick={(entry: any) => {
+                    if (entry?.name) {
+                      toggleEmployeur(entry.name);
+                    }
+                  }}
                 >
-                  {pieData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  {pieData.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={PIE_COLORS[i % PIE_COLORS.length]}
+                      opacity={selectedEmployeurs.length > 0 && !selectedEmployeurs.includes(entry.name) ? 0.3 : 1}
+                      stroke={selectedEmployeurs.includes(entry.name) ? 'hsl(210,20%,92%)' : 'none'}
+                      strokeWidth={selectedEmployeurs.includes(entry.name) ? 2 : 0}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
