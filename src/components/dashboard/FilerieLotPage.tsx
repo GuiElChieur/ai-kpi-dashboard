@@ -92,7 +92,7 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
 
   const expandAll = () => setExpandedLots(new Set(groupedByLot.map(([lot]) => lot)));
   const collapseAll = () => setExpandedLots(new Set());
-  const resetFilters = () => { setSearch(''); setLotFilter(''); };
+  const resetFilters = () => { setSearch(''); setLotFilter(''); setStatusFilter('all'); };
 
   const exportCSV = (data: CableData[], filename: string) => {
     const headers = ['Câble', 'Repère', 'Type', 'Longueur (m)', 'Date plus tôt', 'Date plus tard', 'Date tirage', 'APO', 'APA', 'Lot'];
