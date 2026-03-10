@@ -8,8 +8,7 @@ import {
   type CableData, getFilerieData, isTire, isEnRetard,
 } from '@/lib/cable-parser';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { Cable, Ruler, Layers, CalendarClock, AlertTriangle, RotateCcw, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -53,22 +52,32 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
     return { total, lngTotal, nbLots, dansFenetre, retard };
   }, [filtered, today]);
 
-  // Bar chart: longueur par lot
-  const lotBarData = useMemo(() => {
-    const byLot: Record<string, number> = {};
-    filtered.forEach(c => { byLot[c.lotMtgApo] = (byLot[c.lotMtgApo] || 0) + c.lngTotal; });
+  // Bar chart: longueur par lot (tiré vs non tiré)
+  const lotLngData = useMemo(() => {
+    const byLot: Record<string, { tire: number; nonTire: number }> = {};
+    filtered.forEach(c => {
+      const lot = c.lotMtgApo || 'N/A';
+      if (!byLot[lot]) byLot[lot] = { tire: 0, nonTire: 0 };
+      if (isTire(c)) byLot[lot].tire += c.lngTotal;
+      else byLot[lot].nonTire += c.lngTotal;
+    });
     return Object.entries(byLot)
       .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
-      .map(([lot, lng]) => ({ lot, longueur: Math.round(lng) }));
+      .map(([lot, v]) => ({ lot, tire: Math.round(v.tire), nonTire: Math.round(v.nonTire) }));
   }, [filtered]);
 
-  // Donut: câbles par lot
-  const donutData = useMemo(() => {
-    const byLot: Record<string, number> = {};
-    filtered.forEach(c => { byLot[c.lotMtgApo] = (byLot[c.lotMtgApo] || 0) + 1; });
+  // Bar chart: quantité câbles par lot (tiré vs non tiré)
+  const lotQtyData = useMemo(() => {
+    const byLot: Record<string, { tire: number; nonTire: number }> = {};
+    filtered.forEach(c => {
+      const lot = c.lotMtgApo || 'N/A';
+      if (!byLot[lot]) byLot[lot] = { tire: 0, nonTire: 0 };
+      if (isTire(c)) byLot[lot].tire += 1;
+      else byLot[lot].nonTire += 1;
+    });
     return Object.entries(byLot)
       .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
-      .map(([lot, count]) => ({ name: `Lot ${lot}`, value: count }));
+      .map(([lot, v]) => ({ lot, tire: v.tire, nonTire: v.nonTire }));
   }, [filtered]);
 
   // Grouped data
@@ -135,16 +144,18 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur totale par lot de montage (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotBarData} layout="vertical" margin={{ left: 40, right: 20 }}>
+                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
-                  <YAxis type="category" dataKey="lot" tick={{ fontSize: 11 }} width={50} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur']} />
-                  <Bar dataKey="longueur" fill="hsl(var(--info))" radius={[0, 4, 4, 0]} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} m`} />
+                  <Legend />
+                  <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
+                  <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -152,16 +163,19 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Répartition câbles par lot</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={2} label={({ name, value }) => `${name}: ${value}`}>
-                    {donutData.map((_, i) => <Cell key={i} fill={LOT_COLORS[i % LOT_COLORS.length]} />)}
-                  </Pie>
+                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                </PieChart>
+                  <Legend />
+                  <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
+                  <Bar dataKey="nonTire" name="Non tiré" stackId="a" fill="hsl(var(--muted-foreground))" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
