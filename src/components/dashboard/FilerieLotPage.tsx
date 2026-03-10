@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KpiCard } from './KpiCard';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +22,10 @@ const PAGE_SIZE = 50;
 
 export function FilerieLotPage({ allData }: { allData: CableData[] }) {
   const baseData = useMemo(() => getFilerieData(allData), [allData]);
+  const tableRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
   const [lotFilter, setLotFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'retard'>('all');
   const [expandedLots, setExpandedLots] = useState<Set<string>>(new Set());
 
   const lots = useMemo(() => [...new Set(baseData.map(c => c.lotMtgApo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true })), [baseData]);
@@ -35,8 +37,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       d = d.filter(c => c.cbl.toLowerCase().includes(s) || c.repereCbl.toLowerCase().includes(s));
     }
     if (lotFilter) d = d.filter(c => c.lotMtgApo === lotFilter);
+    if (statusFilter === 'retard') d = d.filter(isEnRetard);
     return d.sort((a, b) => a.lotMtgApo.localeCompare(b.lotMtgApo, 'fr', { numeric: true }));
-  }, [baseData, search, lotFilter]);
+  }, [baseData, search, lotFilter, statusFilter]);
 
   const today = new Date().toISOString().substring(0, 10);
 
@@ -89,7 +92,7 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
 
   const expandAll = () => setExpandedLots(new Set(groupedByLot.map(([lot]) => lot)));
   const collapseAll = () => setExpandedLots(new Set());
-  const resetFilters = () => { setSearch(''); setLotFilter(''); };
+  const resetFilters = () => { setSearch(''); setLotFilter(''); setStatusFilter('all'); };
 
   const exportCSV = (data: CableData[], filename: string) => {
     const headers = ['Câble', 'Repère', 'Type', 'Longueur (m)', 'Date plus tôt', 'Date plus tard', 'Date tirage', 'APO', 'APA', 'Lot'];
@@ -110,7 +113,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
         <KpiCard title="Lots distincts" value={kpis.nbLots.toString()} icon={<Layers className="h-5 w-5" />} />
         <KpiCard title="Dans la fenêtre" value={kpis.dansFenetre.toString()} icon={<CalendarClock className="h-5 w-5" />} />
-        <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} />
+        <div className="cursor-pointer" onClick={() => { setStatusFilter(statusFilter === 'retard' ? 'all' : 'retard'); setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
+          <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} className={statusFilter === 'retard' ? 'ring-2 ring-destructive' : ''} />
+        </div>
       </div>
 
       {/* Filters */}
@@ -164,9 +169,9 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       </div>
 
       {/* Grouped table */}
-      <Card className="glass-card">
+      <Card className="glass-card" ref={tableRef}>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Câbles par lot ({filtered.length})</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Câbles par lot ({filtered.length}){statusFilter === 'retard' && ' — En retard'}</CardTitle>
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={expandAll} className="h-7 text-xs">Tout déplier</Button>
             <Button size="sm" variant="ghost" onClick={collapseAll} className="h-7 text-xs">Tout replier</Button>
