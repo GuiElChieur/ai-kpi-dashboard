@@ -73,7 +73,7 @@ const Index = () => {
           <div className="p-4"><PointageTab data={pointageData} /></div>
         )}
         {activePage === 'matiere' && (
-          <div className="p-4"><MatierTab data={matierData} /></div>
+          <div className="p-4"><MatierTab data={matierData} achatData={achatData} /></div>
         )}
         {activePage === 'achat' && (
           <div className="p-4"><AchatTab data={achatData} /></div>
