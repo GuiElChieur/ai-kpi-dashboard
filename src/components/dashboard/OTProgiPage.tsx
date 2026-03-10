@@ -264,7 +264,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ bottom: 60, left: 10, right: 10 }} onClick={handleBarClick} style={{ cursor: 'pointer' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
-                <XAxis dataKey="name" tick={<CustomXAxisTick />} />
+                <XAxis dataKey="name" tick={<CustomXAxisTick />} interval={0} />
                 <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
