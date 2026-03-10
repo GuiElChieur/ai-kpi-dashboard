@@ -51,7 +51,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     }
     
     return data;
-  }, [otLigneData, filtered, activeFilters, selectedTypeOT]);
+  }, [otLigneData, filtered, activeFilters, selectedTypeOT, selectedLot]);
 
   // KPIs - from DATA_OT_LIGNE
   const kpis = useMemo(() => {
