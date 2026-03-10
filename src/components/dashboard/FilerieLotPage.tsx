@@ -146,16 +146,19 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
       </Card>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Longueur par lot — Tiré vs Non tiré (m)</CardTitle>
+            <Badge className="bg-success/20 text-success border-success/30 text-xs font-mono">{kpis.pctLng}% tiré</Badge>
+          </CardHeader>
           <CardContent>
-            <div style={{ height: Math.max(300, lotLngData.length * 28 + 80), overflowX: 'auto' }}>
+            <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 60 }}>
+                <BarChart data={lotLngData} margin={{ left: 10, right: 10, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={70} interval={0} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={60} interval={0} />
+                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${v}m`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} m`} />
                   <Legend />
                   <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
@@ -167,14 +170,17 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Quantité câbles par lot — Tiré vs Non tiré</CardTitle>
+            <Badge className="bg-success/20 text-success border-success/30 text-xs font-mono">{kpis.pctQty}% tiré</Badge>
+          </CardHeader>
           <CardContent>
-            <div style={{ height: Math.max(300, lotQtyData.length * 28 + 80), overflowX: 'auto' }}>
+            <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 60 }}>
+                <BarChart data={lotQtyData} margin={{ left: 10, right: 10, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={70} interval={0} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="lot" tick={{ fontSize: 8 }} angle={-90} textAnchor="end" height={60} interval={0} />
+                  <YAxis tick={{ fontSize: 9 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
                   <Legend />
                   <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
