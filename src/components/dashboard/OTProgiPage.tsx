@@ -158,12 +158,12 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .slice(0, 50);
   }, [filteredLigne]);
 
-  // Lot numbers for grid
+  // Lot numbers for grid - from otLigneData (unfiltered by lot)
   const lots = useMemo(() => {
     const lotSet = new Set<string>();
-    filtered.forEach(d => { if (d.lot && d.lot !== 'x' && d.lot !== 'X') lotSet.add(d.lot); });
-    return Array.from(lotSet).sort().slice(0, 8);
-  }, [filtered]);
+    otLigneData.forEach(d => { if (d.lot && d.lot !== 'x' && d.lot !== 'X') lotSet.add(d.lot); });
+    return Array.from(lotSet).sort();
+  }, [otLigneData]);
 
   return (
     <div className="flex-1 space-y-3 p-3 overflow-auto">
