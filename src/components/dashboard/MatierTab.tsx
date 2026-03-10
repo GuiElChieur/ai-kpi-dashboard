@@ -54,7 +54,28 @@ export function MatierTab({ data }: { data: MatierData[] }) {
         <KpiCard title="Références" value={kpis.nbReferences.toLocaleString('fr-FR')} icon={<Layers className="h-5 w-5" />} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Card className="glass-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Statut Matière par lot (Reste à sortir vs Sortie)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byLotData} margin={{ left: 10, right: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+                <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }} />
+                <Legend />
+                <Bar dataKey="resteSortir" name="Reste à sortir" stackId="a" fill="hsl(0,72%,60%)" />
+                <Bar dataKey="sortie" name="Sortie" stackId="a" fill="hsl(160,60%,45%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+
         <Card className="glass-card lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Top 10 références (besoin vs sortie)</CardTitle>
