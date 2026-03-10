@@ -100,22 +100,22 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       .slice(0, 15);
   }, [filtered]);
 
-  // Table data - OT ligne aggregated (uses filtered ligne data)
+  // Table data - grouped by typeOT + identifiant like PBI (from filteredLigne)
   const tableData = useMemo(() => {
-    const byOT: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number }> = {};
+    const byKey: Record<string, { typeOT: string; identifiant: string; qtePrev: number; qteReal: number; typeMO: string; charge: number; vbtr: number; tp: number }> = {};
     filteredLigne.forEach(d => {
-      const key = d.identifiantProjet;
-      if (!byOT[key]) byOT[key] = { typeOT: d.typeOT, identifiant: key, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0 };
-      byOT[key].qtePrev += d.qtePrevue;
-      byOT[key].qteReal += d.qteRealisee;
-      byOT[key].charge += d.chargePrevisionnelle;
-      byOT[key].vbtr += d.vbtr;
-      byOT[key].tp += d.tp;
+      const key = `${d.typeOT}|${d.identifiantProjet}`;
+      if (!byKey[key]) byKey[key] = { typeOT: d.typeOT, identifiant: d.identifiantProjet, qtePrev: 0, qteReal: 0, typeMO: d.typeMO, charge: 0, vbtr: 0, tp: 0 };
+      byKey[key].qtePrev += d.qtePrevue;
+      byKey[key].qteReal += d.qteRealisee;
+      byKey[key].charge += d.chargePrevisionnelle;
+      byKey[key].vbtr += d.vbtr;
+      byKey[key].tp += d.tp;
     });
-    return Object.values(byOT)
-      .sort((a, b) => b.vbtr - a.vbtr)
-      .slice(0, 20);
-  }, [otLigneData]);
+    return Object.values(byKey)
+      .sort((a, b) => (b.vbtr - b.tp) - (a.vbtr - a.tp))
+      .slice(0, 50);
+  }, [filteredLigne]);
 
   // Lot numbers for grid
   const lots = useMemo(() => {
