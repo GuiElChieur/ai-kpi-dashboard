@@ -98,21 +98,24 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
 
       <Card className="glass-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Évolution du coût des sorties par mois (croisement Matière × Achats)</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Coût cumulé des sorties par mois (croisement Matière × Achats)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={coutSortieParMois} margin={{ left: 20, right: 20, bottom: 20 }}>
+              <ComposedChart data={coutSortieParMois} margin={{ left: 20, right: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }}
-                  formatter={(value: number) => [`${value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 'Coût sorties']}
+                  formatter={(value: number, name: string) => [`${value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, name]}
                 />
-                <Bar dataKey="cout" name="Coût sorties (€)" fill="hsl(220,70%,50%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <Legend />
+                <Bar yAxisId="left" dataKey="cout" name="Coût mensuel" fill="hsl(220,70%,50%)" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" dataKey="cumul" name="Cumul" type="monotone" stroke="hsl(0,72%,51%)" strokeWidth={2} dot={{ r: 3 }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
