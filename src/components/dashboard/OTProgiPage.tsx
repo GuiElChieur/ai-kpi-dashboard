@@ -16,6 +16,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedTypeOT, setSelectedTypeOT] = useState<string | null>(null);
   const [selectedLot, setSelectedLot] = useState<string | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
