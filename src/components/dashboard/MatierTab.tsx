@@ -56,9 +56,14 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
       byMonth[month] = (byMonth[month] || 0) + d.quantiteSortie * prix;
     });
 
-    return Object.entries(byMonth)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([mois, cout]) => ({ mois, cout: Math.round(cout * 100) / 100 }));
+    const sorted = Object.entries(byMonth)
+      .sort((a, b) => a[0].localeCompare(b[0]));
+    
+    let cumul = 0;
+    return sorted.map(([mois, cout]) => {
+      cumul += cout;
+      return { mois, cout: Math.round(cout * 100) / 100, cumul: Math.round(cumul * 100) / 100 };
+    });
   }, [data, achatData]);
 
   return (
