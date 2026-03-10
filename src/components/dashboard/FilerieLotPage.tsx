@@ -8,8 +8,7 @@ import {
   type CableData, getFilerieData, isTire, isEnRetard,
 } from '@/lib/cable-parser';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { Cable, Ruler, Layers, CalendarClock, AlertTriangle, RotateCcw, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 
