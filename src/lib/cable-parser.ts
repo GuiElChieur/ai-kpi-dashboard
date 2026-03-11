@@ -66,7 +66,7 @@ export async function loadCableData(): Promise<CableData[]> {
   const res = await fetch('/data/Extraction_NEC_Z34.xlsx');
   const buf = await res.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
+  const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
   return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
 }
