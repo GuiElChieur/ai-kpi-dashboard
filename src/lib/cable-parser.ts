@@ -72,6 +72,8 @@ export async function loadCableData(): Promise<CableData[]> {
   const wb = XLSX.read(buf, { type: 'array' });
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+  if (rows.length > 0) console.log('[cable-parser] columns:', Object.keys(rows[0]).join(', '));
+  if (rows.length > 0) console.log('[cable-parser] sample TOT_LNG_TIREE:', rows[0]['TOT_LNG_TIREE'], 'FN:', rows[0]['FN']);
   return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
 }
 
