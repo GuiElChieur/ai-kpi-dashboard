@@ -72,9 +72,15 @@ export async function loadCableData(): Promise<CableData[]> {
   const wb = XLSX.read(buf, { type: 'array' });
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-  if (rows.length > 0) console.log('[cable-parser] columns:', Object.keys(rows[0]).join(', '));
-  if (rows.length > 0) console.log('[cable-parser] sample TOT_LNG_TIREE:', rows[0]['TOT_LNG_TIREE'], 'FN:', rows[0]['FN']);
-  return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  if (rows.length > 0) console.log('[cable-parser] columns sample:', Object.keys(rows[0]).slice(0, 20).join(', '));
+  const parsed = rows.map(parseRow);
+  // Fallback: if TOT_LNG_TIREE is always 0, use LNG_TOTAL for tirés
+  const anyTiree = parsed.some(c => c.totLngTiree > 0);
+  if (!anyTiree) {
+    console.warn('[cable-parser] TOT_LNG_TIREE not found, falling back to LNG_TOTAL for tirés');
+    parsed.forEach(c => { if (c.sttCblBord === 'T' || c.sttCblBord === 'L') c.totLngTiree = c.lngTotal; });
+  }
+  return parsed;
 }
 
 export function parseCableFile(file: File): Promise<CableData[]> {
