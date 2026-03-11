@@ -42,21 +42,19 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   const kpis = useMemo(() => {
     const total = fnFiltered.length;
     const lngTotal = fnFiltered.reduce((s, c) => s + c.lngTotal, 0);
-    const lngTiree = fnFiltered.reduce((s, c) => s + c.totLngTiree, 0);
+    const lngTiree = fnFiltered.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0);
     const raf = lngTotal - lngTiree;
     const avancement = lngTotal ? (lngTiree / lngTotal) * 100 : 0;
     const tires = fnFiltered.filter(c => c.sttCblBord === 'T').length;
-    const lovages = fnFiltered.filter(c => c.sttCblBord === 'L').length;
-    const nonTires = fnFiltered.filter(c => !c.sttCblBord).length;
-    return { total, lngTotal, lngTiree, raf, avancement, tires, lovages, nonTires };
+    return { total, lngTotal, lngTiree, raf, avancement, tires };
   }, [fnFiltered]);
 
   // Daily tire data (using TOT_LNG_TIREE grouped by DATE_TIRAGE_CBL)
   const dailyData = useMemo(() => {
     const byDay: Record<string, number> = {};
     fnFiltered.forEach(c => {
-      if (!c.dateTirageCbl || c.totLngTiree <= 0) return;
-      byDay[c.dateTirageCbl] = (byDay[c.dateTirageCbl] || 0) + c.totLngTiree;
+      if (c.sttCblBord !== 'T' || !c.dateTirageCbl) return;
+      byDay[c.dateTirageCbl] = (byDay[c.dateTirageCbl] || 0) + c.lngTotal;
     });
     return Object.entries(byDay)
       .sort((a, b) => a[0].localeCompare(b[0]))
@@ -79,7 +77,7 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
       if (!c.fn) return;
       if (!byFn[c.fn]) byFn[c.fn] = { total: 0, tiree: 0 };
       byFn[c.fn].total += c.lngTotal;
-      byFn[c.fn].tiree += c.totLngTiree;
+      if (c.sttCblBord === 'T') byFn[c.fn].tiree += c.lngTotal;
     });
     return Object.entries(byFn)
       .map(([fn, v]) => ({ fn, total: Math.round(v.total), tiree: Math.round(v.tiree), pct: v.total ? (v.tiree / v.total) * 100 : 0 }))
@@ -94,8 +92,8 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
     }
     const byFn: Record<string, number> = {};
     data.forEach(c => {
-      if (!c.fn || c.totLngTiree <= 0) return;
-      byFn[c.fn] = (byFn[c.fn] || 0) + c.totLngTiree;
+      if (!c.fn || c.sttCblBord !== 'T') return;
+      byFn[c.fn] = (byFn[c.fn] || 0) + c.lngTotal;
     });
     return Object.entries(byFn)
       .map(([fn, value]) => ({ fn, value: Math.round(value) }))
