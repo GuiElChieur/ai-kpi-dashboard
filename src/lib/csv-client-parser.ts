@@ -152,21 +152,6 @@ export function parseMatiereCSV(text: string) {
     statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
   }));
 }
-  return parseCSV(text, ';').map(row => ({
-    affaire: getVal(row, 'AFFAIRE', 'Affaire'),
-    ot: getVal(row, 'OT'),
-    lot: getVal(row, 'LOT', 'Lot'),
-    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début')),
-    tri: getVal(row, 'TRI'),
-    rep: getVal(row, 'REP', 'Rep'),
-    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin')),
-    quantite_preparation: parseNumber(getVal(row, 'QUANTITE_EN_PREPARATION', 'Quantité en préparation')),
-    quantite_sortie: parseNumber(getVal(row, 'QUANTITE_SORTIE', 'Quantité sortie')),
-    reference_interne: getVal(row, 'REFERENCE_INTERNE', 'Référence interne'),
-    designation_produit: getVal(row, 'DESIGNATION_PRODUIT', 'Désignation produit'),
-    statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
-  }));
-}
 
 function excelDateToISO(v: unknown): string | null {
   if (v == null || v === '') return null;
