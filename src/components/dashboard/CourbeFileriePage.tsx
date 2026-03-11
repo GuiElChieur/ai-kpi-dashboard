@@ -42,13 +42,11 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   const kpis = useMemo(() => {
     const total = fnFiltered.length;
     const lngTotal = fnFiltered.reduce((s, c) => s + c.lngTotal, 0);
-    const lngTiree = fnFiltered.reduce((s, c) => s + c.totLngTiree, 0);
+    const lngTiree = fnFiltered.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0);
     const raf = lngTotal - lngTiree;
     const avancement = lngTotal ? (lngTiree / lngTotal) * 100 : 0;
     const tires = fnFiltered.filter(c => c.sttCblBord === 'T').length;
-    const lovages = fnFiltered.filter(c => c.sttCblBord === 'L').length;
-    const nonTires = fnFiltered.filter(c => !c.sttCblBord).length;
-    return { total, lngTotal, lngTiree, raf, avancement, tires, lovages, nonTires };
+    return { total, lngTotal, lngTiree, raf, avancement, tires };
   }, [fnFiltered]);
 
   // Daily tire data (using TOT_LNG_TIREE grouped by DATE_TIRAGE_CBL)
