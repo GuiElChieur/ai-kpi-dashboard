@@ -12,6 +12,7 @@ import { fr } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import {
   parseAchatCSV,
+  parseOTCSV,
   parseOTLigneCSV,
   parsePointageCSV,
   parseMatiereCSV,
@@ -20,6 +21,7 @@ import {
 
 const FILE_TYPES = [
   { key: 'achat', label: 'Achats', accept: '.csv', pattern: 'ACHAT' },
+  { key: 'ot', label: 'OT', accept: '.csv', pattern: 'DATA_OT_Z' },
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
   { key: 'matiere', label: 'Matières', accept: '.csv', pattern: 'MATIER' },
@@ -28,6 +30,7 @@ const FILE_TYPES = [
 
 const TABLE_MAP: Record<string, string> = {
   achat: 'achats',
+  ot: 'ots',
   ot_ligne: 'ot_lignes',
   pointage: 'pointages',
   matiere: 'matieres',
@@ -97,6 +100,7 @@ export function DataImport() {
             const text = await file.text();
             switch (key) {
               case 'achat': mapped = parseAchatCSV(text); break;
+              case 'ot': mapped = parseOTCSV(text); break;
               case 'ot_ligne': mapped = parseOTLigneCSV(text); break;
               case 'pointage': mapped = parsePointageCSV(text); break;
               case 'matiere': mapped = parseMatiereCSV(text); break;
@@ -132,11 +136,13 @@ export function DataImport() {
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
+      queryClient.invalidateQueries({ queryKey: ['db-ots'] });
       queryClient.invalidateQueries({ queryKey: ['db-ot-lignes'] });
       queryClient.invalidateQueries({ queryKey: ['db-pointages'] });
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
       queryClient.invalidateQueries({ queryKey: ['import-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
 
       setFiles({});
     } catch (err: any) {

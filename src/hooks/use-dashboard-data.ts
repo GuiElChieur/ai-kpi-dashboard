@@ -108,7 +108,44 @@ function mapAchat(r: any): AchatData {
   };
 }
 
+// --- OT mapper ---
+function mapOT(r: any): OTData {
+  return {
+    dateJour: r.date_jour || '',
+    affaire: r.affaire || '',
+    codeResponsable: r.code_responsable || '',
+    numOT: r.num_ot || '',
+    libelleProjet: r.libelle_projet || '',
+    lot: r.lot || '',
+    chargePrevisionnelle: r.charge_previsionnelle ?? 0,
+    tp: r.tp ?? 0,
+    avancementEffectif: r.avancement_effectif ?? 0,
+    vbtr: r.vbtr ?? 0,
+    type: r.type || '',
+    tranche: r.tranche || '',
+    zone: r.zone || '',
+    debutPlusTot: r.debut_plus_tot || '',
+    finPlusTot: r.fin_plus_tot || '',
+    debutPlusTard: r.debut_plus_tard || '',
+    finPlusTard: r.fin_plus_tard || '',
+    dateDebutTheorique: r.date_debut_theorique || '',
+    statut: r.statut || '',
+    societe: r.societe || '',
+    stade: r.stade || '',
+    typeOTBis: r.type_ot_bis || '',
+    natureOT: r.nature_ot || '',
+    moPrev: r.mo_prev ?? 0,
+    statutProjet: r.statut_projet || '',
+  };
+}
+
 // --- Smart loaders: try DB first, fallback to CSV ---
+async function loadOTsFromDb(): Promise<OTData[]> {
+  const rows = await fetchAll('ots');
+  if (rows.length > 0) return rows.map(mapOT);
+  return loadOTData();
+}
+
 async function loadOtLignesFromDb(): Promise<OTLigneData[]> {
   const rows = await fetchAll('ot_lignes');
   if (rows.length > 0) return rows.map(mapOtLigne);
@@ -139,8 +176,7 @@ async function loadAchatsFromDb(): Promise<AchatData[]> {
 }
 
 export function useDashboardData() {
-  // OT data: no DB table, always CSV
-  const otQuery = useQuery({ queryKey: ['ot-data'], queryFn: loadOTData, staleTime: Infinity });
+  const otQuery = useQuery({ queryKey: ['ot-data'], queryFn: loadOTsFromDb, staleTime: 5 * 60 * 1000 });
   // DB-backed queries
   const otLigneQuery = useQuery({ queryKey: ['ot-ligne-data'], queryFn: loadOtLignesFromDb, staleTime: 5 * 60 * 1000 });
   const pointageQuery = useQuery({ queryKey: ['pointage-data'], queryFn: loadPointagesFromDb, staleTime: 5 * 60 * 1000 });
