@@ -6,6 +6,7 @@ export interface CableData {
   respTirage: string;
   indApproCa: string;
   lngTotal: number;
+  totLngTiree: number;
   dateTirPlusTot: string | null;
   dateTirPlusTard: string | null;
   dateTirageCbl: string | null;
@@ -19,6 +20,7 @@ export interface CableData {
   lotOuAppCbl: string;
   gam: string;
   nav: string;
+  fn: string;
 }
 
 function excelDateToString(v: unknown): string | null {
@@ -46,6 +48,7 @@ function parseRow(row: Record<string, unknown>): CableData {
     respTirage: String(row['RESP_TIRAGE'] ?? '').trim().toUpperCase(),
     indApproCa: String(row['IND_APPRO_CA'] ?? '').trim().toUpperCase(),
     lngTotal: Number(row['LNG_TOTAL']) || 0,
+    totLngTiree: Number(row['TOT_LNG_TIREE']) || 0,
     dateTirPlusTot: excelDateToString(row['DATE_TIR_PLUS_TOT']),
     dateTirPlusTard: excelDateToString(row['DATE_TIR_PLUS_TARD']),
     dateTirageCbl: excelDateToString(row['DATE_TIRAGE_CBL']),
@@ -59,6 +62,7 @@ function parseRow(row: Record<string, unknown>): CableData {
     lotOuAppCbl: String(row['LOT_OU_APP_CBL'] ?? ''),
     gam: String(row['GAM'] ?? ''),
     nav: String(row['NAV'] ?? ''),
+    fn: String(row['FN'] ?? '').trim().toUpperCase(),
   };
 }
 

@@ -8,6 +8,7 @@ import { MatierTab } from '@/components/dashboard/MatierTab';
 import { AchatTab } from '@/components/dashboard/AchatTab';
 import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
+import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
 import { PerformancePage } from '@/components/dashboard/PerformancePage';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
 import { AIChat } from '@/components/dashboard/AIChat';
@@ -90,6 +91,10 @@ const Index = () => {
         {activePage === 'filerie-lot' && (
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <FilerieLotPage allData={cableData || []} />
+        )}
+        {activePage === 'courbe-filerie' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <CourbeFileriePage allData={cableData || []} />
         )}
         {activePage === 'ai' && (
           <div className="p-4"><AIChat kpiSummary={kpiSummary} /></div>
