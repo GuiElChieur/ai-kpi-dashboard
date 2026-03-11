@@ -253,17 +253,26 @@ Deno.serve(async (req) => {
           await supabase.from('import_logs').insert({ table_name: 'matieres', rows_imported: count, status: 'success', imported_by: userId });
           results.push({ table: 'matieres', rows: count, status: 'success' });
         }
+        else if (key === 'cables_json') {
+          // XLSX already parsed client-side, receive JSON
+          const text = await value.text();
+          const rawRows: Record<string, unknown>[] = JSON.parse(text);
+          const mapped = rawRows
+            .map(mapCable)
+            .filter(c => c.resp_tirage === 'GEST');
+          await supabase.from('cables').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          const count = await insertBatch(supabase, 'cables', mapped);
+          await supabase.from('import_logs').insert({ table_name: 'cables', rows_imported: count, status: 'success', imported_by: userId });
+          results.push({ table: 'cables', rows: count, status: 'success' });
+        }
         else if (fileName.includes('EXTRACTION') || fileName.endsWith('.XLSX')) {
-          // For XLSX, we need to parse it - use a simple approach
+          // Legacy XLSX handling (kept for backward compat but may hit CPU limits)
           const arrayBuffer = await value.arrayBuffer();
-          // Import xlsx library for Deno
           const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
           const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
-          // Find the cables sheet
           const sheetName = workbook.SheetNames.find((n: string) => n.toLowerCase().includes('cable')) || workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const rawRows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet);
-          // Filter RESP_TIRAGE = GEST
           const mapped = rawRows
             .map(mapCable)
             .filter(c => c.resp_tirage === 'GEST');

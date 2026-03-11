@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Upload, FileText, CheckCircle, XCircle, Loader2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 
 const FILE_TYPES = [
   { key: 'achat', label: 'Achats', accept: '.csv', pattern: 'ACHAT' },
@@ -37,6 +38,14 @@ export function DataImport() {
     setFiles(newFiles);
   };
 
+  const parseXlsxFile = async (file: File): Promise<Record<string, unknown>[]> => {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    return XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+  };
+
   const handleImport = async () => {
     const fileList = Object.values(files);
     if (fileList.length === 0) {
@@ -52,9 +61,17 @@ export function DataImport() {
       if (!session) throw new Error('Non authentifié');
 
       const formData = new FormData();
-      Object.entries(files).forEach(([key, file]) => {
-        formData.append(key, file);
-      });
+      
+      for (const [key, file] of Object.entries(files)) {
+        if (key === 'cables') {
+          // Parse XLSX client-side to avoid edge function CPU limits
+          const rows = await parseXlsxFile(file);
+          const blob = new Blob([JSON.stringify(rows)], { type: 'application/json' });
+          formData.append('cables_json', new File([blob], 'cables.json', { type: 'application/json' }));
+        } else {
+          formData.append(key, file);
+        }
+      }
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const response = await fetch(
