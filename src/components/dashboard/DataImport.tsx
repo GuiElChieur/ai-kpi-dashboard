@@ -10,6 +10,13 @@ import { Upload, FileText, CheckCircle, XCircle, Loader2, Clock } from 'lucide-r
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import {
+  parseAchatCSV,
+  parseOTLigneCSV,
+  parsePointageCSV,
+  parseMatiereCSV,
+  mapCableRows,
+} from '@/lib/csv-client-parser';
 
 const FILE_TYPES = [
   { key: 'achat', label: 'Achats', accept: '.csv', pattern: 'ACHAT' },
@@ -19,9 +26,30 @@ const FILE_TYPES = [
   { key: 'cables', label: 'Câbles (XLSX)', accept: '.xlsx', pattern: 'EXTRACTION' },
 ];
 
+const TABLE_MAP: Record<string, string> = {
+  achat: 'achats',
+  ot_ligne: 'ot_lignes',
+  pointage: 'pointages',
+  matiere: 'matieres',
+  cables: 'cables',
+};
+
+async function insertBatch(tableName: string, data: any[], batchSize = 500) {
+  let inserted = 0;
+  for (let i = 0; i < data.length; i += batchSize) {
+    const batch = data.slice(i, i + batchSize);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from(tableName).insert(batch);
+    if (error) throw new Error(`Insert ${tableName} batch ${i}: ${error.message}`);
+    inserted += batch.length;
+  }
+  return inserted;
+}
+
 export function DataImport() {
   const [files, setFiles] = useState<Record<string, File>>({});
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: logs } = useImportLogs();
@@ -38,14 +66,6 @@ export function DataImport() {
     setFiles(newFiles);
   };
 
-  const parseXlsxFile = async (file: File): Promise<Record<string, unknown>[]> => {
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: 'array' });
-    const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
-    const ws = wb.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-  };
-
   const handleImport = async () => {
     const entries = Object.entries(files);
     if (entries.length === 0) {
@@ -58,42 +78,57 @@ export function DataImport() {
     const allResults: any[] = [];
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Non authentifié');
+      for (let idx = 0; idx < entries.length; idx++) {
+        const [key, file] = entries[idx];
+        const tableName = TABLE_MAP[key];
+        setImportProgress(`${idx + 1}/${entries.length} — ${tableName}`);
 
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-
-      // Send each file individually to avoid memory limits
-      for (const [key, file] of entries) {
         try {
-          const formData = new FormData();
+          let mapped: any[];
+
           if (key === 'cables') {
-            const rows = await parseXlsxFile(file);
-            const blob = new Blob([JSON.stringify(rows)], { type: 'application/json' });
-            formData.append('cables_json', new File([blob], 'cables.json', { type: 'application/json' }));
+            const buf = await file.arrayBuffer();
+            const wb = XLSX.read(buf, { type: 'array' });
+            const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
+            const ws = wb.Sheets[sheetName];
+            const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+            mapped = mapCableRows(rawRows);
           } else {
-            formData.append(key, file);
+            const text = await file.text();
+            switch (key) {
+              case 'achat': mapped = parseAchatCSV(text); break;
+              case 'ot_ligne': mapped = parseOTLigneCSV(text); break;
+              case 'pointage': mapped = parsePointageCSV(text); break;
+              case 'matiere': mapped = parseMatiereCSV(text); break;
+              default: mapped = [];
+            }
           }
 
-          const response = await fetch(
-            `https://${projectId}.supabase.co/functions/v1/import-data`,
-            {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${session.access_token}` },
-              body: formData,
-            }
-          );
+          // Delete existing data then insert
+          await (supabase as any).from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          const count = await insertBatch(tableName, mapped);
 
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Erreur import');
-          allResults.push(...(data.results || []));
+          // Log success
+          await supabase.from('import_logs').insert({
+            table_name: tableName,
+            rows_imported: count,
+            status: 'success',
+          });
+
+          allResults.push({ table: tableName, rows: count, status: 'success' });
         } catch (err: any) {
-          allResults.push({ table: key, rows: 0, status: 'error', error: err.message });
+          allResults.push({ table: tableName, rows: 0, status: 'error', error: err.message });
+          await supabase.from('import_logs').insert({
+            table_name: tableName,
+            rows_imported: 0,
+            status: 'error',
+            error_message: err.message,
+          });
         }
       }
 
       setResults(allResults);
-      const successCount = allResults.filter((r: any) => r.status === 'success').length;
+      const successCount = allResults.filter(r => r.status === 'success').length;
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
@@ -108,6 +143,7 @@ export function DataImport() {
       toast.error(err.message);
     } finally {
       setImporting(false);
+      setImportProgress('');
     }
   };
 
@@ -130,7 +166,7 @@ export function DataImport() {
                 <FileText className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                 <p className="text-xs font-medium text-foreground">{type.label}</p>
                 {files[type.key] ? (
-                  <Badge className="mt-1 text-[10px] bg-success/20 text-success border-0">
+                  <Badge variant="secondary" className="mt-1 text-[10px]">
                     {files[type.key].name.substring(0, 20)}
                   </Badge>
                 ) : (
@@ -140,7 +176,7 @@ export function DataImport() {
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <input
               ref={fileInputRef}
               type="file"
@@ -169,6 +205,9 @@ export function DataImport() {
               )}
               {importing ? 'Import en cours...' : 'Importer'}
             </Button>
+            {importProgress && (
+              <span className="text-xs text-muted-foreground">{importProgress}</span>
+            )}
           </div>
 
           {results.length > 0 && (
@@ -191,7 +230,6 @@ export function DataImport() {
         </CardContent>
       </Card>
 
-      {/* Import history */}
       {logs && logs.length > 0 && (
         <Card className="border-border">
           <CardHeader>
