@@ -73,8 +73,23 @@ export async function loadCableData(): Promise<CableData[]> {
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
   
+  // Debug: log column names and sample data
+  if (rows.length > 0) {
+    const cols = Object.keys(rows[0]);
+    console.log('[cable-parser] Columns:', cols);
+    console.log('[cable-parser] Sample row:', JSON.stringify(rows[0]));
+    console.log('[cable-parser] Total rows:', rows.length);
+    // Check LNG columns
+    const lngCols = cols.filter(c => c.toUpperCase().includes('LNG'));
+    console.log('[cable-parser] LNG columns:', lngCols);
+  }
+  
   // Filtre global : uniquement RESP_TIRAGE = GEST
-  return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  const result = rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  console.log('[cable-parser] After GEST filter:', result.length);
+  console.log('[cable-parser] Total lngTotal sum:', result.reduce((s, c) => s + c.lngTotal, 0));
+  console.log('[cable-parser] Tiré sum:', result.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0));
+  return result;
 }
 
 export function parseCableFile(file: File): Promise<CableData[]> {
