@@ -1,17 +1,151 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  loadOTData, loadOTLigneData, loadPointageData,
-  loadMatierData, loadAchatData,
+  loadOTData,
   type OTData, type OTLigneData, type PointageData,
   type MatierData, type AchatData
 } from '@/lib/csv-parser';
 
+// --- DB fetch helpers with pagination ---
+async function fetchAll(table: string) {
+  let allData: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await (supabase as any).from(table).select('*').range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return allData;
+}
+
+// --- DB row → interface mappers ---
+function mapOtLigne(r: any): OTLigneData {
+  return {
+    dateJour: r.date_jour || '',
+    affaireMaitre: r.affaire_maitre || '',
+    identifiantProjet: r.identifiant_projet || '',
+    trigramme: r.trigramme || '',
+    repere: r.repere || '',
+    typeMO: r.type_mo || '',
+    libelleTache: r.libelle_tache || '',
+    qtePrevue: r.qte_prevue ?? 0,
+    qteRealisee: r.qte_realisee ?? 0,
+    chargePrevisionnelle: r.charge_previsionnelle ?? 0,
+    vbtr: r.vbtr ?? 0,
+    chargeRestante: r.charge_restante ?? 0,
+    avancementEffectif: r.avancement_effectif ?? 0,
+    tp: r.tp ?? 0,
+    typeOT: r.type_ot || '',
+    lot: r.lot || '',
+    zone: r.zone || '',
+    stade: r.stade || '',
+    monteur: r.monteur || '',
+    codeResponsable: r.code_responsable || '',
+    codeLibreTable: r.code_libre_table || '',
+  };
+}
+
+function mapPointage(r: any): PointageData {
+  return {
+    intitule: r.intitule || '',
+    codeLibreAlpha: r.code_libre_alpha || '',
+    nomPrenom: r.nom_prenom || '',
+    quantite99: 0,
+    dateSaisie: r.date_saisie || '',
+    affaireMaitre: r.affaire_maitre || '',
+    intituleAffaire: r.intitule_affaire || '',
+    employeur: r.employeur || '',
+    quantite: r.quantite ?? 0,
+    objetTravail: r.objet_travail || '',
+    codeLibreTable: r.code_libre_table || '',
+    numAffaire: r.num_affaire || '',
+    user: r.username || '',
+    intervenant: r.intervenant || '',
+    dateModif: r.date_modif || '',
+    equipe: r.equipe || '',
+    identifiantProjet: r.identifiant_projet || '',
+  };
+}
+
+function mapMatiere(r: any): MatierData {
+  return {
+    affaire: r.affaire || '',
+    ot: r.ot || '',
+    lot: r.lot || '',
+    dateDebut: r.date_debut || '',
+    tri: r.tri || '',
+    rep: r.rep || '',
+    quantiteBesoin: r.quantite_besoin ?? 0,
+    quantiteEnPreparation: r.quantite_preparation ?? 0,
+    quantiteSortie: r.quantite_sortie ?? 0,
+    referenceInterne: r.reference_interne || '',
+    designationProduit: r.designation_produit || '',
+    statutProjet: r.statut_projet || '',
+  };
+}
+
+function mapAchat(r: any): AchatData {
+  return {
+    typeSaisie: r.type_saisie || '',
+    dateCommande: r.date_commande || '',
+    dateLivPrevue: r.date_livraison || '',
+    codeAffaire: r.code_affaire || '',
+    numCommande: r.num_commande || '',
+    numBL: r.num_bl || '',
+    referenceCommande: r.reference_commande || '',
+    adresseFacturation: r.adresse_facturation || '',
+    typeElement: r.type_element || '',
+    numProduit: r.num_produit || '',
+    designationProduit: r.designation_produit || '',
+    referenceInterne: r.reference_interne || '',
+    quantite: r.quantite ?? 0,
+    prixAchat: r.prix_achat ?? 0,
+    totalHT: r.total_ht ?? 0,
+  };
+}
+
+// --- Smart loaders: try DB first, fallback to CSV ---
+async function loadOtLignesFromDb(): Promise<OTLigneData[]> {
+  const rows = await fetchAll('ot_lignes');
+  if (rows.length > 0) return rows.map(mapOtLigne);
+  // Fallback to CSV
+  const { loadOTLigneData } = await import('@/lib/csv-parser');
+  return loadOTLigneData();
+}
+
+async function loadPointagesFromDb(): Promise<PointageData[]> {
+  const rows = await fetchAll('pointages');
+  if (rows.length > 0) return rows.map(mapPointage);
+  const { loadPointageData } = await import('@/lib/csv-parser');
+  return loadPointageData();
+}
+
+async function loadMatieresFromDb(): Promise<MatierData[]> {
+  const rows = await fetchAll('matieres');
+  if (rows.length > 0) return rows.map(mapMatiere);
+  const { loadMatierData } = await import('@/lib/csv-parser');
+  return loadMatierData();
+}
+
+async function loadAchatsFromDb(): Promise<AchatData[]> {
+  const rows = await fetchAll('achats');
+  if (rows.length > 0) return rows.map(mapAchat);
+  const { loadAchatData } = await import('@/lib/csv-parser');
+  return loadAchatData();
+}
+
 export function useDashboardData() {
+  // OT data: no DB table, always CSV
   const otQuery = useQuery({ queryKey: ['ot-data'], queryFn: loadOTData, staleTime: Infinity });
-  const otLigneQuery = useQuery({ queryKey: ['ot-ligne-data'], queryFn: loadOTLigneData, staleTime: Infinity });
-  const pointageQuery = useQuery({ queryKey: ['pointage-data'], queryFn: loadPointageData, staleTime: Infinity });
-  const matierQuery = useQuery({ queryKey: ['matier-data'], queryFn: loadMatierData, staleTime: Infinity });
-  const achatQuery = useQuery({ queryKey: ['achat-data'], queryFn: loadAchatData, staleTime: Infinity });
+  // DB-backed queries
+  const otLigneQuery = useQuery({ queryKey: ['ot-ligne-data'], queryFn: loadOtLignesFromDb, staleTime: 5 * 60 * 1000 });
+  const pointageQuery = useQuery({ queryKey: ['pointage-data'], queryFn: loadPointagesFromDb, staleTime: 5 * 60 * 1000 });
+  const matierQuery = useQuery({ queryKey: ['matier-data'], queryFn: loadMatieresFromDb, staleTime: 5 * 60 * 1000 });
+  const achatQuery = useQuery({ queryKey: ['achat-data'], queryFn: loadAchatsFromDb, staleTime: 5 * 60 * 1000 });
 
   const isLoading = otQuery.isLoading || otLigneQuery.isLoading || pointageQuery.isLoading || matierQuery.isLoading || achatQuery.isLoading;
   const isError = otQuery.isError || otLigneQuery.isError || pointageQuery.isError || matierQuery.isError || achatQuery.isError;
@@ -38,7 +172,6 @@ export function computeOTKpis(data: OTData[]) {
   const totalVBTR = latest.reduce((s, d) => s + d.vbtr, 0);
   const avgAvancement = total > 0 ? latest.reduce((s, d) => s + d.avancementEffectif, 0) / total : 0;
 
-  // Group by type
   const byType: Record<string, { count: number; charge: number; vbtr: number; avgAvancement: number }> = {};
   latest.forEach(d => {
     const t = d.type || 'Non défini';
