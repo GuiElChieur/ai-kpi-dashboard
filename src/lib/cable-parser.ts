@@ -41,28 +41,35 @@ function excelDateToString(v: unknown): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString().substring(0, 10);
 }
 
+function getVal(row: Record<string, unknown>, ...keys: string[]): unknown {
+  for (const k of keys) {
+    if (row[k] !== undefined) return row[k];
+  }
+  return undefined;
+}
+
 function parseRow(row: Record<string, unknown>): CableData {
   return {
-    cbl: String(row['CBL'] ?? ''),
-    repereCbl: String(row['REPERE_CBL'] ?? ''),
-    respTirage: String(row['RESP_TIRAGE'] ?? '').trim().toUpperCase(),
-    indApproCa: String(row['IND_APPRO_CA'] ?? '').trim().toUpperCase(),
-    lngTotal: Number(row['LNG_TOTAL']) || 0,
-    totLngTiree: Number(row['TOT_LNG_TIREE']) || 0,
-    dateTirPlusTot: excelDateToString(row['DATE_TIR_PLUS_TOT']),
-    dateTirPlusTard: excelDateToString(row['DATE_TIR_PLUS_TARD']),
-    dateTirageCbl: excelDateToString(row['DATE_TIRAGE_CBL']),
-    sttCblBord: row['STT_CBL_BORD'] ? String(row['STT_CBL_BORD']).trim().toUpperCase() : null,
-    lotMtgApo: String(row['LOT_MTG_APO'] ?? ''),
-    apo: String(row['APO'] ?? ''),
-    apa: String(row['APA'] ?? ''),
-    ptCbl: String(row['PT_CBL'] ?? ''),
-    catCablage: String(row['CAT_CABLAGE'] ?? ''),
-    codZoneTirage: String(row['COD_ZONE_TIRAGE'] ?? ''),
-    lotOuAppCbl: String(row['LOT_OU_APP_CBL'] ?? ''),
-    gam: String(row['GAM'] ?? ''),
-    nav: String(row['NAV'] ?? ''),
-    fn: String(row['FN'] ?? '').trim().toUpperCase(),
+    cbl: String(getVal(row, 'CBL') ?? ''),
+    repereCbl: String(getVal(row, 'REPERE_CBL') ?? ''),
+    respTirage: String(getVal(row, 'RESP_TIRAGE') ?? '').trim().toUpperCase(),
+    indApproCa: String(getVal(row, 'IND_APPRO_CA') ?? '').trim().toUpperCase(),
+    lngTotal: Number(getVal(row, 'LNG_TOTAL', 'LNG_TOTALE')) || 0,
+    totLngTiree: Number(getVal(row, 'TOT_LNG_TIREE') ?? 0) || 0,
+    dateTirPlusTot: excelDateToString(getVal(row, 'DATE_TIR_PLUS_TOT')),
+    dateTirPlusTard: excelDateToString(getVal(row, 'DATE_TIR_PLUS_TARD')),
+    dateTirageCbl: excelDateToString(getVal(row, 'DATE_TIRAGE_CBL')),
+    sttCblBord: getVal(row, 'STT_CBL_BORD') ? String(getVal(row, 'STT_CBL_BORD')).trim().toUpperCase() : null,
+    lotMtgApo: String(getVal(row, 'LOT_MTG_APO') ?? ''),
+    apo: String(getVal(row, 'APO') ?? ''),
+    apa: String(getVal(row, 'APA') ?? ''),
+    ptCbl: String(getVal(row, 'PT_CBL') ?? ''),
+    catCablage: String(getVal(row, 'CAT_CABLAGE') ?? ''),
+    codZoneTirage: String(getVal(row, 'COD_ZONE_TIRAGE') ?? ''),
+    lotOuAppCbl: String(getVal(row, 'LOT_OU_APP_CBL') ?? ''),
+    gam: String(getVal(row, 'GAM') ?? ''),
+    nav: String(getVal(row, 'NAV') ?? ''),
+    fn: String(getVal(row, 'FN') ?? '').trim().toUpperCase(),
   };
 }
 
@@ -73,8 +80,26 @@ export async function loadCableData(): Promise<CableData[]> {
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
   
+  // Debug: log column names and sample data
+  if (rows.length > 0) {
+    const cols = Object.keys(rows[0]);
+    console.log('[cable-parser] Columns:', cols);
+    console.log('[cable-parser] Sample row:', JSON.stringify(rows[0]));
+    console.log('[cable-parser] Total rows:', rows.length);
+    // Check LNG columns
+    const lngCols = cols.filter(c => c.toUpperCase().includes('LNG'));
+    console.log('[cable-parser] LNG columns:', lngCols);
+  }
+  
   // Filtre global : uniquement RESP_TIRAGE = GEST
-  return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  const result = rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  const filerie = result.filter(c => c.indApproCa !== 'O');
+  console.log('[cable-parser] Columns:', rows.length > 0 ? Object.keys(rows[0]) : []);
+  console.log('[cable-parser] GEST count:', result.length, '| Filerie count:', filerie.length);
+  console.log('[cable-parser] Filerie LNG_TOTAL:', Math.round(filerie.reduce((s, c) => s + c.lngTotal, 0)));
+  console.log('[cable-parser] Filerie Tiré:', Math.round(filerie.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0)));
+  console.log('[cable-parser] IND_APPRO_CA values:', [...new Set(result.map(c => c.indApproCa))]);
+  return result;
 }
 
 export function parseCableFile(file: File): Promise<CableData[]> {
