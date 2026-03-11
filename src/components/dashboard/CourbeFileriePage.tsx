@@ -77,7 +77,7 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
       if (!c.fn) return;
       if (!byFn[c.fn]) byFn[c.fn] = { total: 0, tiree: 0 };
       byFn[c.fn].total += c.lngTotal;
-      byFn[c.fn].tiree += c.totLngTiree;
+      if (c.sttCblBord === 'T') byFn[c.fn].tiree += c.lngTotal;
     });
     return Object.entries(byFn)
       .map(([fn, v]) => ({ fn, total: Math.round(v.total), tiree: Math.round(v.tiree), pct: v.total ? (v.tiree / v.total) * 100 : 0 }))
