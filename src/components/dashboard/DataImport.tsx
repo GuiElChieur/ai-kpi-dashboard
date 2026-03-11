@@ -38,7 +38,8 @@ async function insertBatch(tableName: string, data: any[], batchSize = 500) {
   let inserted = 0;
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize);
-    const { error } = await (supabase.from(tableName) as any).insert(batch);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from(tableName).insert(batch);
     if (error) throw new Error(`Insert ${tableName} batch ${i}: ${error.message}`);
     inserted += batch.length;
   }
