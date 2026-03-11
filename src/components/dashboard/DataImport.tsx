@@ -47,52 +47,55 @@ export function DataImport() {
   };
 
   const handleImport = async () => {
-    const fileList = Object.values(files);
-    if (fileList.length === 0) {
+    const entries = Object.entries(files);
+    if (entries.length === 0) {
       toast.error('Sélectionnez au moins un fichier');
       return;
     }
 
     setImporting(true);
     setResults([]);
+    const allResults: any[] = [];
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Non authentifié');
 
-      const formData = new FormData();
-      
-      for (const [key, file] of Object.entries(files)) {
-        if (key === 'cables') {
-          // Parse XLSX client-side to avoid edge function CPU limits
-          const rows = await parseXlsxFile(file);
-          const blob = new Blob([JSON.stringify(rows)], { type: 'application/json' });
-          formData.append('cables_json', new File([blob], 'cables.json', { type: 'application/json' }));
-        } else {
-          formData.append(key, file);
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
+      // Send each file individually to avoid memory limits
+      for (const [key, file] of entries) {
+        try {
+          const formData = new FormData();
+          if (key === 'cables') {
+            const rows = await parseXlsxFile(file);
+            const blob = new Blob([JSON.stringify(rows)], { type: 'application/json' });
+            formData.append('cables_json', new File([blob], 'cables.json', { type: 'application/json' }));
+          } else {
+            formData.append(key, file);
+          }
+
+          const response = await fetch(
+            `https://${projectId}.supabase.co/functions/v1/import-data`,
+            {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${session.access_token}` },
+              body: formData,
+            }
+          );
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Erreur import');
+          allResults.push(...(data.results || []));
+        } catch (err: any) {
+          allResults.push({ table: key, rows: 0, status: 'error', error: err.message });
         }
       }
 
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/import-data`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Erreur import');
-
-      setResults(data.results || []);
-      const successCount = (data.results || []).filter((r: any) => r.status === 'success').length;
+      setResults(allResults);
+      const successCount = allResults.filter((r: any) => r.status === 'success').length;
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
-      // Invalidate all data queries
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
       queryClient.invalidateQueries({ queryKey: ['db-ot-lignes'] });
       queryClient.invalidateQueries({ queryKey: ['db-pointages'] });
