@@ -92,8 +92,8 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
     }
     const byFn: Record<string, number> = {};
     data.forEach(c => {
-      if (!c.fn || c.totLngTiree <= 0) return;
-      byFn[c.fn] = (byFn[c.fn] || 0) + c.totLngTiree;
+      if (!c.fn || c.sttCblBord !== 'T') return;
+      byFn[c.fn] = (byFn[c.fn] || 0) + c.lngTotal;
     });
     return Object.entries(byFn)
       .map(([fn, value]) => ({ fn, value: Math.round(value) }))
