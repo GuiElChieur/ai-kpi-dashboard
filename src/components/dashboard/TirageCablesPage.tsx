@@ -206,17 +206,17 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card lg:col-span-2">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Distribution des longueurs</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueurs tirées par jour (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={histoData} margin={{ left: 10, right: 10 }}>
+                <LineChart data={dailyTireData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="tranche" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                  <Bar dataKey="count" name="Câbles" fill="hsl(var(--info))" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <XAxis dataKey="jour" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur tirée']} />
+                  <Line type="monotone" dataKey="lng" name="Longueur tirée" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
