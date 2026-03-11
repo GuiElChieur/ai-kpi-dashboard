@@ -72,7 +72,15 @@ export async function loadCableData(): Promise<CableData[]> {
   const wb = XLSX.read(buf, { type: 'array' });
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-  return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
+  
+  const parsed = rows.map(parseRow);
+  // Fallback: if TOT_LNG_TIREE is always 0, use LNG_TOTAL for tirés
+  const anyTiree = parsed.some(c => c.totLngTiree > 0);
+  if (!anyTiree) {
+    console.warn('[cable-parser] TOT_LNG_TIREE not found, falling back to LNG_TOTAL for tirés');
+    parsed.forEach(c => { if (c.sttCblBord === 'T' || c.sttCblBord === 'L') c.totLngTiree = c.lngTotal; });
+  }
+  return parsed;
 }
 
 export function parseCableFile(file: File): Promise<CableData[]> {
@@ -84,7 +92,10 @@ export function parseCableFile(file: File): Promise<CableData[]> {
         const wb = XLSX.read(buf, { type: 'array' });
         const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-        resolve(rows.map(parseRow).filter(c => c.respTirage === 'GEST'));
+        const parsed = rows.map(parseRow);
+        const anyTiree = parsed.some(c => c.totLngTiree > 0);
+        if (!anyTiree) parsed.forEach(c => { if (c.sttCblBord === 'T' || c.sttCblBord === 'L') c.totLngTiree = c.lngTotal; });
+        resolve(parsed);
       } catch (err) {
         reject(err);
       }
@@ -96,11 +107,15 @@ export function parseCableFile(file: File): Promise<CableData[]> {
 
 // Filter helpers
 export function getTirageData(data: CableData[]) {
-  return data.filter(c => c.indApproCa === 'O');
+  return data.filter(c => c.indApproCa === 'O' && c.respTirage === 'GEST');
 }
 
 export function getFilerieData(data: CableData[]) {
   return data.filter(c => c.indApproCa !== 'O');
+}
+
+export function getGestFilerieData(data: CableData[]) {
+  return data.filter(c => c.indApproCa !== 'O' && c.respTirage === 'GEST');
 }
 
 export function isTire(c: CableData) { return c.sttCblBord === 'T'; }
