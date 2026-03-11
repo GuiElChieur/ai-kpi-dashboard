@@ -100,6 +100,7 @@ export function DataImport() {
             const text = await file.text();
             switch (key) {
               case 'achat': mapped = parseAchatCSV(text); break;
+              case 'ot': mapped = parseOTCSV(text); break;
               case 'ot_ligne': mapped = parseOTLigneCSV(text); break;
               case 'pointage': mapped = parsePointageCSV(text); break;
               case 'matiere': mapped = parseMatiereCSV(text); break;
