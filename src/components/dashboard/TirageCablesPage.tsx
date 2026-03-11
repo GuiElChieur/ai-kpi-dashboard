@@ -88,19 +88,17 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     { name: 'En retard', value: kpis.retard },
   ].filter(d => d.value > 0), [kpis]);
 
-  // Distribution longueurs
-  const histoData = useMemo(() => {
-    const bins = [
-      { label: '0-10m', min: 0, max: 10, count: 0 },
-      { label: '10-50m', min: 10, max: 50, count: 0 },
-      { label: '50-100m', min: 50, max: 100, count: 0 },
-      { label: '>100m', min: 100, max: Infinity, count: 0 },
-    ];
+  // Longueurs tirées par jour
+  const dailyTireData = useMemo(() => {
+    const byDay: Record<string, number> = {};
     filtered.forEach(c => {
-      const bin = bins.find(b => c.lngTotal >= b.min && c.lngTotal < b.max);
-      if (bin) bin.count++;
+      if (!isTire(c) || !c.dateTirageCbl) return;
+      const day = c.dateTirageCbl;
+      byDay[day] = (byDay[day] || 0) + c.lngTotal;
     });
-    return bins.map(b => ({ tranche: b.label, count: b.count }));
+    return Object.entries(byDay)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([jour, lng]) => ({ jour, lng: Math.round(lng) }));
   }, [filtered]);
 
   // Sorted table data
