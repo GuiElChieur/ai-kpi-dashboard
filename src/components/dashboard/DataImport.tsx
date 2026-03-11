@@ -12,6 +12,7 @@ import { fr } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import {
   parseAchatCSV,
+  parseOTCSV,
   parseOTLigneCSV,
   parsePointageCSV,
   parseMatiereCSV,
