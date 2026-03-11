@@ -99,17 +99,18 @@ export function parseCableFile(file: File): Promise<CableData[]> {
   });
 }
 
-// Filter helpers
+// Filter helpers (RESP_TIRAGE=GEST déjà appliqué au chargement)
 export function getTirageData(data: CableData[]) {
-  return data.filter(c => c.indApproCa === 'O' && c.respTirage === 'GEST');
+  return data.filter(c => c.indApproCa === 'O');
 }
 
 export function getFilerieData(data: CableData[]) {
   return data.filter(c => c.indApproCa !== 'O');
 }
 
-export function getGestFilerieData(data: CableData[]) {
-  return data.filter(c => c.indApproCa !== 'O' && c.respTirage === 'GEST');
+/** Toutes les données (déjà filtrées GEST) */
+export function getAllGestData(data: CableData[]) {
+  return data;
 }
 
 export function isTire(c: CableData) { return c.sttCblBord === 'T'; }
