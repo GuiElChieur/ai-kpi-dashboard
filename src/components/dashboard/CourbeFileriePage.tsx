@@ -53,8 +53,8 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   const dailyData = useMemo(() => {
     const byDay: Record<string, number> = {};
     fnFiltered.forEach(c => {
-      if (!c.dateTirageCbl || c.totLngTiree <= 0) return;
-      byDay[c.dateTirageCbl] = (byDay[c.dateTirageCbl] || 0) + c.totLngTiree;
+      if (c.sttCblBord !== 'T' || !c.dateTirageCbl) return;
+      byDay[c.dateTirageCbl] = (byDay[c.dateTirageCbl] || 0) + c.lngTotal;
     });
     return Object.entries(byDay)
       .sort((a, b) => a[0].localeCompare(b[0]))
