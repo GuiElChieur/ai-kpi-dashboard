@@ -106,7 +106,52 @@ export function parsePointageCSV(text: string) {
   }));
 }
 
+export function parseOTCSV(text: string) {
+  return parseCSV(text, ';').map(row => ({
+    date_jour: parseDate(getVal(row, 'DATE_DU_JOUR', 'Date du jour')),
+    affaire: getVal(row, 'AFFAIRE', 'Affaire'),
+    code_responsable: getVal(row, 'CODE_DU_RESPONSABLE', 'Code du responsable'),
+    num_ot: getVal(row, 'N_OT', 'N° OT', 'NUM_OT'),
+    libelle_projet: getVal(row, 'LIBELLE_PROJET', 'Libellé projet', 'LIBELLE_DU_PROJET'),
+    lot: getVal(row, 'LOT', 'Lot'),
+    charge_previsionnelle: parseNumber(getVal(row, 'CHARGE_PREVISIONNELLE', 'Charge prévisionnelle')),
+    tp: parseNumber(getVal(row, 'TP')),
+    avancement_effectif: parseNumber(getVal(row, 'AVANCEMENT_EFFECTIF', 'Avancement effectif')),
+    vbtr: parseNumber(getVal(row, 'VBTR')),
+    type: getVal(row, 'TYPE', 'Type'),
+    tranche: getVal(row, 'TRANCHE', 'Tranche'),
+    zone: getVal(row, 'ZONE', 'Zone'),
+    debut_plus_tot: getVal(row, 'DEBUT_PLUS_TOT', 'Début plus tôt'),
+    fin_plus_tot: getVal(row, 'FIN_PLUS_TOT', 'Fin plus tôt'),
+    debut_plus_tard: getVal(row, 'DEBUT_PLUS_TARD', 'Début plus tard'),
+    fin_plus_tard: getVal(row, 'FIN_PLUS_TARD', 'Fin plus tard'),
+    date_debut_theorique: getVal(row, 'DATE_DEBUT_THEORIQUE', 'Date début théorique'),
+    statut: getVal(row, 'STATUT', 'Statut'),
+    societe: getVal(row, 'SOCIETE', 'Société'),
+    stade: getVal(row, 'STADE', 'Stade'),
+    type_ot_bis: getVal(row, 'TYPE_OT_BIS', 'Type OT bis', 'TYPE_OT'),
+    nature_ot: getVal(row, 'NATURE_OT', 'Nature OT'),
+    mo_prev: parseNumber(getVal(row, 'MO_PREV', 'MO Prev')),
+    statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
+  }));
+}
+
 export function parseMatiereCSV(text: string) {
+  return parseCSV(text, ';').map(row => ({
+    affaire: getVal(row, 'AFFAIRE', 'Affaire'),
+    ot: getVal(row, 'OT'),
+    lot: getVal(row, 'LOT', 'Lot'),
+    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début')),
+    tri: getVal(row, 'TRI'),
+    rep: getVal(row, 'REP', 'Rep'),
+    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin')),
+    quantite_preparation: parseNumber(getVal(row, 'QUANTITE_EN_PREPARATION', 'Quantité en préparation')),
+    quantite_sortie: parseNumber(getVal(row, 'QUANTITE_SORTIE', 'Quantité sortie')),
+    reference_interne: getVal(row, 'REFERENCE_INTERNE', 'Référence interne'),
+    designation_produit: getVal(row, 'DESIGNATION_PRODUIT', 'Désignation produit'),
+    statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
+  }));
+}
   return parseCSV(text, ';').map(row => ({
     affaire: getVal(row, 'AFFAIRE', 'Affaire'),
     ot: getVal(row, 'OT'),

@@ -176,8 +176,7 @@ async function loadAchatsFromDb(): Promise<AchatData[]> {
 }
 
 export function useDashboardData() {
-  // OT data: no DB table, always CSV
-  const otQuery = useQuery({ queryKey: ['ot-data'], queryFn: loadOTData, staleTime: Infinity });
+  const otQuery = useQuery({ queryKey: ['ot-data'], queryFn: loadOTsFromDb, staleTime: 5 * 60 * 1000 });
   // DB-backed queries
   const otLigneQuery = useQuery({ queryKey: ['ot-ligne-data'], queryFn: loadOtLignesFromDb, staleTime: 5 * 60 * 1000 });
   const pointageQuery = useQuery({ queryKey: ['pointage-data'], queryFn: loadPointagesFromDb, staleTime: 5 * 60 * 1000 });

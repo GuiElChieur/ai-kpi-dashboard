@@ -136,11 +136,13 @@ export function DataImport() {
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
+      queryClient.invalidateQueries({ queryKey: ['db-ots'] });
       queryClient.invalidateQueries({ queryKey: ['db-ot-lignes'] });
       queryClient.invalidateQueries({ queryKey: ['db-pointages'] });
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
       queryClient.invalidateQueries({ queryKey: ['import-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
 
       setFiles({});
     } catch (err: any) {
