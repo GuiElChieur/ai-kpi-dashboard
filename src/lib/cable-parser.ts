@@ -93,9 +93,12 @@ export async function loadCableData(): Promise<CableData[]> {
   
   // Filtre global : uniquement RESP_TIRAGE = GEST
   const result = rows.map(parseRow).filter(c => c.respTirage === 'GEST');
-  console.log('[cable-parser] After GEST filter:', result.length);
-  console.log('[cable-parser] Total lngTotal sum:', result.reduce((s, c) => s + c.lngTotal, 0));
-  console.log('[cable-parser] Tiré sum:', result.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0));
+  const filerie = result.filter(c => c.indApproCa !== 'O');
+  console.log('[cable-parser] Columns:', rows.length > 0 ? Object.keys(rows[0]) : []);
+  console.log('[cable-parser] GEST count:', result.length, '| Filerie count:', filerie.length);
+  console.log('[cable-parser] Filerie LNG_TOTAL:', Math.round(filerie.reduce((s, c) => s + c.lngTotal, 0)));
+  console.log('[cable-parser] Filerie Tiré:', Math.round(filerie.filter(c => c.sttCblBord === 'T').reduce((s, c) => s + c.lngTotal, 0)));
+  console.log('[cable-parser] IND_APPRO_CA values:', [...new Set(result.map(c => c.indApproCa))]);
   return result;
 }
 
