@@ -105,11 +105,11 @@ export function DataImport() {
           }
 
           // Delete existing data then insert
-          await (supabase.from(tableName) as any).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          await (supabase as any).from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000');
           const count = await insertBatch(tableName, mapped);
 
           // Log success
-          await (supabase.from('import_logs') as any).insert({
+          await supabase.from('import_logs').insert({
             table_name: tableName,
             rows_imported: count,
             status: 'success',
@@ -118,7 +118,7 @@ export function DataImport() {
           allResults.push({ table: tableName, rows: count, status: 'success' });
         } catch (err: any) {
           allResults.push({ table: tableName, rows: 0, status: 'error', error: err.message });
-          await (supabase.from('import_logs') as any).insert({
+          await supabase.from('import_logs').insert({
             table_name: tableName,
             rows_imported: 0,
             status: 'error',
