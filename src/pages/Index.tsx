@@ -8,6 +8,7 @@ import { MatierTab } from '@/components/dashboard/MatierTab';
 import { AchatTab } from '@/components/dashboard/AchatTab';
 import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
+import { PerformancePage } from '@/components/dashboard/PerformancePage';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
 import { AIChat } from '@/components/dashboard/AIChat';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -103,9 +104,7 @@ const Index = () => {
           </div>
         )}
         {activePage === 'performance' && (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Page Performance — à venir
-          </div>
+          <PerformancePage otLigneData={otLigneData} />
         )}
       </div>
     </div>
