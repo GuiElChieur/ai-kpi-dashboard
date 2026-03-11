@@ -86,7 +86,7 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis dataKey="lot" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
                 <Legend />
                 <Bar dataKey="resteSortir" name="Reste à sortir" stackId="a" fill="hsl(0,72%,60%)" />
                 <Bar dataKey="sortie" name="Sortie" stackId="a" fill="hsl(160,60%,45%)" />
@@ -109,7 +109,7 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
                 <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
                 <Tooltip
-                  contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }}
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }}
                   formatter={(value: number, name: string) => [`${value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, name]}
                 />
                 <Legend />
