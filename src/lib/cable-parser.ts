@@ -107,11 +107,15 @@ export function parseCableFile(file: File): Promise<CableData[]> {
 
 // Filter helpers
 export function getTirageData(data: CableData[]) {
-  return data.filter(c => c.indApproCa === 'O');
+  return data.filter(c => c.indApproCa === 'O' && c.respTirage === 'GEST');
 }
 
 export function getFilerieData(data: CableData[]) {
   return data.filter(c => c.indApproCa !== 'O');
+}
+
+export function getGestFilerieData(data: CableData[]) {
+  return data.filter(c => c.indApproCa !== 'O' && c.respTirage === 'GEST');
 }
 
 export function isTire(c: CableData) { return c.sttCblBord === 'T'; }
