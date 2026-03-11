@@ -21,6 +21,7 @@ import {
 
 const FILE_TYPES = [
   { key: 'achat', label: 'Achats', accept: '.csv', pattern: 'ACHAT' },
+  { key: 'ot', label: 'OT', accept: '.csv', pattern: 'DATA_OT_Z' },
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
   { key: 'matiere', label: 'Matières', accept: '.csv', pattern: 'MATIER' },
@@ -29,6 +30,7 @@ const FILE_TYPES = [
 
 const TABLE_MAP: Record<string, string> = {
   achat: 'achats',
+  ot: 'ots',
   ot_ligne: 'ot_lignes',
   pointage: 'pointages',
   matiere: 'matieres',
