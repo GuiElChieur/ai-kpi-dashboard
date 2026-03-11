@@ -10,8 +10,6 @@ import { Upload, FileText, CheckCircle, XCircle, Loader2, Clock } from 'lucide-r
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const FILE_TYPES = [
   { key: 'achat', label: 'Achats', accept: '.csv', pattern: 'ACHAT' },
