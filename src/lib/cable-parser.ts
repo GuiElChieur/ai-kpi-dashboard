@@ -6,6 +6,7 @@ export interface CableData {
   respTirage: string;
   indApproCa: string;
   lngTotal: number;
+  totLngTiree: number;
   dateTirPlusTot: string | null;
   dateTirPlusTard: string | null;
   dateTirageCbl: string | null;
@@ -19,6 +20,7 @@ export interface CableData {
   lotOuAppCbl: string;
   gam: string;
   nav: string;
+  fn: string;
 }
 
 function excelDateToString(v: unknown): string | null {
