@@ -86,10 +86,8 @@ export function parseCableFile(file: File): Promise<CableData[]> {
         const wb = XLSX.read(buf, { type: 'array' });
         const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-        const parsed = rows.map(parseRow);
-        const anyTiree = parsed.some(c => c.totLngTiree > 0);
-        if (!anyTiree) parsed.forEach(c => { if (c.sttCblBord === 'T' || c.sttCblBord === 'L') c.totLngTiree = c.lngTotal; });
-        resolve(parsed);
+        // Filtre global : uniquement RESP_TIRAGE = GEST
+        resolve(rows.map(parseRow).filter(c => c.respTirage === 'GEST'));
       } catch (err) {
         reject(err);
       }
