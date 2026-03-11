@@ -73,14 +73,8 @@ export async function loadCableData(): Promise<CableData[]> {
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
   
-  const parsed = rows.map(parseRow);
-  // Fallback: if TOT_LNG_TIREE is always 0, use LNG_TOTAL for tirés
-  const anyTiree = parsed.some(c => c.totLngTiree > 0);
-  if (!anyTiree) {
-    console.warn('[cable-parser] TOT_LNG_TIREE not found, falling back to LNG_TOTAL for tirés');
-    parsed.forEach(c => { if (c.sttCblBord === 'T' || c.sttCblBord === 'L') c.totLngTiree = c.lngTotal; });
-  }
-  return parsed;
+  // Filtre global : uniquement RESP_TIRAGE = GEST
+  return rows.map(parseRow).filter(c => c.respTirage === 'GEST');
 }
 
 export function parseCableFile(file: File): Promise<CableData[]> {
