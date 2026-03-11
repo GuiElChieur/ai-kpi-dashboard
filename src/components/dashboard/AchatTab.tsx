@@ -43,7 +43,7 @@ export function AchatTab({ data }: { data: AchatData[] }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                   <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                   <YAxis dataKey="name" type="category" width={160} tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} €`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => `${v.toLocaleString('fr-FR')} €`} />
                   <Bar dataKey="total" name="Total HT" fill="hsl(280,60%,55%)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
