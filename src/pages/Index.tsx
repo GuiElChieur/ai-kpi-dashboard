@@ -92,6 +92,10 @@ const Index = () => {
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <FilerieLotPage allData={cableData || []} />
         )}
+        {activePage === 'courbe-filerie' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <CourbeFileriePage allData={cableData || []} />
+        )}
         {activePage === 'ai' && (
           <div className="p-4"><AIChat kpiSummary={kpiSummary} /></div>
         )}
