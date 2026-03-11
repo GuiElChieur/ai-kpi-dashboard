@@ -308,6 +308,96 @@ export type Database = {
         }
         Relationships: []
       }
+      ots: {
+        Row: {
+          affaire: string | null
+          avancement_effectif: number | null
+          charge_previsionnelle: number | null
+          code_responsable: string | null
+          date_debut_theorique: string | null
+          date_jour: string | null
+          debut_plus_tard: string | null
+          debut_plus_tot: string | null
+          fin_plus_tard: string | null
+          fin_plus_tot: string | null
+          id: string
+          imported_at: string
+          libelle_projet: string | null
+          lot: string | null
+          mo_prev: number | null
+          nature_ot: string | null
+          num_ot: string | null
+          societe: string | null
+          stade: string | null
+          statut: string | null
+          statut_projet: string | null
+          tp: number | null
+          tranche: string | null
+          type: string | null
+          type_ot_bis: string | null
+          vbtr: number | null
+          zone: string | null
+        }
+        Insert: {
+          affaire?: string | null
+          avancement_effectif?: number | null
+          charge_previsionnelle?: number | null
+          code_responsable?: string | null
+          date_debut_theorique?: string | null
+          date_jour?: string | null
+          debut_plus_tard?: string | null
+          debut_plus_tot?: string | null
+          fin_plus_tard?: string | null
+          fin_plus_tot?: string | null
+          id?: string
+          imported_at?: string
+          libelle_projet?: string | null
+          lot?: string | null
+          mo_prev?: number | null
+          nature_ot?: string | null
+          num_ot?: string | null
+          societe?: string | null
+          stade?: string | null
+          statut?: string | null
+          statut_projet?: string | null
+          tp?: number | null
+          tranche?: string | null
+          type?: string | null
+          type_ot_bis?: string | null
+          vbtr?: number | null
+          zone?: string | null
+        }
+        Update: {
+          affaire?: string | null
+          avancement_effectif?: number | null
+          charge_previsionnelle?: number | null
+          code_responsable?: string | null
+          date_debut_theorique?: string | null
+          date_jour?: string | null
+          debut_plus_tard?: string | null
+          debut_plus_tot?: string | null
+          fin_plus_tard?: string | null
+          fin_plus_tot?: string | null
+          id?: string
+          imported_at?: string
+          libelle_projet?: string | null
+          lot?: string | null
+          mo_prev?: number | null
+          nature_ot?: string | null
+          num_ot?: string | null
+          societe?: string | null
+          stade?: string | null
+          statut?: string | null
+          statut_projet?: string | null
+          tp?: number | null
+          tranche?: string | null
+          type?: string | null
+          type_ot_bis?: string | null
+          vbtr?: number | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
       pointages: {
         Row: {
           affaire_maitre: string | null
