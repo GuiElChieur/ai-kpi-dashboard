@@ -14,7 +14,399 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achats: {
+        Row: {
+          adresse_facturation: string | null
+          code_affaire: string | null
+          date_commande: string | null
+          date_livraison: string | null
+          designation_produit: string | null
+          id: string
+          imported_at: string
+          num_bl: string | null
+          num_commande: string | null
+          num_produit: string | null
+          prix_achat: number | null
+          quantite: number | null
+          reference_commande: string | null
+          reference_interne: string | null
+          total_ht: number | null
+          type_element: string | null
+          type_saisie: string | null
+        }
+        Insert: {
+          adresse_facturation?: string | null
+          code_affaire?: string | null
+          date_commande?: string | null
+          date_livraison?: string | null
+          designation_produit?: string | null
+          id?: string
+          imported_at?: string
+          num_bl?: string | null
+          num_commande?: string | null
+          num_produit?: string | null
+          prix_achat?: number | null
+          quantite?: number | null
+          reference_commande?: string | null
+          reference_interne?: string | null
+          total_ht?: number | null
+          type_element?: string | null
+          type_saisie?: string | null
+        }
+        Update: {
+          adresse_facturation?: string | null
+          code_affaire?: string | null
+          date_commande?: string | null
+          date_livraison?: string | null
+          designation_produit?: string | null
+          id?: string
+          imported_at?: string
+          num_bl?: string | null
+          num_commande?: string | null
+          num_produit?: string | null
+          prix_achat?: number | null
+          quantite?: number | null
+          reference_commande?: string | null
+          reference_interne?: string | null
+          total_ht?: number | null
+          type_element?: string | null
+          type_saisie?: string | null
+        }
+        Relationships: []
+      }
+      cables: {
+        Row: {
+          apa: string | null
+          apo: string | null
+          cat_cablage: string | null
+          cbl: string | null
+          cod_zone_tirage: string | null
+          date_tir_plus_tard: string | null
+          date_tir_plus_tot: string | null
+          date_tirage_cbl: string | null
+          fn: string | null
+          gam: string | null
+          id: string
+          imported_at: string
+          ind_appro_ca: string | null
+          lng_total: number | null
+          lot_mtg_apo: string | null
+          lot_ou_app_cbl: string | null
+          nav: string | null
+          pt_cbl: string | null
+          repere_cbl: string | null
+          resp_tirage: string | null
+          stt_cbl_bord: string | null
+          tot_lng_tiree: number | null
+        }
+        Insert: {
+          apa?: string | null
+          apo?: string | null
+          cat_cablage?: string | null
+          cbl?: string | null
+          cod_zone_tirage?: string | null
+          date_tir_plus_tard?: string | null
+          date_tir_plus_tot?: string | null
+          date_tirage_cbl?: string | null
+          fn?: string | null
+          gam?: string | null
+          id?: string
+          imported_at?: string
+          ind_appro_ca?: string | null
+          lng_total?: number | null
+          lot_mtg_apo?: string | null
+          lot_ou_app_cbl?: string | null
+          nav?: string | null
+          pt_cbl?: string | null
+          repere_cbl?: string | null
+          resp_tirage?: string | null
+          stt_cbl_bord?: string | null
+          tot_lng_tiree?: number | null
+        }
+        Update: {
+          apa?: string | null
+          apo?: string | null
+          cat_cablage?: string | null
+          cbl?: string | null
+          cod_zone_tirage?: string | null
+          date_tir_plus_tard?: string | null
+          date_tir_plus_tot?: string | null
+          date_tirage_cbl?: string | null
+          fn?: string | null
+          gam?: string | null
+          id?: string
+          imported_at?: string
+          ind_appro_ca?: string | null
+          lng_total?: number | null
+          lot_mtg_apo?: string | null
+          lot_ou_app_cbl?: string | null
+          nav?: string | null
+          pt_cbl?: string | null
+          repere_cbl?: string | null
+          resp_tirage?: string | null
+          stt_cbl_bord?: string | null
+          tot_lng_tiree?: number | null
+        }
+        Relationships: []
+      }
+      import_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          imported_by: string | null
+          rows_imported: number
+          status: string
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          imported_by?: string | null
+          rows_imported?: number
+          status?: string
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          imported_by?: string | null
+          rows_imported?: number
+          status?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
+      matieres: {
+        Row: {
+          affaire: string | null
+          date_debut: string | null
+          designation_produit: string | null
+          id: string
+          imported_at: string
+          lot: string | null
+          ot: string | null
+          quantite_besoin: number | null
+          quantite_preparation: number | null
+          quantite_sortie: number | null
+          reference_interne: string | null
+          rep: string | null
+          statut_projet: string | null
+          tri: string | null
+        }
+        Insert: {
+          affaire?: string | null
+          date_debut?: string | null
+          designation_produit?: string | null
+          id?: string
+          imported_at?: string
+          lot?: string | null
+          ot?: string | null
+          quantite_besoin?: number | null
+          quantite_preparation?: number | null
+          quantite_sortie?: number | null
+          reference_interne?: string | null
+          rep?: string | null
+          statut_projet?: string | null
+          tri?: string | null
+        }
+        Update: {
+          affaire?: string | null
+          date_debut?: string | null
+          designation_produit?: string | null
+          id?: string
+          imported_at?: string
+          lot?: string | null
+          ot?: string | null
+          quantite_besoin?: number | null
+          quantite_preparation?: number | null
+          quantite_sortie?: number | null
+          reference_interne?: string | null
+          rep?: string | null
+          statut_projet?: string | null
+          tri?: string | null
+        }
+        Relationships: []
+      }
+      ot_lignes: {
+        Row: {
+          affaire_maitre: string | null
+          avancement_effectif: number | null
+          charge_previsionnelle: number | null
+          charge_restante: number | null
+          code_libre_table: string | null
+          code_responsable: string | null
+          date_jour: string | null
+          id: string
+          identifiant_projet: string | null
+          imported_at: string
+          libelle_tache: string | null
+          lot: string | null
+          monteur: string | null
+          qte_prevue: number | null
+          qte_realisee: number | null
+          repere: string | null
+          stade: string | null
+          tp: number | null
+          trigramme: string | null
+          type_mo: string | null
+          type_ot: string | null
+          vbtr: number | null
+          zone: string | null
+        }
+        Insert: {
+          affaire_maitre?: string | null
+          avancement_effectif?: number | null
+          charge_previsionnelle?: number | null
+          charge_restante?: number | null
+          code_libre_table?: string | null
+          code_responsable?: string | null
+          date_jour?: string | null
+          id?: string
+          identifiant_projet?: string | null
+          imported_at?: string
+          libelle_tache?: string | null
+          lot?: string | null
+          monteur?: string | null
+          qte_prevue?: number | null
+          qte_realisee?: number | null
+          repere?: string | null
+          stade?: string | null
+          tp?: number | null
+          trigramme?: string | null
+          type_mo?: string | null
+          type_ot?: string | null
+          vbtr?: number | null
+          zone?: string | null
+        }
+        Update: {
+          affaire_maitre?: string | null
+          avancement_effectif?: number | null
+          charge_previsionnelle?: number | null
+          charge_restante?: number | null
+          code_libre_table?: string | null
+          code_responsable?: string | null
+          date_jour?: string | null
+          id?: string
+          identifiant_projet?: string | null
+          imported_at?: string
+          libelle_tache?: string | null
+          lot?: string | null
+          monteur?: string | null
+          qte_prevue?: number | null
+          qte_realisee?: number | null
+          repere?: string | null
+          stade?: string | null
+          tp?: number | null
+          trigramme?: string | null
+          type_mo?: string | null
+          type_ot?: string | null
+          vbtr?: number | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      pointages: {
+        Row: {
+          affaire_maitre: string | null
+          code_99: string | null
+          code_libre_alpha: string | null
+          code_libre_alpha1: string | null
+          code_libre_alpha3: string | null
+          code_libre_table: string | null
+          date_modif: string | null
+          date_saisie: string | null
+          employeur: string | null
+          equipe: string | null
+          id: string
+          identifiant_projet: string | null
+          imported_at: string
+          intervenant: string | null
+          intitule: string | null
+          intitule_affaire: string | null
+          nom_prenom: string | null
+          num_affaire: string | null
+          objet_travail: string | null
+          quantite: number | null
+          username: string | null
+        }
+        Insert: {
+          affaire_maitre?: string | null
+          code_99?: string | null
+          code_libre_alpha?: string | null
+          code_libre_alpha1?: string | null
+          code_libre_alpha3?: string | null
+          code_libre_table?: string | null
+          date_modif?: string | null
+          date_saisie?: string | null
+          employeur?: string | null
+          equipe?: string | null
+          id?: string
+          identifiant_projet?: string | null
+          imported_at?: string
+          intervenant?: string | null
+          intitule?: string | null
+          intitule_affaire?: string | null
+          nom_prenom?: string | null
+          num_affaire?: string | null
+          objet_travail?: string | null
+          quantite?: number | null
+          username?: string | null
+        }
+        Update: {
+          affaire_maitre?: string | null
+          code_99?: string | null
+          code_libre_alpha?: string | null
+          code_libre_alpha1?: string | null
+          code_libre_alpha3?: string | null
+          code_libre_table?: string | null
+          date_modif?: string | null
+          date_saisie?: string | null
+          employeur?: string | null
+          equipe?: string | null
+          id?: string
+          identifiant_projet?: string | null
+          imported_at?: string
+          intervenant?: string | null
+          intitule?: string | null
+          intitule_affaire?: string | null
+          nom_prenom?: string | null
+          num_affaire?: string | null
+          objet_travail?: string | null
+          quantite?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
