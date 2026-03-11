@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'tirage-cables', label: 'Tirage Câbles' },
   { id: 'courbe-filerie', label: 'Courbe Filerie (m)' },
   { id: 'filerie-lot', label: 'Filerie de Lot' },
+  { id: 'import', label: '📥 Import données' },
   { id: 'ai', label: 'Analyse IA ✨' },
 ];
 
