@@ -9,7 +9,7 @@ import {
 } from '@/lib/cable-parser';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, PieChart, Pie, Cell,
+  Legend, PieChart, Pie, Cell, LineChart, Line,
 } from 'recharts';
 import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfWeek, getISOWeek } from 'date-fns';
@@ -88,19 +88,17 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     { name: 'En retard', value: kpis.retard },
   ].filter(d => d.value > 0), [kpis]);
 
-  // Distribution longueurs
-  const histoData = useMemo(() => {
-    const bins = [
-      { label: '0-10m', min: 0, max: 10, count: 0 },
-      { label: '10-50m', min: 10, max: 50, count: 0 },
-      { label: '50-100m', min: 50, max: 100, count: 0 },
-      { label: '>100m', min: 100, max: Infinity, count: 0 },
-    ];
+  // Longueurs tirées par jour
+  const dailyTireData = useMemo(() => {
+    const byDay: Record<string, number> = {};
     filtered.forEach(c => {
-      const bin = bins.find(b => c.lngTotal >= b.min && c.lngTotal < b.max);
-      if (bin) bin.count++;
+      if (!isTire(c) || !c.dateTirageCbl) return;
+      const day = c.dateTirageCbl;
+      byDay[day] = (byDay[day] || 0) + c.lngTotal;
     });
-    return bins.map(b => ({ tranche: b.label, count: b.count }));
+    return Object.entries(byDay)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([jour, lng]) => ({ jour, lng: Math.round(lng) }));
   }, [filtered]);
 
   // Sorted table data
@@ -208,17 +206,17 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card lg:col-span-2">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Distribution des longueurs</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueurs tirées par jour (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={histoData} margin={{ left: 10, right: 10 }}>
+                <LineChart data={dailyTireData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="tranche" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                  <Bar dataKey="count" name="Câbles" fill="hsl(var(--info))" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <XAxis dataKey="jour" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur tirée']} />
+                  <Line type="monotone" dataKey="lng" name="Longueur tirée" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
