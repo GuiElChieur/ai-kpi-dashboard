@@ -45,7 +45,7 @@ export function OTTab({ data }: { data: OTData[] }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(220,13%,91%)', borderRadius: '8px', fontSize: 12 }} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
                   <Bar dataKey="charge" name="Charge prév." fill="hsl(220,70%,50%)" radius={[0, 4, 4, 0]} />
                   <Bar dataKey="vbtr" name="VBTR" fill="hsl(160,60%,45%)" radius={[0, 4, 4, 0]} />
                 </BarChart>
