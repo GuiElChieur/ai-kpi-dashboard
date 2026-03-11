@@ -104,9 +104,7 @@ const Index = () => {
           </div>
         )}
         {activePage === 'performance' && (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Page Performance — à venir
-          </div>
+          <PerformancePage otLigneData={otLigneData} />
         )}
       </div>
     </div>
