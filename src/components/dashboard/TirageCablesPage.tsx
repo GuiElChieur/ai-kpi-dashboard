@@ -272,17 +272,18 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Charge hebdo lissée — Objectif vs Réalisé (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Charge hebdo lissée — max 13 000 m/sem, 1 sem. avant deadline</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyChargeData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="sem" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`]} />
                   <Legend />
-                  <Bar dataKey="objectif" name="Objectif (−1 sem.)" fill="hsl(var(--primary))" opacity={0.6} />
+                  <ReferenceLine y={13000} stroke="hsl(var(--destructive))" strokeDasharray="6 3" strokeWidth={2} label={{ value: '13 000 m', position: 'right', fill: 'hsl(var(--destructive))', fontSize: 10 }} />
+                  <Bar dataKey="objectif" name="Objectif lissé" fill="hsl(var(--primary))" opacity={0.6} />
                   <Bar dataKey="realise" name="Réalisé" fill="hsl(var(--success))" />
                 </BarChart>
               </ResponsiveContainer>
