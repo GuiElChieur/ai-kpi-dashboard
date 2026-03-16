@@ -9,7 +9,7 @@ import {
 } from '@/lib/cable-parser';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, LineChart, Line,
+  Legend, LineChart, Line, ReferenceLine,
 } from 'recharts';
 import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfWeek, getISOWeek } from 'date-fns';
