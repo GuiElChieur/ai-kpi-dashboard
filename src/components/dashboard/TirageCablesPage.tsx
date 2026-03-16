@@ -81,23 +81,58 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       .map(([sem, v]) => ({ sem, tire: Math.round(v.tire), restant: Math.round(v.restant) }));
   }, [filtered]);
 
-  // Charge hebdomadaire lissée (objectif = 1 semaine avant date au plus tard)
   const weeklyChargeData = useMemo(() => {
+    const MAX_PER_WEEK = 13000; // mètres max par semaine
     const today = new Date();
-    const todayStr = today.toISOString().substring(0, 10);
-    // Câbles non tirés avec une date au plus tard
-    const nonTires = filtered.filter(c => !isTire(c) && c.dateTirPlusTard);
-    // Pour chaque câble, la date cible = dateTirPlusTard - 7 jours
-    const byWeek: Record<string, { charge: number; cumulCharge: number }> = {};
+    const todayWk = startOfWeek(today, { weekStartsOn: 1 });
+
+    // Câbles non tirés avec deadline, triés par date au plus tard croissante
+    const nonTires = filtered
+      .filter(c => !isTire(c) && c.dateTirPlusTard)
+      .sort((a, b) => a.dateTirPlusTard!.localeCompare(b.dateTirPlusTard!));
+
+    // Générer toutes les semaines de aujourd'hui jusqu'à la dernière deadline
+    const lastDeadline = nonTires.length > 0
+      ? new Date(nonTires[nonTires.length - 1].dateTirPlusTard!)
+      : today;
+    const allWeekStarts: Date[] = [];
+    let wk = new Date(todayWk);
+    while (wk <= lastDeadline) {
+      allWeekStarts.push(new Date(wk));
+      wk = new Date(wk.getTime() + 7 * 24 * 3600 * 1000);
+    }
+    if (allWeekStarts.length === 0) allWeekStarts.push(new Date(todayWk));
+
+    // Initialiser la charge lissée par semaine
+    const weekCharge: number[] = new Array(allWeekStarts.length).fill(0);
+
+    // Pour chaque câble (trié par deadline), l'affecter à la semaine la plus tardive
+    // possible (deadline - 1 semaine) puis remonter si la capacité est dépassée
     nonTires.forEach(c => {
       const deadline = new Date(c.dateTirPlusTard!);
-      const target = new Date(deadline.getTime() - 7 * 24 * 3600 * 1000); // 1 semaine avant
-      const wkStart = startOfWeek(target, { weekStartsOn: 1 });
-      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
-      if (!byWeek[wkKey]) byWeek[wkKey] = { charge: 0, cumulCharge: 0 };
-      byWeek[wkKey].charge += c.lngTotal;
+      const targetDate = new Date(deadline.getTime() - 7 * 24 * 3600 * 1000);
+      // Trouver l'index de la semaine cible (la plus tardive <= targetDate)
+      let targetIdx = allWeekStarts.length - 1;
+      for (let i = allWeekStarts.length - 1; i >= 0; i--) {
+        if (allWeekStarts[i] <= targetDate) { targetIdx = i; break; }
+        if (i === 0) targetIdx = 0;
+      }
+      // Placer le câble : remonter dans le temps si capacité dépassée
+      let placed = false;
+      for (let i = targetIdx; i >= 0; i--) {
+        if (weekCharge[i] + c.lngTotal <= MAX_PER_WEEK) {
+          weekCharge[i] += c.lngTotal;
+          placed = true;
+          break;
+        }
+      }
+      // Si pas de place, forcer sur la semaine cible (dépassement signalé)
+      if (!placed) {
+        weekCharge[targetIdx] += c.lngTotal;
+      }
     });
-    // Aussi ajouter les câbles déjà tirés par semaine de tirage réel
+
+    // Câbles déjà tirés par semaine de tirage réel
     const tires = filtered.filter(c => isTire(c) && c.dateTirageCbl);
     const byWeekTire: Record<string, number> = {};
     tires.forEach(c => {
@@ -106,17 +141,30 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       const wkKey = format(wkStart, 'dd/MM', { locale: fr });
       byWeekTire[wkKey] = (byWeekTire[wkKey] || 0) + c.lngTotal;
     });
-    // Merge toutes les semaines
-    const allWeeks = new Set([...Object.keys(byWeek), ...Object.keys(byWeekTire)]);
-    const result = [...allWeeks].sort((a, b) => {
+
+    // Construire le résultat final
+    const result: { sem: string; objectif: number; realise: number; cap: number }[] = [];
+    // D'abord les semaines passées (tirées uniquement)
+    const futureKeys = new Set(allWeekStarts.map(w => format(w, 'dd/MM', { locale: fr })));
+    const pastKeys = Object.keys(byWeekTire).filter(k => !futureKeys.has(k));
+    pastKeys.sort((a, b) => {
       const [da, ma] = a.split('/').map(Number);
       const [db, mb] = b.split('/').map(Number);
       return ma !== mb ? ma - mb : da - db;
-    }).map(sem => ({
-      sem: `S${sem}`,
-      objectif: Math.round(byWeek[sem]?.charge || 0),
-      realise: Math.round(byWeekTire[sem] || 0),
-    }));
+    });
+    pastKeys.forEach(k => {
+      result.push({ sem: `S${k}`, objectif: 0, realise: Math.round(byWeekTire[k]), cap: MAX_PER_WEEK });
+    });
+    // Puis les semaines planifiées
+    allWeekStarts.forEach((ws, i) => {
+      const key = format(ws, 'dd/MM', { locale: fr });
+      result.push({
+        sem: `S${key}`,
+        objectif: Math.round(weekCharge[i]),
+        realise: Math.round(byWeekTire[key] || 0),
+        cap: MAX_PER_WEEK,
+      });
+    });
     return result;
   }, [filtered]);
 
