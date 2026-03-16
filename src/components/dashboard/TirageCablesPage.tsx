@@ -9,13 +9,12 @@ import {
 } from '@/lib/cable-parser';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, PieChart, Pie, Cell, LineChart, Line,
+  Legend, LineChart, Line,
 } from 'recharts';
 import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfWeek, getISOWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const DONUT_COLORS = ['hsl(142,71%,45%)', 'hsl(215,15%,60%)', 'hsl(0,72%,51%)'];
 const PAGE_SIZE = 50;
 
 function StatusBadge({ cable }: { cable: CableData }) {
@@ -82,12 +81,44 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       .map(([sem, v]) => ({ sem, tire: Math.round(v.tire), restant: Math.round(v.restant) }));
   }, [filtered]);
 
-  // Donut
-  const donutData = useMemo(() => [
-    { name: 'Tirés', value: kpis.tires },
-    { name: 'Non tirés', value: kpis.nonTires - kpis.retard },
-    { name: 'En retard', value: kpis.retard },
-  ].filter(d => d.value > 0), [kpis]);
+  // Charge hebdomadaire lissée (objectif = 1 semaine avant date au plus tard)
+  const weeklyChargeData = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().substring(0, 10);
+    // Câbles non tirés avec une date au plus tard
+    const nonTires = filtered.filter(c => !isTire(c) && c.dateTirPlusTard);
+    // Pour chaque câble, la date cible = dateTirPlusTard - 7 jours
+    const byWeek: Record<string, { charge: number; cumulCharge: number }> = {};
+    nonTires.forEach(c => {
+      const deadline = new Date(c.dateTirPlusTard!);
+      const target = new Date(deadline.getTime() - 7 * 24 * 3600 * 1000); // 1 semaine avant
+      const wkStart = startOfWeek(target, { weekStartsOn: 1 });
+      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
+      if (!byWeek[wkKey]) byWeek[wkKey] = { charge: 0, cumulCharge: 0 };
+      byWeek[wkKey].charge += c.lngTotal;
+    });
+    // Aussi ajouter les câbles déjà tirés par semaine de tirage réel
+    const tires = filtered.filter(c => isTire(c) && c.dateTirageCbl);
+    const byWeekTire: Record<string, number> = {};
+    tires.forEach(c => {
+      const d = new Date(c.dateTirageCbl!);
+      const wkStart = startOfWeek(d, { weekStartsOn: 1 });
+      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
+      byWeekTire[wkKey] = (byWeekTire[wkKey] || 0) + c.lngTotal;
+    });
+    // Merge toutes les semaines
+    const allWeeks = new Set([...Object.keys(byWeek), ...Object.keys(byWeekTire)]);
+    const result = [...allWeeks].sort((a, b) => {
+      const [da, ma] = a.split('/').map(Number);
+      const [db, mb] = b.split('/').map(Number);
+      return ma !== mb ? ma - mb : da - db;
+    }).map(sem => ({
+      sem: `S${sem}`,
+      objectif: Math.round(byWeek[sem]?.charge || 0),
+      realise: Math.round(byWeekTire[sem] || 0),
+    }));
+    return result;
+  }, [filtered]);
 
   // Longueurs tirées par jour
   const dailyTireData = useMemo(() => {
@@ -193,16 +224,19 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Répartition par statut</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Charge hebdo lissée — Objectif vs Réalisé (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} label={({ name, value }) => `${name}: ${value}`}>
-                    {donutData.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                </PieChart>
+                <BarChart data={weeklyChargeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="sem" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`]} />
+                  <Legend />
+                  <Bar dataKey="objectif" name="Objectif (−1 sem.)" fill="hsl(var(--primary))" opacity={0.6} />
+                  <Bar dataKey="realise" name="Réalisé" fill="hsl(var(--success))" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
