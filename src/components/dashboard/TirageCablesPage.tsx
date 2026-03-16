@@ -82,12 +82,44 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       .map(([sem, v]) => ({ sem, tire: Math.round(v.tire), restant: Math.round(v.restant) }));
   }, [filtered]);
 
-  // Donut
-  const donutData = useMemo(() => [
-    { name: 'Tirés', value: kpis.tires },
-    { name: 'Non tirés', value: kpis.nonTires - kpis.retard },
-    { name: 'En retard', value: kpis.retard },
-  ].filter(d => d.value > 0), [kpis]);
+  // Charge hebdomadaire lissée (objectif = 1 semaine avant date au plus tard)
+  const weeklyChargeData = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().substring(0, 10);
+    // Câbles non tirés avec une date au plus tard
+    const nonTires = filtered.filter(c => !isTire(c) && c.dateTirPlusTard);
+    // Pour chaque câble, la date cible = dateTirPlusTard - 7 jours
+    const byWeek: Record<string, { charge: number; cumulCharge: number }> = {};
+    nonTires.forEach(c => {
+      const deadline = new Date(c.dateTirPlusTard!);
+      const target = new Date(deadline.getTime() - 7 * 24 * 3600 * 1000); // 1 semaine avant
+      const wkStart = startOfWeek(target, { weekStartsOn: 1 });
+      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
+      if (!byWeek[wkKey]) byWeek[wkKey] = { charge: 0, cumulCharge: 0 };
+      byWeek[wkKey].charge += c.lngTotal;
+    });
+    // Aussi ajouter les câbles déjà tirés par semaine de tirage réel
+    const tires = filtered.filter(c => isTire(c) && c.dateTirageCbl);
+    const byWeekTire: Record<string, number> = {};
+    tires.forEach(c => {
+      const d = new Date(c.dateTirageCbl!);
+      const wkStart = startOfWeek(d, { weekStartsOn: 1 });
+      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
+      byWeekTire[wkKey] = (byWeekTire[wkKey] || 0) + c.lngTotal;
+    });
+    // Merge toutes les semaines
+    const allWeeks = new Set([...Object.keys(byWeek), ...Object.keys(byWeekTire)]);
+    const result = [...allWeeks].sort((a, b) => {
+      const [da, ma] = a.split('/').map(Number);
+      const [db, mb] = b.split('/').map(Number);
+      return ma !== mb ? ma - mb : da - db;
+    }).map(sem => ({
+      sem: `S${sem}`,
+      objectif: Math.round(byWeek[sem]?.charge || 0),
+      realise: Math.round(byWeekTire[sem] || 0),
+    }));
+    return result;
+  }, [filtered]);
 
   // Longueurs tirées par jour
   const dailyTireData = useMemo(() => {
