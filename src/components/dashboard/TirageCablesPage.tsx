@@ -224,16 +224,19 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </Card>
 
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Répartition par statut</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Charge hebdo lissée — Objectif vs Réalisé (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} label={({ name, value }) => `${name}: ${value}`}>
-                    {donutData.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
-                </PieChart>
+                <BarChart data={weeklyChargeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="sem" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`]} />
+                  <Legend />
+                  <Bar dataKey="objectif" name="Objectif (−1 sem.)" fill="hsl(var(--primary))" opacity={0.6} />
+                  <Bar dataKey="realise" name="Réalisé" fill="hsl(var(--success))" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
