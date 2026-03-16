@@ -59,8 +59,9 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     const nonTires = filtered.filter(isNonTire).length;
     const retard = filtered.filter(isEnRetard).length;
     const lngTotal = filtered.reduce((s, c) => s + c.lngTotal, 0);
+    const lngTiree = filtered.filter(isTire).reduce((s, c) => s + c.lngTotal, 0);
     const lngRestante = filtered.filter(c => !isTire(c)).reduce((s, c) => s + c.lngTotal, 0);
-    return { total, tires, nonTires, retard, lngTotal, lngRestante };
+    return { total, tires, nonTires, retard, lngTotal, lngTiree, lngRestante };
   }, [filtered]);
 
   // Avancement par semaine
