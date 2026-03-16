@@ -135,14 +135,20 @@ export function DataImport() {
       const successCount = allResults.filter(r => r.status === 'success').length;
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
+      // Invalidate all dashboard query keys
+      queryClient.invalidateQueries({ queryKey: ['achat-data'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-ligne-data'] });
+      queryClient.invalidateQueries({ queryKey: ['pointage-data'] });
+      queryClient.invalidateQueries({ queryKey: ['matier-data'] });
+      queryClient.invalidateQueries({ queryKey: ['cable-data'] });
+      queryClient.invalidateQueries({ queryKey: ['import-logs'] });
+      // Also invalidate db-* keys used by use-db-data hooks
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
-      queryClient.invalidateQueries({ queryKey: ['db-ots'] });
       queryClient.invalidateQueries({ queryKey: ['db-ot-lignes'] });
       queryClient.invalidateQueries({ queryKey: ['db-pointages'] });
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
-      queryClient.invalidateQueries({ queryKey: ['import-logs'] });
-      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
 
       setFiles({});
     } catch (err: any) {
