@@ -15,7 +15,6 @@ import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLe
 import { format, startOfWeek, getISOWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const DONUT_COLORS = ['hsl(142,71%,45%)', 'hsl(215,15%,60%)', 'hsl(0,72%,51%)'];
 const PAGE_SIZE = 50;
 
 function StatusBadge({ cable }: { cable: CableData }) {
