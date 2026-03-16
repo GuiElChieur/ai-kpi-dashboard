@@ -138,7 +138,9 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     <div className="p-4 space-y-4 animate-fade-in overflow-auto">
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard title="Total câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} />
+        <div className="cursor-pointer" onClick={() => { setStatusFilter('all'); setPage(0); }}>
+          <KpiCard title="Total câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} className={statusFilter === 'all' ? 'ring-2 ring-primary' : ''} />
+        </div>
         <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
         <KpiCard title="Métré tiré" value={`${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m (${kpis.lngTotal ? ((kpis.lngTiree / kpis.lngTotal) * 100).toFixed(1) : 0}%)`} icon={<CheckCircle className="h-5 w-5" />} />
         <KpiCard title="Non tirés" value={`${kpis.nonTires}`} icon={<XCircle className="h-5 w-5" />} />
