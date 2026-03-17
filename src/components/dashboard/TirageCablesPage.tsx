@@ -9,11 +9,9 @@ import {
 } from '@/lib/cable-parser';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, LineChart, Line, ReferenceLine,
+  Legend, LineChart, Line, Area, AreaChart,
 } from 'recharts';
 import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, startOfWeek, getISOWeek } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const PAGE_SIZE = 50;
 
@@ -63,112 +61,28 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     return { total, tires, nonTires, retard, lngTotal, lngTiree, lngRestante };
   }, [filtered]);
 
-  // Avancement par semaine
-  const weeklyData = useMemo(() => {
-    const byWeek: Record<string, { tire: number; restant: number }> = {};
+  // Avancement par MOIS (au lieu de semaine)
+  const monthlyData = useMemo(() => {
+    const byMonth: Record<string, { tire: number; restant: number; sortKey: string }> = {};
     filtered.forEach(c => {
       const dateStr = c.dateTirageCbl || c.dateTirPlusTard || c.dateTirPlusTot;
       if (!dateStr) return;
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return;
-      const wk = `S${getISOWeek(d)}-${d.getFullYear()}`;
-      if (!byWeek[wk]) byWeek[wk] = { tire: 0, restant: 0 };
-      if (isTire(c)) byWeek[wk].tire += c.lngTotal;
-      else byWeek[wk].restant += c.lngTotal;
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const key = `${mm}/${yyyy}`;
+      const sortKey = `${yyyy}-${mm}`;
+      if (!byMonth[key]) byMonth[key] = { tire: 0, restant: 0, sortKey };
+      if (isTire(c)) byMonth[key].tire += c.lngTotal;
+      else byMonth[key].restant += c.lngTotal;
     });
-    return Object.entries(byWeek)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([sem, v]) => ({ sem, tire: Math.round(v.tire), restant: Math.round(v.restant) }));
+    return Object.entries(byMonth)
+      .sort((a, b) => a[1].sortKey.localeCompare(b[1].sortKey))
+      .map(([mois, v]) => ({ mois, tire: Math.round(v.tire), restant: Math.round(v.restant) }));
   }, [filtered]);
 
-  const weeklyChargeData = useMemo(() => {
-    const MAX_PER_WEEK = 13000; // mètres max par semaine
-    const today = new Date();
-    const todayWk = startOfWeek(today, { weekStartsOn: 1 });
-
-    // Câbles non tirés avec deadline, triés par date au plus tard croissante
-    const nonTires = filtered
-      .filter(c => !isTire(c) && c.dateTirPlusTard)
-      .sort((a, b) => a.dateTirPlusTard!.localeCompare(b.dateTirPlusTard!));
-
-    // Générer toutes les semaines de aujourd'hui jusqu'à la dernière deadline
-    const lastDeadline = nonTires.length > 0
-      ? new Date(nonTires[nonTires.length - 1].dateTirPlusTard!)
-      : today;
-    const allWeekStarts: Date[] = [];
-    let wk = new Date(todayWk);
-    while (wk <= lastDeadline) {
-      allWeekStarts.push(new Date(wk));
-      wk = new Date(wk.getTime() + 7 * 24 * 3600 * 1000);
-    }
-    if (allWeekStarts.length === 0) allWeekStarts.push(new Date(todayWk));
-
-    // Initialiser la charge lissée par semaine
-    const weekCharge: number[] = new Array(allWeekStarts.length).fill(0);
-
-    // Pour chaque câble (trié par deadline), l'affecter à la semaine la plus tardive
-    // possible (deadline - 1 semaine) puis remonter si la capacité est dépassée
-    nonTires.forEach(c => {
-      const deadline = new Date(c.dateTirPlusTard!);
-      const targetDate = new Date(deadline.getTime() - 7 * 24 * 3600 * 1000);
-      // Trouver l'index de la semaine cible (la plus tardive <= targetDate)
-      let targetIdx = allWeekStarts.length - 1;
-      for (let i = allWeekStarts.length - 1; i >= 0; i--) {
-        if (allWeekStarts[i] <= targetDate) { targetIdx = i; break; }
-        if (i === 0) targetIdx = 0;
-      }
-      // Placer le câble : remonter dans le temps si capacité dépassée
-      let placed = false;
-      for (let i = targetIdx; i >= 0; i--) {
-        if (weekCharge[i] + c.lngTotal <= MAX_PER_WEEK) {
-          weekCharge[i] += c.lngTotal;
-          placed = true;
-          break;
-        }
-      }
-      // Si pas de place, forcer sur la semaine cible (dépassement signalé)
-      if (!placed) {
-        weekCharge[targetIdx] += c.lngTotal;
-      }
-    });
-
-    // Câbles déjà tirés par semaine de tirage réel
-    const tires = filtered.filter(c => isTire(c) && c.dateTirageCbl);
-    const byWeekTire: Record<string, number> = {};
-    tires.forEach(c => {
-      const d = new Date(c.dateTirageCbl!);
-      const wkStart = startOfWeek(d, { weekStartsOn: 1 });
-      const wkKey = format(wkStart, 'dd/MM', { locale: fr });
-      byWeekTire[wkKey] = (byWeekTire[wkKey] || 0) + c.lngTotal;
-    });
-
-    // Construire le résultat final
-    const result: { sem: string; objectif: number; realise: number; cap: number }[] = [];
-    // D'abord les semaines passées (tirées uniquement)
-    const futureKeys = new Set(allWeekStarts.map(w => format(w, 'dd/MM', { locale: fr })));
-    const pastKeys = Object.keys(byWeekTire).filter(k => !futureKeys.has(k));
-    pastKeys.sort((a, b) => {
-      const [da, ma] = a.split('/').map(Number);
-      const [db, mb] = b.split('/').map(Number);
-      return ma !== mb ? ma - mb : da - db;
-    });
-    pastKeys.forEach(k => {
-      result.push({ sem: `S${k}`, objectif: 0, realise: Math.round(byWeekTire[k]), cap: MAX_PER_WEEK });
-    });
-    // Puis les semaines planifiées
-    allWeekStarts.forEach((ws, i) => {
-      const key = format(ws, 'dd/MM', { locale: fr });
-      result.push({
-        sem: `S${key}`,
-        objectif: Math.round(weekCharge[i]),
-        realise: Math.round(byWeekTire[key] || 0),
-        cap: MAX_PER_WEEK,
-      });
-    });
-    return result;
-  }, [filtered]);
-
-  // Longueurs tirées par jour
+  // Longueurs tirées par jour (bar chart)
   const dailyTireData = useMemo(() => {
     const byDay: Record<string, number> = {};
     filtered.forEach(c => {
@@ -179,6 +93,47 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     return Object.entries(byDay)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([jour, lng]) => ({ jour, lng: Math.round(lng) }));
+  }, [filtered]);
+
+  // Avancement cumulé du tirage (APPRO_CA = O, déjà filtré par getTirageData)
+  const cumulativeData = useMemo(() => {
+    // Câbles tirés avec date, triés par date
+    const tires = filtered
+      .filter(c => isTire(c) && c.dateTirageCbl)
+      .sort((a, b) => a.dateTirageCbl!.localeCompare(b.dateTirageCbl!));
+
+    if (tires.length === 0) return [];
+
+    // Agréger par jour
+    const byDay: Record<string, number> = {};
+    tires.forEach(c => {
+      byDay[c.dateTirageCbl!] = (byDay[c.dateTirageCbl!] || 0) + c.lngTotal;
+    });
+
+    const days = Object.keys(byDay).sort();
+    let cumul = 0;
+    const result: { date: string; cumule: number; objectif?: number }[] = [];
+
+    days.forEach(day => {
+      cumul += byDay[day];
+      result.push({ date: day, cumule: Math.round(cumul) });
+    });
+
+    // Ligne objectif : longueur totale de tous les câbles filtrés
+    const totalObjectif = Math.round(filtered.reduce((s, c) => s + c.lngTotal, 0));
+
+    // Trouver la dernière deadline
+    const lastDeadline = filtered
+      .filter(c => c.dateTirPlusTard)
+      .reduce((max, c) => c.dateTirPlusTard! > max ? c.dateTirPlusTard! : max, '');
+
+    // Ajouter le point objectif final si on a une deadline
+    if (lastDeadline && (result.length === 0 || lastDeadline > result[result.length - 1].date)) {
+      result.push({ date: lastDeadline, cumule: result.length > 0 ? result[result.length - 1].cumule : 0, objectif: totalObjectif });
+    }
+
+    // Ajouter l'objectif sur tous les points (ligne horizontale)
+    return result.map(r => ({ ...r, objectif: totalObjectif }));
   }, [filtered]);
 
   // Sorted table data
@@ -212,6 +167,8 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     a.download = 'tirage_cables.csv';
     a.click();
   };
+
+  const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' };
 
   return (
     <div className="p-4 space-y-4 animate-fade-in overflow-auto">
@@ -250,18 +207,19 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
         </CardContent>
       </Card>
 
-      {/* Charts */}
+      {/* Charts — 2x2 grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* 1. Avancement mensuel */}
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Avancement hebdomadaire — Longueur tirée (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Avancement mensuel — Longueur tirée (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <BarChart data={monthlyData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="sem" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <XAxis dataKey="mois" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} />
+                  <Tooltip contentStyle={tooltipStyle} />
                   <Legend />
                   <Bar dataKey="tire" name="Tiré" stackId="a" fill="hsl(var(--success))" />
                   <Bar dataKey="restant" name="Restant" stackId="a" fill="hsl(var(--muted-foreground))" />
@@ -271,38 +229,45 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
           </CardContent>
         </Card>
 
+        {/* 2. Longueurs tirées par jour (bar chart) */}
         <Card className="glass-card">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Charge hebdo lissée — max 13 000 m/sem, 1 sem. avant deadline</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueurs tirées par jour (m)</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyChargeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <BarChart data={dailyTireData} margin={{ left: 10, right: 10, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="sem" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`]} />
-                  <Legend />
-                  <ReferenceLine y={13000} stroke="hsl(var(--destructive))" strokeDasharray="6 3" strokeWidth={2} label={{ value: '13 000 m', position: 'right', fill: 'hsl(var(--destructive))', fontSize: 10 }} />
-                  <Bar dataKey="objectif" name="Objectif lissé" fill="hsl(var(--primary))" opacity={0.6} />
-                  <Bar dataKey="realise" name="Réalisé" fill="hsl(var(--success))" />
+                  <XAxis dataKey="jour" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur tirée']} />
+                  <Bar dataKey="lng" name="Longueur tirée" fill="hsl(var(--success))" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
+        {/* 3. Avancement cumulé du tirage */}
         <Card className="glass-card lg:col-span-2">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Longueurs tirées par jour (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Avancement cumulé du tirage (m)</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-[220px]">
+            <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyTireData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <AreaChart data={cumulativeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                  <defs>
+                    <linearGradient id="gradCumul" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="jour" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}m`} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Longueur tirée']} />
-                  <Line type="monotone" dataKey="lng" name="Longueur tirée" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                </LineChart>
+                  <XAxis dataKey="date" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${v.toLocaleString('fr-FR')} m`, name === 'cumule' ? 'Cumulé tiré' : 'Objectif total']} />
+                  <Legend />
+                  <Area type="monotone" dataKey="cumule" name="Cumulé tiré" stroke="hsl(var(--success))" strokeWidth={2} fill="url(#gradCumul)" />
+                  <Line type="monotone" dataKey="objectif" name="Objectif total" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
