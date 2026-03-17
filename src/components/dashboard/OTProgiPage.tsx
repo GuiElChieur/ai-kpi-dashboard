@@ -275,7 +275,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       </div>
 
       {/* Bottom: Data table */}
-      <div className="pbi-card overflow-hidden flex-1 min-h-0">
+      <div className="pbi-card overflow-hidden shrink-0 max-h-[30vh] min-h-[120px]">
         <div className="overflow-auto h-full">
           <table className="w-full text-[11px]">
             <thead className="sticky top-0 bg-card z-10">
