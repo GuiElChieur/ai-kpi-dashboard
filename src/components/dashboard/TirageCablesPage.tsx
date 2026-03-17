@@ -97,45 +97,129 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
       .map(([jour, lng]) => ({ jour, lng: Math.round(lng) }));
   }, [filtered]);
 
-  // Avancement cumulé du tirage (APPRO_CA = O, déjà filtré par getTirageData)
-  const cumulativeData = useMemo(() => {
-    // Câbles tirés avec date, triés par date
-    const tires = filtered
-      .filter(c => isTire(c) && c.dateTirageCbl)
-      .sort((a, b) => a.dateTirageCbl!.localeCompare(b.dateTirageCbl!));
+  // ── Avancement cumulé du tirage (full business logic) ──
+  const cumulativeResult = useMemo(() => {
+    const OBJECTIF_TOTAL = 236027;
 
-    if (tires.length === 0) return [];
+    // Câbles tirés avec date
+    const tiresWithDate = filtered.filter(c => isTire(c) && c.dateTirageCbl);
+    if (tiresWithDate.length === 0) return { data: [], delta: 0, dateFin: '', objectifTotal: OBJECTIF_TOTAL };
 
-    // Agréger par jour
-    const byDay: Record<string, number> = {};
-    tires.forEach(c => {
-      byDay[c.dateTirageCbl!] = (byDay[c.dateTirageCbl!] || 0) + c.lngTotal;
+    // dateDebut = premier tirage réel
+    const allTirDates = tiresWithDate.map(c => c.dateTirageCbl!).sort();
+    const dateDebut = new Date(allTirDates[0]);
+
+    // dateFin = max(TIR_PLUS_TARD)
+    const deadlines = filtered.filter(c => c.dateTirPlusTard).map(c => c.dateTirPlusTard!);
+    const dateFinStr = deadlines.length > 0 ? deadlines.sort().pop()! : allTirDates[allTirDates.length - 1];
+    const dateFin = new Date(dateFinStr);
+
+    // Generate all dates
+    const allDates: Date[] = [];
+    for (let d = new Date(dateDebut); d <= dateFin; d.setDate(d.getDate() + 1)) {
+      allDates.push(new Date(d));
+    }
+    if (allDates.length === 0) return { data: [], delta: 0, dateFin: dateFinStr, objectifTotal: OBJECTIF_TOTAL };
+
+    const toKey = (d: Date) => d.toISOString().substring(0, 10);
+
+    // Real daily aggregation
+    const realDaily: Record<string, number> = {};
+    tiresWithDate.forEach(c => {
+      realDaily[c.dateTirageCbl!] = (realDaily[c.dateTirageCbl!] || 0) + c.lngTotal;
     });
 
-    const days = Object.keys(byDay).sort();
+    // Real cumulative
+    const realCumulative: number[] = [];
     let cumul = 0;
-    const result: { date: string; cumule: number; objectif?: number }[] = [];
-
-    days.forEach(day => {
-      cumul += byDay[day];
-      result.push({ date: day, cumule: Math.round(cumul) });
+    allDates.forEach((d, i) => {
+      cumul += (realDaily[toKey(d)] || 0);
+      realCumulative[i] = Math.round(cumul);
     });
 
-    // Ligne objectif : longueur totale de tous les câbles filtrés
-    const totalObjectif = Math.round(filtered.reduce((s, c) => s + c.lngTotal, 0));
+    // Minimum required cumulative (câbles dont TIR_PLUS_TARD <= d)
+    // Pre-aggregate by deadline
+    const byDeadline: Record<string, number> = {};
+    filtered.forEach(c => {
+      if (!c.dateTirPlusTard) return;
+      byDeadline[c.dateTirPlusTard] = (byDeadline[c.dateTirPlusTard] || 0) + c.lngTotal;
+    });
+    const deadlineDays = Object.keys(byDeadline).sort();
+    let deadlineIdx = 0;
+    let minCumul = 0;
+    const minimumRequired: number[] = [];
+    allDates.forEach((d) => {
+      const dk = toKey(d);
+      while (deadlineIdx < deadlineDays.length && deadlineDays[deadlineIdx] <= dk) {
+        minCumul += byDeadline[deadlineDays[deadlineIdx]];
+        deadlineIdx++;
+      }
+      minimumRequired.push(Math.round(minCumul));
+    });
 
-    // Trouver la dernière deadline
-    const lastDeadline = filtered
-      .filter(c => c.dateTirPlusTard)
-      .reduce((max, c) => c.dateTirPlusTard! > max ? c.dateTirPlusTard! : max, '');
-
-    // Ajouter le point objectif final si on a une deadline
-    if (lastDeadline && (result.length === 0 || lastDeadline > result[result.length - 1].date)) {
-      result.push({ date: lastDeadline, cumule: result.length > 0 ? result[result.length - 1].cumule : 0, objectif: totalObjectif });
+    // ── buildSmoothedTarget ──
+    const n = allDates.length;
+    const dailyBase = OBJECTIF_TOTAL / Math.max(n - 1, 1);
+    // Linear trajectory
+    const linear = allDates.map((_, i) => Math.round(dailyBase * i));
+    // Force constraints
+    const constrained: number[] = [];
+    constrained[0] = Math.max(linear[0], minimumRequired[0], 0);
+    for (let i = 1; i < n; i++) {
+      constrained[i] = Math.max(linear[i], minimumRequired[i], constrained[i - 1]);
+    }
+    // Extract increments
+    const increments = constrained.map((v, i) => i === 0 ? v : v - constrained[i - 1]);
+    // Smooth increments (simple moving average, window 7)
+    const win = Math.min(7, Math.floor(n / 3));
+    const smoothedInc = increments.map((_, i) => {
+      let sum = 0, cnt = 0;
+      for (let j = Math.max(0, i - win); j <= Math.min(n - 1, i + win); j++) {
+        sum += increments[j]; cnt++;
+      }
+      return sum / cnt;
+    });
+    // Rebuild cumul from smoothed increments
+    const smoothedCum: number[] = [];
+    smoothedCum[0] = smoothedInc[0];
+    for (let i = 1; i < n; i++) {
+      smoothedCum[i] = smoothedCum[i - 1] + smoothedInc[i];
+    }
+    // Re-constrain & renormalize
+    const target: number[] = [];
+    target[0] = Math.max(smoothedCum[0], minimumRequired[0], 0);
+    for (let i = 1; i < n; i++) {
+      target[i] = Math.max(smoothedCum[i], minimumRequired[i], target[i - 1]);
+    }
+    // Scale to exactly OBJECTIF_TOTAL
+    const lastTarget = target[n - 1];
+    if (lastTarget > 0 && lastTarget !== OBJECTIF_TOTAL) {
+      const scale = OBJECTIF_TOTAL / lastTarget;
+      for (let i = 0; i < n; i++) target[i] = Math.round(target[i] * scale);
+      // Re-constrain after scaling
+      for (let i = 1; i < n; i++) {
+        target[i] = Math.max(target[i], minimumRequired[i], target[i - 1]);
+      }
+      target[n - 1] = OBJECTIF_TOTAL;
     }
 
-    // Ajouter l'objectif sur tous les points (ligne horizontale)
-    return result.map(r => ({ ...r, objectif: totalObjectif }));
+    // Format dates DD/MM/YYYY
+    const fmtDate = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+    const data = allDates.map((d, i) => ({
+      date: fmtDate(d),
+      dateISO: toKey(d),
+      real: realCumulative[i],
+      target: Math.round(target[i]),
+      minReq: minimumRequired[i],
+      objectifFinal: OBJECTIF_TOTAL,
+    }));
+
+    // Delta on last date with real data
+    const lastRealIdx = realCumulative.findLastIndex(v => v > 0);
+    const delta = lastRealIdx >= 0 ? realCumulative[lastRealIdx] - Math.round(target[lastRealIdx]) : 0;
+
+    return { data, delta, dateFin: dateFinStr, objectifTotal: OBJECTIF_TOTAL };
   }, [filtered]);
 
   // Sorted table data
