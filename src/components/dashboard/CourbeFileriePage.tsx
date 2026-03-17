@@ -343,7 +343,24 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
                       strokeWidth={selectedFns.has(entry.fn) ? 2 : 0}
                     />
                   ))}
-                  <LabelList dataKey="pct" position="insideRight" formatter={(v: number) => `${v.toFixed(1)}%`} style={{ fill: '#fff', fontSize: 10, fontWeight: 600 }} />
+                  <LabelList dataKey="pct" content={({ x, y, width, height, value }: any) => {
+                    const pct = typeof value === 'number' ? value : 0;
+                    const label = `${pct.toFixed(1)}%`;
+                    const isSmall = pct < 5;
+                    return (
+                      <text
+                        x={isSmall ? (x || 0) + (width || 0) + 4 : (x || 0) + (width || 0) - 6}
+                        y={(y || 0) + (height || 0) / 2}
+                        textAnchor={isSmall ? 'start' : 'end'}
+                        dominantBaseline="central"
+                        fill={isSmall ? '#8899AA' : '#fff'}
+                        fontSize={10}
+                        fontWeight={600}
+                      >
+                        {label}
+                      </text>
+                    );
+                  }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
