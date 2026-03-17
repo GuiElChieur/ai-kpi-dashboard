@@ -28,7 +28,12 @@ function getBarColor(pct: number) {
 }
 
 export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
-  const baseData = useMemo(() => getFilerieData(allData), [allData]);
+  // Filter on RESP_TIRAGE="GEST" and IND_APPRO_CA="N"
+  const filteredAll = useMemo(() =>
+    allData.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'N'),
+  [allData]);
+
+  const baseData = useMemo(() => getFilerieData(filteredAll), [filteredAll]);
   const [selectedFns, setSelectedFns] = useState<Set<string>>(new Set());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
@@ -63,14 +68,14 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
 
   // Total project target & last deadline (using dateTirPlusTard for ALL cables, not just filtered)
   const projectTarget = useMemo(() => {
-    const lngTotal = allData.reduce((s, c) => s + c.lngTotal, 0);
-    const deadlines = allData
+    const lngTotal = filteredAll.reduce((s, c) => s + c.lngTotal, 0);
+    const deadlines = filteredAll
       .map(c => c.dateTirPlusTard)
       .filter((d): d is string => !!d)
       .sort((a, b) => a.localeCompare(b));
     const lastDeadline = deadlines.length > 0 ? deadlines[deadlines.length - 1] : null;
     return { lngTotal: Math.round(lngTotal), lastDeadline };
-  }, [allData]);
+  }, [filteredAll]);
 
   // Cumulative curve: réalisé stops at last tirage, objectif goes to lastDeadline
   const cumulativeData = useMemo(() => {
@@ -79,41 +84,49 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
     const firstDate = dailyData[0].date;
     const lastTirageDate = dailyData[dailyData.length - 1].date;
     const lastDeadline = projectTarget.lastDeadline;
+    const endDate = lastDeadline && lastDeadline > lastTirageDate ? lastDeadline : lastTirageDate;
 
-    // Build réalisé cumulé points
+    const startTs = new Date(firstDate).getTime();
+    const endTs = new Date(endDate).getTime();
+    const totalDays = Math.max(1, (endTs - startTs) / 86400000);
+
+    // Build réalisé cumulé map
     let cumul = 0;
-    const realisePoints: { date: string; cumul: number }[] = dailyData.map(d => {
+    const cumulMap = new Map<string, number>();
+    dailyData.forEach(d => {
       cumul += d.value;
-      return { date: d.date, cumul };
+      cumulMap.set(d.date, cumul);
     });
 
-    // Collect all dates: réalisé dates + deadline
-    const allDates = new Set<string>(realisePoints.map(p => p.date));
-    if (lastDeadline && lastDeadline > lastTirageDate) {
-      allDates.add(lastDeadline);
+    // Collect all unique dates and generate daily ticks for linear axis
+    const allDates = new Set<string>();
+    // Add all tirage dates
+    dailyData.forEach(d => allDates.add(d.date));
+    // Fill gaps day-by-day from first to end for a truly linear axis
+    const dayMs = 86400000;
+    for (let ts = startTs; ts <= endTs; ts += dayMs) {
+      const d = new Date(ts).toISOString().slice(0, 10);
+      allDates.add(d);
     }
+
     const sortedDates = [...allDates].sort((a, b) => a.localeCompare(b));
 
-    // Build objectif linéaire from firstDate to lastDeadline
-    const endDate = lastDeadline || lastTirageDate;
-    const totalDays = Math.max(1, (new Date(endDate).getTime() - new Date(firstDate).getTime()) / 86400000);
-
-    // Map cumul values
-    const cumulMap = new Map(realisePoints.map(p => [p.date, p.cumul]));
-
-    const points = sortedDates.map(date => {
-      const dayOffset = (new Date(date).getTime() - new Date(firstDate).getTime()) / 86400000;
+    let lastCumul = 0;
+    return sortedDates.map(date => {
+      const ts = new Date(date).getTime();
+      const dayOffset = (ts - startTs) / dayMs;
       const objectif = Math.round((dayOffset / totalDays) * projectTarget.lngTotal);
       const isAfterLastTirage = date > lastTirageDate;
+
+      if (cumulMap.has(date)) lastCumul = cumulMap.get(date)!;
+
       return {
         date,
-        daily: 0,
-        cumul: isAfterLastTirage ? null as number | null : (cumulMap.get(date) ?? null),
+        ts,
+        cumul: isAfterLastTirage ? (null as number | null) : lastCumul,
         objectif,
       };
     });
-
-    return points;
   }, [dailyData, projectTarget]);
 
   // FN advancement data
@@ -238,16 +251,18 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={formatDateShort} />
+                <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']} tick={{ fontSize: 9, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={(ts: number) => {
+                  try { return format(new Date(ts), 'dd/MM/yy', { locale: fr }); } catch { return ''; }
+                }} />
                 <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} domain={[0, Math.max(projectTarget.lngTotal * 1.05, kpis.lngTiree * 1.05)]} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => {
                   if (v === 0 && name === 'cumul') return [null, null];
                   const label = name === 'cumul' ? 'Réalisé cumulé' : 'Objectif linéaire';
                   return [`${v.toLocaleString('fr-FR')} m`, label];
-                }} labelFormatter={l => `Date: ${formatDateShort(l)}`} />
+                }} labelFormatter={(ts: number) => `Date: ${format(new Date(ts), 'dd/MM/yyyy', { locale: fr })}`} />
                 <ReferenceLine y={projectTarget.lngTotal} stroke="#F0A500" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Objectif: ${projectTarget.lngTotal.toLocaleString('fr-FR')} m`, position: 'right', fill: '#F0A500', fontSize: 10 }} />
                 <Area type="monotone" dataKey="objectif" stroke="#F0A500" strokeWidth={1.5} strokeDasharray="4 2" fill="none" dot={false} name="objectif" />
-                <Area type="monotone" dataKey="cumul" stroke="#00D4AA" strokeWidth={2} fill="url(#cumulGrad)" dot={false} connectNulls />
+                <Area type="monotone" dataKey="cumul" stroke="#00D4AA" strokeWidth={2} fill="url(#cumulGrad)" dot={false} connectNulls={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
