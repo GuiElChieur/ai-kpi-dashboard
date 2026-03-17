@@ -336,25 +336,64 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
 
         {/* 3. Avancement cumulé du tirage */}
         <Card className="glass-card lg:col-span-2">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Avancement cumulé du tirage (m)</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avancement cumulé du tirage (m)</CardTitle>
+              {cumulativeResult.data.length > 0 && (
+                <Badge className={`mt-1 ${cumulativeResult.delta >= 0 ? 'bg-success/20 text-success border-success/30' : 'bg-destructive/20 text-destructive border-destructive/30'}`}>
+                  {cumulativeResult.delta >= 0 ? `En avance de ${cumulativeResult.delta.toLocaleString('fr-FR')} m` : `En retard de ${Math.abs(cumulativeResult.delta).toLocaleString('fr-FR')} m`}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Min. requis</span>
+              <Switch checked={showMinReq} onCheckedChange={setShowMinReq} />
+            </div>
+          </CardHeader>
           <CardContent>
-            <div className="h-[280px]">
+            <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={cumulativeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+                <ComposedChart data={cumulativeResult.data} margin={{ left: 20, right: 20, bottom: 30, top: 10 }}>
                   <defs>
                     <linearGradient id="gradCumul" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.05} />
+                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                  <XAxis dataKey="date" tick={{ fontSize: 8 }} angle={-45} textAnchor="end" height={50} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${v.toLocaleString('fr-FR')} m`, name === 'cumule' ? 'Cumulé tiré' : 'Objectif total']} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0]?.payload;
+                      if (!d) return null;
+                      const ecart = d.real - d.target;
+                      return (
+                        <div style={tooltipStyle} className="p-2 text-xs space-y-0.5">
+                          <div className="font-semibold">{label}</div>
+                          <div>Réel : <b>{d.real.toLocaleString('fr-FR')} m</b></div>
+                          <div>Objectif : <b>{d.target.toLocaleString('fr-FR')} m</b></div>
+                          <div>Min. requis : <b>{d.minReq.toLocaleString('fr-FR')} m</b></div>
+                          <div className={ecart >= 0 ? 'text-success' : 'text-destructive'}>
+                            Écart : <b>{ecart >= 0 ? '+' : ''}{ecart.toLocaleString('fr-FR')} m</b>
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
                   <Legend />
-                  <Area type="monotone" dataKey="cumule" name="Cumulé tiré" stroke="hsl(var(--success))" strokeWidth={2} fill="url(#gradCumul)" />
-                  <Line type="monotone" dataKey="objectif" name="Objectif total" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} />
-                </AreaChart>
+                  <ReferenceLine y={cumulativeResult.objectifTotal} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeWidth={1} label={{ value: `${cumulativeResult.objectifTotal.toLocaleString('fr-FR')} m`, position: 'right', fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                  {cumulativeResult.dateFin && (() => {
+                    const df = new Date(cumulativeResult.dateFin);
+                    const label = `${String(df.getDate()).padStart(2,'0')}/${String(df.getMonth()+1).padStart(2,'0')}/${df.getFullYear()}`;
+                    return <ReferenceLine x={label} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeWidth={1} label={{ value: label, position: 'top', fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />;
+                  })()}
+                  <Area type="monotone" dataKey="real" name="Cumulé réel tiré" stroke="hsl(var(--success))" strokeWidth={2.5} fill="url(#gradCumul)" dot={false} />
+                  <Line type="monotone" dataKey="target" name="Objectif cumulé lissé" stroke="hsl(var(--warning, 45 93% 47%))" strokeWidth={2} strokeDasharray="6 3" dot={false} />
+                  {showMinReq && <Line type="stepAfter" dataKey="minReq" name="Minimum requis" stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="2 2" dot={false} />}
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
