@@ -191,7 +191,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
       </div>
 
       {/* Middle row: KPI cards + Bar chart */}
-      <div className="flex gap-2 flex-1 min-h-0">
+      <div className="flex gap-2 flex-[3] min-h-0">
         {/* Left KPI cards */}
         <div className="flex flex-col gap-1.5 min-w-[140px] shrink-0">
           <PbiKpiCard label="Heures prévues" value={Math.round(kpis.totalCharge)} color="info" />
