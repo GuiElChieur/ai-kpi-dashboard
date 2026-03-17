@@ -61,48 +61,57 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
       .map(([date, value]) => ({ date, value: Math.round(value) }));
   }, [fnFiltered]);
 
-  // Total project target & last deadline
+  // Total project target & last deadline (using dateTirPlusTard for ALL cables, not just filtered)
   const projectTarget = useMemo(() => {
-    const lngTotal = fnFiltered.reduce((s, c) => s + c.lngTotal, 0);
-    const deadlines = fnFiltered
+    const lngTotal = allData.reduce((s, c) => s + c.lngTotal, 0);
+    const deadlines = allData
       .map(c => c.dateTirPlusTard)
       .filter((d): d is string => !!d)
       .sort((a, b) => a.localeCompare(b));
     const lastDeadline = deadlines.length > 0 ? deadlines[deadlines.length - 1] : null;
     return { lngTotal: Math.round(lngTotal), lastDeadline };
-  }, [fnFiltered]);
+  }, [allData]);
 
-  // Cumulative curve with target endpoint
+  // Cumulative curve: réalisé stops at last tirage, objectif goes to lastDeadline
   const cumulativeData = useMemo(() => {
+    if (dailyData.length === 0) return [];
+
+    const firstDate = dailyData[0].date;
+    const lastTirageDate = dailyData[dailyData.length - 1].date;
+    const lastDeadline = projectTarget.lastDeadline;
+
+    // Build réalisé cumulé points
     let cumul = 0;
-    const points = dailyData.map(d => {
+    const realisePoints: { date: string; cumul: number }[] = dailyData.map(d => {
       cumul += d.value;
-      return { date: d.date, daily: d.value, cumul, objectif: null as number | null };
+      return { date: d.date, cumul };
     });
 
-    // Add the final deadline point if it's after the last data point
-    if (projectTarget.lastDeadline) {
-      const lastDataDate = points.length > 0 ? points[points.length - 1].date : null;
-      if (!lastDataDate || projectTarget.lastDeadline > lastDataDate) {
-        points.push({
-          date: projectTarget.lastDeadline,
-          daily: 0,
-          cumul: 0,
-          objectif: projectTarget.lngTotal,
-        });
-      }
+    // Collect all dates: réalisé dates + deadline
+    const allDates = new Set<string>(realisePoints.map(p => p.date));
+    if (lastDeadline && lastDeadline > lastTirageDate) {
+      allDates.add(lastDeadline);
     }
+    const sortedDates = [...allDates].sort((a, b) => a.localeCompare(b));
 
-    // Build objectif line: from first point (0) to last deadline (total)
-    if (points.length > 1 && projectTarget.lastDeadline) {
-      const firstDate = points[0].date;
-      const lastDate = projectTarget.lastDeadline;
-      const totalDays = Math.max(1, (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / (86400000));
-      points.forEach(p => {
-        const dayOffset = (new Date(p.date).getTime() - new Date(firstDate).getTime()) / 86400000;
-        p.objectif = Math.round((dayOffset / totalDays) * projectTarget.lngTotal);
-      });
-    }
+    // Build objectif linéaire from firstDate to lastDeadline
+    const endDate = lastDeadline || lastTirageDate;
+    const totalDays = Math.max(1, (new Date(endDate).getTime() - new Date(firstDate).getTime()) / 86400000);
+
+    // Map cumul values
+    const cumulMap = new Map(realisePoints.map(p => [p.date, p.cumul]));
+
+    const points = sortedDates.map(date => {
+      const dayOffset = (new Date(date).getTime() - new Date(firstDate).getTime()) / 86400000;
+      const objectif = Math.round((dayOffset / totalDays) * projectTarget.lngTotal);
+      const isAfterLastTirage = date > lastTirageDate;
+      return {
+        date,
+        daily: 0,
+        cumul: isAfterLastTirage ? null as number | null : (cumulMap.get(date) ?? null),
+        objectif,
+      };
+    });
 
     return points;
   }, [dailyData, projectTarget]);
