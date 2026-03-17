@@ -161,7 +161,7 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
           </CardContent>
         </Card>
 
-        <Card className="glass-card flex flex-col min-h-0">
+        <Card className="glass-card flex flex-col flex-1 min-h-0">
           <CardHeader className="pb-1 pt-3 px-4 shrink-0">
             <CardTitle className="text-xs font-medium text-muted-foreground">Coût cumulé des sorties par mois (Matière × Achats)</CardTitle>
           </CardHeader>
