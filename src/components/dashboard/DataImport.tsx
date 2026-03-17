@@ -16,6 +16,7 @@ import {
   parseOTLigneCSV,
   parsePointageCSV,
   parseMatiereCSV,
+  mapMatiereRows,
   mapCableRows,
 } from '@/lib/csv-client-parser';
 
