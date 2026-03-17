@@ -25,7 +25,7 @@ const FILE_TYPES = [
   { key: 'ot', label: 'OT', accept: '.csv', pattern: 'DATA_OT_Z' },
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
-  { key: 'matiere', label: 'Matières', accept: '.csv', pattern: 'MATIER' },
+  { key: 'matiere', label: 'Matières', accept: '.csv,.xlsx', pattern: 'MATIER' },
   { key: 'cables', label: 'Câbles (XLSX)', accept: '.xlsx', pattern: 'EXTRACTION' },
 ];
 
