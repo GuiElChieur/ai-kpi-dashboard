@@ -105,8 +105,8 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
         <KpiCard title="Références" value={kpis.nbReferences.toLocaleString('fr-FR')} icon={<Layers className="h-4 w-4" />} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
-        <Card className="glass-card flex flex-col min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 gap-2">
+        <Card className="glass-card flex flex-col flex-1 min-h-0">
           <CardHeader className="pb-1 pt-3 px-4 shrink-0">
             <div className="flex items-center justify-between flex-wrap gap-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
