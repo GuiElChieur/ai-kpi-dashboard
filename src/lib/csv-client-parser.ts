@@ -149,6 +149,7 @@ export function parseMatiereCSV(text: string) {
     quantite_sortie: parseNumber(getVal(row, 'QUANTITE_SORTIE', 'Quantité sortie')),
     reference_interne: getVal(row, 'REFERENCE_INTERNE', 'Référence interne'),
     designation_produit: getVal(row, 'DESIGNATION_PRODUIT', 'Désignation produit'),
+    date_livraison: parseDate(getVal(row, 'DATE_LIVRAISON', 'Date livraison', 'DATE_LIV', 'Date Livraison')),
     statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
   }));
 }
