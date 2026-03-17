@@ -216,7 +216,8 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     }));
 
     // Delta on last date with real data
-    const lastRealIdx = realCumulative.findLastIndex(v => v > 0);
+    let lastRealIdx = -1;
+    for (let i = realCumulative.length - 1; i >= 0; i--) { if (realCumulative[i] > 0) { lastRealIdx = i; break; } }
     const delta = lastRealIdx >= 0 ? realCumulative[lastRealIdx] - Math.round(target[lastRealIdx]) : 0;
 
     return { data, delta, dateFin: dateFinStr, objectifTotal: OBJECTIF_TOTAL };
