@@ -97,97 +97,93 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="flex flex-col h-full gap-3 animate-fade-in">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
         <KpiCard title="Qté besoin totale" value={Math.round(kpis.totalBesoin).toLocaleString('fr-FR')} icon={<Package className="h-5 w-5" />} />
         <KpiCard title="Qté sortie" value={Math.round(kpis.totalSortie).toLocaleString('fr-FR')} icon={<TrendingUp className="h-5 w-5" />} />
         <KpiCard title="Taux de sortie" value={`${kpis.tauxSortie.toFixed(1)}%`} icon={<BarChart3 className="h-5 w-5" />} />
         <KpiCard title="Références" value={kpis.nbReferences.toLocaleString('fr-FR')} icon={<Layers className="h-5 w-5" />} />
       </div>
 
-      <Card className="glass-card">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Statut Matière par lot (Reste à sortir vs Sortie) — {filteredLotData.length} lots
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Select value={lotFilter} onValueChange={handleFilterChange}>
-                <SelectTrigger className="w-[200px] h-8 text-xs">
-                  <SelectValue placeholder="Filtrer par préfixe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les lots</SelectItem>
-                  {lotPrefixes.map(p => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        <Card className="glass-card flex flex-col min-h-0">
+          <CardHeader className="pb-1 pt-3 px-4 shrink-0">
+            <div className="flex items-center justify-between flex-wrap gap-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                Statut Matière par lot — {filteredLotData.length} lots
+              </CardTitle>
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={lotPage === 0} onClick={() => setLotPage(p => p - 1)}>
-                  <ChevronLeft className="h-4 w-4" />
+                <Select value={lotFilter} onValueChange={handleFilterChange}>
+                  <SelectTrigger className="w-[160px] h-7 text-xs">
+                    <SelectValue placeholder="Filtrer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les lots</SelectItem>
+                    {lotPrefixes.map(p => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon" className="h-7 w-7" disabled={lotPage === 0} onClick={() => setLotPage(p => p - 1)}>
+                  <ChevronLeft className="h-3 w-3" />
                 </Button>
-                <span className="text-xs text-muted-foreground min-w-[60px] text-center">{lotPage + 1}/{totalPages}</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={lotPage >= totalPages - 1} onClick={() => setLotPage(p => p + 1)}>
-                  <ChevronRight className="h-4 w-4" />
+                <span className="text-xs text-muted-foreground min-w-[40px] text-center">{lotPage + 1}/{totalPages}</span>
+                <Button variant="outline" size="icon" className="h-7 w-7" disabled={lotPage >= totalPages - 1} onClick={() => setLotPage(p => p + 1)}>
+                  <ChevronRight className="h-3 w-3" />
                 </Button>
               </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px]">
+          </CardHeader>
+          <CardContent className="flex-1 min-h-0 pb-2 px-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={pagedLotData} margin={{ left: 10, right: 20, bottom: 40 }}>
+              <BarChart data={pagedLotData} margin={{ left: 5, right: 10, bottom: 30, top: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis
                   dataKey="lot"
-                  tick={{ fontSize: 9 }}
-                  angle={-50}
+                  tick={{ fontSize: 8 }}
+                  angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={60}
                   tickFormatter={formatLotLabel}
                   interval={0}
                 />
-                <YAxis tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 10 }} width={45} />
                 <Tooltip
-                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 11, color: 'hsl(var(--foreground))' }}
                   formatter={(value: number, name: string) => [value.toLocaleString('fr-FR'), name]}
                   labelFormatter={(label: string) => `Lot: ${label}`}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="resteSortir" name="Reste à sortir" stackId="a" fill="hsl(0,72%,60%)" />
                 <Bar dataKey="sortie" name="Sortie" stackId="a" fill="hsl(160,60%,45%)" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="glass-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Coût cumulé des sorties par mois de livraison (croisement Matière × Achats)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[350px]">
+        <Card className="glass-card flex flex-col min-h-0">
+          <CardHeader className="pb-1 pt-3 px-4 shrink-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground">Coût cumulé des sorties par mois (Matière × Achats)</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 min-h-0 pb-2 px-2">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={coutSortieParMois} margin={{ left: 20, right: 20, bottom: 20 }}>
+              <ComposedChart data={coutSortieParMois} margin={{ left: 15, right: 15, bottom: 10, top: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
-                <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                <XAxis dataKey="mois" tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10 }} width={50} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} width={50} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
                 <Tooltip
-                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 12, color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: 11, color: 'hsl(var(--foreground))' }}
                   formatter={(value: number, name: string) => [`${value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, name]}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar yAxisId="left" dataKey="cout" name="Coût mensuel" fill="hsl(220,70%,50%)" radius={[4, 4, 0, 0]} />
                 <Line yAxisId="right" dataKey="cumul" name="Cumul" type="monotone" stroke="hsl(0,72%,51%)" strokeWidth={2} dot={{ r: 3 }} />
               </ComposedChart>
             </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
