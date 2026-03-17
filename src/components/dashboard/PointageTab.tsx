@@ -306,7 +306,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       </div>
 
       {/* Main content row - charts */}
-      <div className="flex gap-2 shrink-0" style={{ height: 'calc(50vh - 40px)' }}>
+      <div className="flex gap-2 shrink-0" style={{ height: 'calc(48vh - 40px)' }}>
         {/* Left KPI column */}
         <div className="flex flex-col gap-2 min-w-[130px] shrink-0">
           <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
