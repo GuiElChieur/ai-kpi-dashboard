@@ -427,7 +427,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       </div>
 
       {/* Bottom: Data table */}
-      <div className="pbi-card overflow-hidden flex-1 min-h-[120px]">
+      <div className="pbi-card overflow-hidden flex-1 min-h-0">
         <div className="overflow-auto h-full">
           <table className="w-full text-[10px]">
             <thead className="sticky top-0 bg-card z-10">
