@@ -9,9 +9,10 @@ import {
 } from '@/lib/cable-parser';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, LineChart, Line, Area, AreaChart,
+  Legend, Line, Area, ComposedChart, ReferenceLine,
 } from 'recharts';
 import { Cable, Ruler, CheckCircle, XCircle, AlertTriangle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const PAGE_SIZE = 50;
 
