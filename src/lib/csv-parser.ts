@@ -84,6 +84,7 @@ export interface MatierData {
   quantiteSortie: number;
   referenceInterne: string;
   designationProduit: string;
+  dateLivraison: string;
   statutProjet: string;
 }
 
