@@ -275,73 +275,37 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
         </CardContent>
       </Card>
 
-      {/* Daily histogram + FN detail */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>Métré tiré par jour (m)</CardTitle>
-              {selectedDates.size > 0 && (
-                <Button size="sm" variant="ghost" onClick={() => setSelectedDates(new Set())} className="h-6 text-xs" style={{ color: '#F0A500' }}>
-                  Réinitialiser dates
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyData} margin={{ left: 10, right: 10, bottom: 30 }}
-                  onClick={(e) => { if (e?.activeLabel) toggleDate(e.activeLabel); }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                  <XAxis dataKey="date" tick={{ fontSize: 8, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={formatDateShort} />
-                  <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}m`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Métré']} labelFormatter={l => `Date: ${l}`} />
-                  <Bar dataKey="value" name="Métré tiré">
-                    {dailyData.map((entry) => (
-                      <Cell key={entry.date} fill={selectedDates.has(entry.date) ? '#F0A500' : '#2ECC71'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>
-              {selectedDates.size > 0 ? `Métré par trigramme — ${[...selectedDates].map(formatDateShort).join(', ')}` : 'Métré total par trigramme'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={fnDetailData} margin={{ left: 10, right: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                  <XAxis dataKey="fn" tick={{ fontSize: 10, fill: '#8899AA' }} />
-                  <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}m`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Métré']} />
-                  <Bar dataKey="value" name="Métré tiré">
-                    {fnDetailData.map((entry) => (
-                      <Cell key={entry.fn} fill={getFnColor(entry.fn)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {/* FN legend */}
-            <div className="flex flex-wrap gap-2 mt-2 justify-center">
-              {fnDetailData.map(d => (
-                <span key={d.fn} className="flex items-center gap-1 text-[10px]" style={{ color: '#8899AA' }}>
-                  <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: getFnColor(d.fn) }} />
-                  {d.fn}
-                </span>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Daily histogram */}
+      <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>Métré tiré par jour (m)</CardTitle>
+            {selectedDates.size > 0 && (
+              <Button size="sm" variant="ghost" onClick={() => setSelectedDates(new Set())} className="h-6 text-xs" style={{ color: '#F0A500' }}>
+                Réinitialiser dates
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dailyData} margin={{ left: 10, right: 10, bottom: 30 }}
+                onClick={(e) => { if (e?.activeLabel) toggleDate(e.activeLabel); }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                <XAxis dataKey="date" tick={{ fontSize: 8, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={formatDateShort} />
+                <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}m`} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Métré']} labelFormatter={l => `Date: ${l}`} />
+                <Bar dataKey="value" name="Métré tiré">
+                  {dailyData.map((entry) => (
+                    <Cell key={entry.date} fill={selectedDates.has(entry.date) ? '#F0A500' : '#2ECC71'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Horizontal bar: Avancement par FN */}
       <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
@@ -358,13 +322,13 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[360px]">
+          <div style={{ height: Math.max(360, fnData.length * 28 + 40) }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={fnData} layout="vertical" margin={{ left: 40, right: 50, top: 5, bottom: 5 }}
                 onClick={(e) => { if (e?.activeLabel) toggleFn(e.activeLabel); }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}%`} />
-                <YAxis type="category" dataKey="fn" tick={{ fontSize: 11, fill: '#fff', fontWeight: 600 }} width={40} />
+                <YAxis type="category" dataKey="fn" tick={{ fontSize: 11, fill: '#fff', fontWeight: 600 }} width={40} interval={0} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string, props: any) => [
                   `${v.toFixed(1)}% (${props.payload.tiree.toLocaleString('fr-FR')} / ${props.payload.total.toLocaleString('fr-FR')} m)`,
                   'Avancement'
@@ -378,6 +342,7 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
                       strokeWidth={selectedFns.has(entry.fn) ? 2 : 0}
                     />
                   ))}
+                  <LabelList dataKey="pct" position="insideRight" formatter={(v: number) => `${v.toFixed(1)}%`} style={{ fill: '#fff', fontSize: 10, fontWeight: 600 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
