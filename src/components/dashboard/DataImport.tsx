@@ -16,6 +16,7 @@ import {
   parseOTLigneCSV,
   parsePointageCSV,
   parseMatiereCSV,
+  mapMatiereRows,
   mapCableRows,
 } from '@/lib/csv-client-parser';
 
@@ -24,7 +25,7 @@ const FILE_TYPES = [
   { key: 'ot', label: 'OT', accept: '.csv', pattern: 'DATA_OT_Z' },
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
-  { key: 'matiere', label: 'Matières', accept: '.csv', pattern: 'MATIER' },
+  { key: 'matiere', label: 'Matières', accept: '.csv,.xlsx', pattern: 'MATIER' },
   { key: 'cables', label: 'Câbles (XLSX)', accept: '.xlsx', pattern: 'EXTRACTION' },
 ];
 
@@ -89,13 +90,19 @@ export function DataImport() {
         try {
           let mapped: any[];
 
-          if (key === 'cables') {
+          if (key === 'cables' || (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx'))) {
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: 'array' });
-            const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
-            const ws = wb.Sheets[sheetName];
-            const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-            mapped = mapCableRows(rawRows);
+            if (key === 'cables') {
+              const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
+              const ws = wb.Sheets[sheetName];
+              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+              mapped = mapCableRows(rawRows);
+            } else {
+              const ws = wb.Sheets[wb.SheetNames[0]];
+              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+              mapped = mapMatiereRows(rawRows);
+            }
           } else {
             const text = await file.text();
             switch (key) {

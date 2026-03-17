@@ -138,24 +138,59 @@ export function parseOTCSV(text: string) {
 
 export function parseMatiereCSV(text: string) {
   const rows = parseCSV(text, ';');
-  if (rows.length > 0) {
-    console.log('[MATIERE IMPORT] Headers détectés:', Object.keys(rows[0]));
-    console.log('[MATIERE IMPORT] Première ligne:', JSON.stringify(rows[0]));
-  }
   return rows.map(row => ({
     affaire: getVal(row, 'AFFAIRE', 'Affaire'),
     ot: getVal(row, 'OT'),
     lot: getVal(row, 'LOT', 'Lot'),
-    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début')),
+    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début', 'DATE_DEBUT')),
+    date_livraison: parseDate(getVal(row, 'DATE_DE_LIVRAISON', 'Date de livraison', 'DATE_LIVRAISON', 'Date livraison')),
     tri: getVal(row, 'TRI'),
     rep: getVal(row, 'REP', 'Rep'),
-    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin')),
+    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin', 'Quantité besoin')),
     quantite_preparation: parseNumber(getVal(row, 'QUANTITE_EN_PREPARATION', 'Quantité en préparation')),
     quantite_sortie: parseNumber(getVal(row, 'QUANTITE_SORTIE', 'Quantité sortie')),
     reference_interne: getVal(row, 'REFERENCE_INTERNE', 'Référence interne'),
     designation_produit: getVal(row, 'DESIGNATION_PRODUIT', 'Désignation produit'),
-    date_livraison: parseDate(getVal(row, 'DATE_LIVRAISON', 'Date livraison', 'DATE_LIV', 'Date Livraison')),
     statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
+  }));
+}
+
+export function mapMatiereRows(rawRows: Record<string, unknown>[]) {
+  const g = (row: Record<string, unknown>, ...keys: string[]) => {
+    for (const k of keys) {
+      for (const rk of Object.keys(row)) {
+        if (rk.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') === k.toUpperCase().replace(/[^A-Z0-9]/g, '')) {
+          return row[rk];
+        }
+      }
+    }
+    return null;
+  };
+
+  function xlsxDate(v: unknown): string | null {
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') {
+      const d = new Date((v - 25569) * 86400 * 1000);
+      return d.toISOString().substring(0, 10);
+    }
+    if (typeof v === 'string') return parseDate(v);
+    return null;
+  }
+
+  return rawRows.map(row => ({
+    affaire: String(g(row, 'Affaire', 'AFFAIRE') ?? ''),
+    ot: String(g(row, 'OT') ?? ''),
+    lot: String(g(row, 'Lot', 'LOT') ?? ''),
+    date_debut: xlsxDate(g(row, 'Datedébut', 'DATEDEBUT', 'Datdébut', 'Datedebut')),
+    date_livraison: xlsxDate(g(row, 'Datedelivraison', 'DATEDELIVRAISON', 'DATELIVRAISON', 'Datelivraison')),
+    tri: String(g(row, 'TRI') ?? ''),
+    rep: String(g(row, 'Rep', 'REP') ?? ''),
+    quantite_besoin: Number(g(row, 'QuantitéBesoin', 'QUANTITEBESOIN', 'Quantitébesoin') ?? 0) || null,
+    quantite_preparation: Number(g(row, 'Quantitéenpréparation', 'QUANTITEENPREPARATION') ?? 0) || null,
+    quantite_sortie: Number(g(row, 'Quantitésortie', 'QUANTITESORTIE') ?? 0) || null,
+    reference_interne: String(g(row, 'Référenceinterne', 'REFERENCEINTERNE', 'Referenceinterne') ?? ''),
+    designation_produit: String(g(row, 'Désignationproduit', 'DESIGNATIONPRODUIT') ?? ''),
+    statut_projet: String(g(row, 'Statutduprojet', 'STATUTDUPROJET') ?? ''),
   }));
 }
 
