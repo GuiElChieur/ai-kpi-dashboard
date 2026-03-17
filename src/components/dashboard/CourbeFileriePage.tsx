@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { type CableData, getFilerieData } from '@/lib/cable-parser';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Cell,
+  ResponsiveContainer, ReferenceLine, Cell, LabelList,
 } from 'recharts';
 import { Cable, Ruler, TrendingUp, CheckCircle, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
