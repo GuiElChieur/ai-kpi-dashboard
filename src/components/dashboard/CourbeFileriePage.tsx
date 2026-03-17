@@ -195,7 +195,7 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   };
 
   return (
-    <div className="p-3 space-y-2 animate-fade-in h-screen flex flex-col overflow-hidden" style={{ background: '#0A1628' }}>
+    <div className="p-3 space-y-2 animate-fade-in h-full flex flex-col overflow-hidden" style={{ background: '#0A1628' }}>
       {/* KPIs */}
       <div className="grid grid-cols-5 gap-2">
         {[
