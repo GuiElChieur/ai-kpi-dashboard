@@ -84,6 +84,7 @@ export interface MatierData {
   quantiteSortie: number;
   referenceInterne: string;
   designationProduit: string;
+  dateLivraison: string;
   statutProjet: string;
 }
 
@@ -212,7 +213,8 @@ export async function loadMatierData(): Promise<MatierData[]> {
     quantiteSortie: parseNumber(r[8]),
     referenceInterne: r[9] || '',
     designationProduit: r[10] || '',
-    statutProjet: r[11] || '',
+    dateLivraison: r[11] || '',
+    statutProjet: r[12] || '',
   }));
 }
 

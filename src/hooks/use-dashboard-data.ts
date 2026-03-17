@@ -84,6 +84,7 @@ function mapMatiere(r: any): MatierData {
     quantiteSortie: r.quantite_sortie ?? 0,
     referenceInterne: r.reference_interne || '',
     designationProduit: r.designation_produit || '',
+    dateLivraison: r.date_livraison || '',
     statutProjet: r.statut_projet || '',
   };
 }
