@@ -28,7 +28,12 @@ function getBarColor(pct: number) {
 }
 
 export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
-  const baseData = useMemo(() => getFilerieData(allData), [allData]);
+  // Filter on RESP_TIRAGE="GEST" and IND_APPRO_CA="N"
+  const filteredAll = useMemo(() =>
+    allData.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'N'),
+  [allData]);
+
+  const baseData = useMemo(() => getFilerieData(filteredAll), [filteredAll]);
   const [selectedFns, setSelectedFns] = useState<Set<string>>(new Set());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
