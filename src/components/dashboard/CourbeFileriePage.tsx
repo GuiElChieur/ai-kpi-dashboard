@@ -61,14 +61,51 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
       .map(([date, value]) => ({ date, value: Math.round(value) }));
   }, [fnFiltered]);
 
-  // Cumulative curve
+  // Total project target & last deadline
+  const projectTarget = useMemo(() => {
+    const lngTotal = fnFiltered.reduce((s, c) => s + c.lngTotal, 0);
+    const deadlines = fnFiltered
+      .map(c => c.dateTirPlusTard)
+      .filter((d): d is string => !!d)
+      .sort((a, b) => a.localeCompare(b));
+    const lastDeadline = deadlines.length > 0 ? deadlines[deadlines.length - 1] : null;
+    return { lngTotal: Math.round(lngTotal), lastDeadline };
+  }, [fnFiltered]);
+
+  // Cumulative curve with target endpoint
   const cumulativeData = useMemo(() => {
     let cumul = 0;
-    return dailyData.map(d => {
+    const points = dailyData.map(d => {
       cumul += d.value;
-      return { date: d.date, daily: d.value, cumul };
+      return { date: d.date, daily: d.value, cumul, objectif: null as number | null };
     });
-  }, [dailyData]);
+
+    // Add the final deadline point if it's after the last data point
+    if (projectTarget.lastDeadline) {
+      const lastDataDate = points.length > 0 ? points[points.length - 1].date : null;
+      if (!lastDataDate || projectTarget.lastDeadline > lastDataDate) {
+        points.push({
+          date: projectTarget.lastDeadline,
+          daily: 0,
+          cumul: 0,
+          objectif: projectTarget.lngTotal,
+        });
+      }
+    }
+
+    // Build objectif line: from first point (0) to last deadline (total)
+    if (points.length > 1 && projectTarget.lastDeadline) {
+      const firstDate = points[0].date;
+      const lastDate = projectTarget.lastDeadline;
+      const totalDays = Math.max(1, (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / (86400000));
+      points.forEach(p => {
+        const dayOffset = (new Date(p.date).getTime() - new Date(firstDate).getTime()) / 86400000;
+        p.objectif = Math.round((dayOffset / totalDays) * projectTarget.lngTotal);
+      });
+    }
+
+    return points;
+  }, [dailyData, projectTarget]);
 
   // FN advancement data
   const fnData = useMemo(() => {
