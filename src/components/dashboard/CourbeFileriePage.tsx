@@ -251,16 +251,18 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={formatDateShort} />
+                <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']} tick={{ fontSize: 9, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={(ts: number) => {
+                  try { return format(new Date(ts), 'dd/MM/yy', { locale: fr }); } catch { return ''; }
+                }} />
                 <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} domain={[0, Math.max(projectTarget.lngTotal * 1.05, kpis.lngTiree * 1.05)]} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => {
                   if (v === 0 && name === 'cumul') return [null, null];
                   const label = name === 'cumul' ? 'Réalisé cumulé' : 'Objectif linéaire';
                   return [`${v.toLocaleString('fr-FR')} m`, label];
-                }} labelFormatter={l => `Date: ${formatDateShort(l)}`} />
+                }} labelFormatter={(ts: number) => `Date: ${format(new Date(ts), 'dd/MM/yyyy', { locale: fr })}`} />
                 <ReferenceLine y={projectTarget.lngTotal} stroke="#F0A500" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Objectif: ${projectTarget.lngTotal.toLocaleString('fr-FR')} m`, position: 'right', fill: '#F0A500', fontSize: 10 }} />
                 <Area type="monotone" dataKey="objectif" stroke="#F0A500" strokeWidth={1.5} strokeDasharray="4 2" fill="none" dot={false} name="objectif" />
-                <Area type="monotone" dataKey="cumul" stroke="#00D4AA" strokeWidth={2} fill="url(#cumulGrad)" dot={false} connectNulls />
+                <Area type="monotone" dataKey="cumul" stroke="#00D4AA" strokeWidth={2} fill="url(#cumulGrad)" dot={false} connectNulls={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
