@@ -84,7 +84,7 @@ const Index = () => {
           <OTProgiPage otData={otData} otLigneData={otLigneData} pointageData={pointageData} />
         )}
         {activePage === 'pointage' && (
-          <div className="p-4"><PointageTab data={pointageData} /></div>
+          <div className="flex-1 min-h-0"><PointageTab data={pointageData} /></div>
         )}
         {activePage === 'matiere' && (
           <div className="p-4"><MatierTab data={matierData} achatData={achatData} /></div>
