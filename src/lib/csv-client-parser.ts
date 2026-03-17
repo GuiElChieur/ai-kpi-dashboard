@@ -169,12 +169,16 @@ export function mapMatiereRows(rawRows: Record<string, unknown>[]) {
 
   const g = (row: Record<string, unknown>, ...keys: string[]) => {
     const normKeys = keys.map(norm);
+    // Pass 1: exact normalized match only
     for (const rk of Object.keys(row)) {
       const nrk = norm(rk);
       if (normKeys.includes(nrk)) return row[rk];
-      // Also try partial/contains match for robustness
+    }
+    // Pass 2: partial match, but only for keys with length >= 5 to avoid false positives (e.g. LOT matching OT)
+    for (const rk of Object.keys(row)) {
+      const nrk = norm(rk);
       for (const nk of normKeys) {
-        if (nrk.includes(nk) || nk.includes(nrk)) return row[rk];
+        if (nk.length >= 5 && nrk.length >= 5 && (nrk.includes(nk) || nk.includes(nrk))) return row[rk];
       }
     }
     return null;
