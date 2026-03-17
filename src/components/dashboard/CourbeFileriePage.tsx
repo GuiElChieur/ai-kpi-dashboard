@@ -68,14 +68,14 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
 
   // Total project target & last deadline (using dateTirPlusTard for ALL cables, not just filtered)
   const projectTarget = useMemo(() => {
-    const lngTotal = allData.reduce((s, c) => s + c.lngTotal, 0);
-    const deadlines = allData
+    const lngTotal = filteredAll.reduce((s, c) => s + c.lngTotal, 0);
+    const deadlines = filteredAll
       .map(c => c.dateTirPlusTard)
       .filter((d): d is string => !!d)
       .sort((a, b) => a.localeCompare(b));
     const lastDeadline = deadlines.length > 0 ? deadlines[deadlines.length - 1] : null;
     return { lngTotal: Math.round(lngTotal), lastDeadline };
-  }, [allData]);
+  }, [filteredAll]);
 
   // Cumulative curve: réalisé stops at last tirage, objectif goes to lastDeadline
   const cumulativeData = useMemo(() => {
