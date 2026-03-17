@@ -137,7 +137,12 @@ export function parseOTCSV(text: string) {
 }
 
 export function parseMatiereCSV(text: string) {
-  return parseCSV(text, ';').map(row => ({
+  const rows = parseCSV(text, ';');
+  if (rows.length > 0) {
+    console.log('[MATIERE IMPORT] Headers détectés:', Object.keys(rows[0]));
+    console.log('[MATIERE IMPORT] Première ligne:', JSON.stringify(rows[0]));
+  }
+  return rows.map(row => ({
     affaire: getVal(row, 'AFFAIRE', 'Affaire'),
     ot: getVal(row, 'OT'),
     lot: getVal(row, 'LOT', 'Lot'),
