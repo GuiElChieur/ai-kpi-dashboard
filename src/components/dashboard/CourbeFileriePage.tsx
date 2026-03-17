@@ -195,20 +195,20 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   };
 
   return (
-    <div className="p-4 space-y-4 animate-fade-in overflow-auto" style={{ background: '#0A1628' }}>
+    <div className="p-3 space-y-2 animate-fade-in h-screen flex flex-col overflow-hidden" style={{ background: '#0A1628' }}>
       {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-5 gap-2">
         {[
-          { title: 'Nbre Total Câbles', value: kpis.total.toLocaleString('fr-FR'), icon: <Cable className="h-5 w-5" />, color: '#00D4FF' },
-          { title: 'Tiré (m)', value: `${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`, icon: <CheckCircle className="h-5 w-5" />, color: '#C084FC' },
-          { title: 'RAF (m)', value: `${Math.round(kpis.raf).toLocaleString('fr-FR')} m`, icon: <Ruler className="h-5 w-5" />, color: '#C084FC' },
-          { title: 'Avancement', value: `${kpis.avancement.toFixed(1)} %`, icon: <TrendingUp className="h-5 w-5" />, color: '#00D4FF' },
-          { title: 'Câbles Tirés', value: kpis.tires.toLocaleString('fr-FR'), icon: <CheckCircle className="h-5 w-5" />, color: '#2ECC71' },
+          { title: 'Nbre Total Câbles', value: kpis.total.toLocaleString('fr-FR'), color: '#00D4FF' },
+          { title: 'Tiré (m)', value: `${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`, color: '#C084FC' },
+          { title: 'RAF (m)', value: `${Math.round(kpis.raf).toLocaleString('fr-FR')} m`, color: '#C084FC' },
+          { title: 'Avancement', value: `${kpis.avancement.toFixed(1)} %`, color: '#00D4FF' },
+          { title: 'Câbles Tirés', value: kpis.tires.toLocaleString('fr-FR'), color: '#2ECC71' },
         ].map((kpi, i) => (
           <Card key={i} className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-            <CardContent className="p-4">
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#8899AA' }}>{kpi.title}</p>
-              <p className="text-2xl font-bold font-mono mt-1" style={{ color: kpi.color }}>{kpi.value}</p>
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: '#8899AA' }}>{kpi.title}</p>
+              <p className="text-xl font-bold font-mono mt-0.5" style={{ color: kpi.color }}>{kpi.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -234,16 +234,16 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
       )}
 
       {/* Cumulative curve */}
-      <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>
-          Courbe cumulative — Métré filerie tiré vs Objectif ({projectTarget.lngTotal.toLocaleString('fr-FR')} m)
+      <Card className="border-0 shadow-lg flex-1 min-h-0 flex flex-col" style={{ background: '#1B2A3E' }}>
+        <CardHeader className="pb-1 pt-2 px-3">
+          <CardTitle className="text-xs font-medium" style={{ color: '#8899AA' }}>
+            Courbe cumulative — Métré filerie tiré vs Objectif ({projectTarget.lngTotal.toLocaleString('fr-FR')} m)
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[340px]">
+        <CardContent className="flex-1 min-h-0 px-3 pb-2">
+          <div className="h-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={cumulativeData} margin={{ left: 10, right: 10, bottom: 30 }}>
+              <AreaChart data={cumulativeData} margin={{ left: 10, right: 10, bottom: 25 }}>
                 <defs>
                   <linearGradient id="cumulGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#00D4AA" stopOpacity={0.4} />
@@ -251,128 +251,119 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']} tick={{ fontSize: 9, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={(ts: number) => {
+                <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']} tick={{ fontSize: 8, fill: '#8899AA' }} angle={-45} textAnchor="end" height={40} tickFormatter={(ts: number) => {
                   try { return format(new Date(ts), 'dd/MM/yy', { locale: fr }); } catch { return ''; }
                 }} />
-                <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} domain={[0, Math.max(projectTarget.lngTotal * 1.05, kpis.lngTiree * 1.05)]} />
+                <YAxis tick={{ fontSize: 9, fill: '#8899AA' }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} domain={[0, Math.max(projectTarget.lngTotal * 1.05, kpis.lngTiree * 1.05)]} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => {
                   if (v === 0 && name === 'cumul') return [null, null];
                   const label = name === 'cumul' ? 'Réalisé cumulé' : 'Objectif linéaire';
                   return [`${v.toLocaleString('fr-FR')} m`, label];
                 }} labelFormatter={(ts: number) => `Date: ${format(new Date(ts), 'dd/MM/yyyy', { locale: fr })}`} />
-                <ReferenceLine y={projectTarget.lngTotal} stroke="#F0A500" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Objectif: ${projectTarget.lngTotal.toLocaleString('fr-FR')} m`, position: 'right', fill: '#F0A500', fontSize: 10 }} />
+                <ReferenceLine y={projectTarget.lngTotal} stroke="#F0A500" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Objectif: ${projectTarget.lngTotal.toLocaleString('fr-FR')} m`, position: 'right', fill: '#F0A500', fontSize: 9 }} />
                 <Area type="monotone" dataKey="objectif" stroke="#F0A500" strokeWidth={1.5} strokeDasharray="4 2" fill="none" dot={false} name="objectif" />
                 <Area type="monotone" dataKey="cumul" stroke="#00D4AA" strokeWidth={2} fill="url(#cumulGrad)" dot={false} connectNulls={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          {/* Legend */}
-          <div className="flex gap-4 mt-2 justify-center text-[10px]" style={{ color: '#8899AA' }}>
-            <span className="flex items-center gap-1"><span className="inline-block w-4 h-0.5" style={{ background: '#00D4AA' }} />Réalisé cumulé</span>
-            <span className="flex items-center gap-1"><span className="inline-block w-4 h-0.5 border-t border-dashed" style={{ borderColor: '#F0A500' }} />Objectif linéaire</span>
-            <span className="flex items-center gap-1"><span className="inline-block w-4 h-0.5 border-t border-dashed" style={{ borderColor: '#F0A500' }} />Total: {projectTarget.lngTotal.toLocaleString('fr-FR')} m {projectTarget.lastDeadline ? `(échéance: ${formatDateShort(projectTarget.lastDeadline)})` : ''}</span>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Daily histogram */}
-      <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>Métré tiré par jour (m)</CardTitle>
-            {selectedDates.size > 0 && (
-              <Button size="sm" variant="ghost" onClick={() => setSelectedDates(new Set())} className="h-6 text-xs" style={{ color: '#F0A500' }}>
-                Réinitialiser dates
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyData} margin={{ left: 10, right: 10, bottom: 30 }}
-                onClick={(e) => { if (e?.activeLabel) toggleDate(e.activeLabel); }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                <XAxis dataKey="date" tick={{ fontSize: 8, fill: '#8899AA' }} angle={-45} textAnchor="end" height={50} tickFormatter={formatDateShort} />
-                <YAxis tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}m`} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Métré']} labelFormatter={l => `Date: ${l}`} />
-                <Bar dataKey="value" name="Métré tiré">
-                  {dailyData.map((entry) => (
-                    <Cell key={entry.date} fill={selectedDates.has(entry.date) ? '#F0A500' : '#2ECC71'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Bottom row: Daily histogram (2/3) + Avancement par FN (1/3) */}
+      <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
+        {/* Daily histogram - 2/3 */}
+        <Card className="border-0 shadow-lg col-span-2 flex flex-col" style={{ background: '#1B2A3E' }}>
+          <CardHeader className="pb-1 pt-2 px-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-medium" style={{ color: '#8899AA' }}>Métré tiré par jour (m)</CardTitle>
+              {selectedDates.size > 0 && (
+                <Button size="sm" variant="ghost" onClick={() => setSelectedDates(new Set())} className="h-5 text-[10px]" style={{ color: '#F0A500' }}>
+                  Réinitialiser dates
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1 min-h-0 px-3 pb-2">
+            <div className="h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dailyData} margin={{ left: 10, right: 10, bottom: 25 }}
+                  onClick={(e) => { if (e?.activeLabel) toggleDate(e.activeLabel); }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                  <XAxis dataKey="date" tick={{ fontSize: 7, fill: '#8899AA' }} angle={-45} textAnchor="end" height={40} tickFormatter={formatDateShort} />
+                  <YAxis tick={{ fontSize: 9, fill: '#8899AA' }} tickFormatter={v => `${v}m`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} m`, 'Métré']} labelFormatter={l => `Date: ${l}`} />
+                  <Bar dataKey="value" name="Métré tiré">
+                    {dailyData.map((entry) => (
+                      <Cell key={entry.date} fill={selectedDates.has(entry.date) ? '#F0A500' : '#2ECC71'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Horizontal bar: Avancement par FN */}
-      <Card className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium" style={{ color: '#8899AA' }}>
-              Avancement par trigramme FN (%) — cliquez pour filtrer
-            </CardTitle>
-            {selectedFns.size > 0 && (
-              <Button size="sm" variant="ghost" onClick={() => setSelectedFns(new Set())} className="h-6 text-xs" style={{ color: '#00D4FF' }}>
-                Tout afficher
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div style={{ height: Math.max(400, fnData.length * 32 + 50) }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={fnData} layout="vertical" margin={{ left: 10, right: 60, top: 5, bottom: 5 }}
-                onClick={(e) => { if (e?.activeLabel) toggleFn(e.activeLabel); }}
-                barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}%`} />
-                <YAxis type="category" dataKey="fn" tick={{ fontSize: 10, fill: '#fff', fontWeight: 600 }} width={45} interval={0} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string, props: any) => [
-                  `${v.toFixed(1)}% (${props.payload.tiree.toLocaleString('fr-FR')} / ${props.payload.total.toLocaleString('fr-FR')} m)`,
-                  'Avancement'
-                ]} />
-                <Bar dataKey="pct" name="Avancement %" radius={[0, 4, 4, 0]} background={{ fill: '#0D1B2A', radius: 4 }}>
-                  {fnData.map((entry) => (
-                    <Cell
-                      key={entry.fn}
-                      fill={getBarColor(entry.pct)}
-                      stroke={selectedFns.has(entry.fn) ? '#fff' : 'transparent'}
-                      strokeWidth={selectedFns.has(entry.fn) ? 2 : 0}
-                    />
-                  ))}
-                  <LabelList dataKey="pct" content={({ x, y, width, height, value }: any) => {
-                    const pct = typeof value === 'number' ? value : 0;
-                    const label = `${pct.toFixed(1)}%`;
-                    const isSmall = pct < 5;
-                    return (
-                      <text
-                        x={isSmall ? (x || 0) + (width || 0) + 4 : (x || 0) + (width || 0) - 6}
-                        y={(y || 0) + (height || 0) / 2}
-                        textAnchor={isSmall ? 'start' : 'end'}
-                        dominantBaseline="central"
-                        fill={isSmall ? '#8899AA' : '#fff'}
-                        fontSize={10}
-                        fontWeight={600}
-                      >
-                        {label}
-                      </text>
-                    );
-                  }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          {/* Color legend */}
-          <div className="flex gap-4 mt-2 justify-center text-[10px]" style={{ color: '#8899AA' }}>
-            <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: '#2ECC71' }} />≥ 15%</span>
-            <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: '#F39C12' }} />5–15%</span>
-            <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: '#E74C3C' }} />&lt; 5%</span>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Avancement par FN - 1/3 */}
+        <Card className="border-0 shadow-lg col-span-1 flex flex-col" style={{ background: '#1B2A3E' }}>
+          <CardHeader className="pb-1 pt-2 px-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-medium" style={{ color: '#8899AA' }}>
+                Avancement par FN (%)
+              </CardTitle>
+              {selectedFns.size > 0 && (
+                <Button size="sm" variant="ghost" onClick={() => setSelectedFns(new Set())} className="h-5 text-[10px]" style={{ color: '#00D4FF' }}>
+                  Tout afficher
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1 min-h-0 px-3 pb-2 overflow-y-auto">
+            <div style={{ height: Math.max(200, fnData.length * 22) }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={fnData} layout="vertical" margin={{ left: 5, right: 45, top: 2, bottom: 2 }}
+                  onClick={(e) => { if (e?.activeLabel) toggleFn(e.activeLabel); }}
+                  barCategoryGap="15%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 8, fill: '#8899AA' }} tickFormatter={v => `${v}%`} />
+                  <YAxis type="category" dataKey="fn" tick={{ fontSize: 9, fill: '#fff', fontWeight: 600 }} width={35} interval={0} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string, props: any) => [
+                    `${v.toFixed(1)}% (${props.payload.tiree.toLocaleString('fr-FR')} / ${props.payload.total.toLocaleString('fr-FR')} m)`,
+                    'Avancement'
+                  ]} />
+                  <Bar dataKey="pct" name="Avancement %" radius={[0, 3, 3, 0]} background={{ fill: '#0D1B2A', radius: 3 }}>
+                    {fnData.map((entry) => (
+                      <Cell
+                        key={entry.fn}
+                        fill={getBarColor(entry.pct)}
+                        stroke={selectedFns.has(entry.fn) ? '#fff' : 'transparent'}
+                        strokeWidth={selectedFns.has(entry.fn) ? 2 : 0}
+                      />
+                    ))}
+                    <LabelList dataKey="pct" content={({ x, y, width, height, value }: any) => {
+                      const pct = typeof value === 'number' ? value : 0;
+                      const label = `${pct.toFixed(1)}%`;
+                      const isSmall = pct < 5;
+                      return (
+                        <text
+                          x={isSmall ? (x || 0) + (width || 0) + 3 : (x || 0) + (width || 0) - 4}
+                          y={(y || 0) + (height || 0) / 2}
+                          textAnchor={isSmall ? 'start' : 'end'}
+                          dominantBaseline="central"
+                          fill={isSmall ? '#8899AA' : '#fff'}
+                          fontSize={8}
+                          fontWeight={600}
+                        >
+                          {label}
+                        </text>
+                      );
+                    }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
