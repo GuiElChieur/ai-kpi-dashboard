@@ -266,18 +266,17 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   };
 
   return (
-    <div className="flex-1 space-y-3 p-3 overflow-auto">
+    <div className="h-full flex flex-col overflow-hidden p-2 gap-2">
       {/* Top filters row */}
-      <div className="flex gap-3 items-start flex-wrap">
+      <div className="flex gap-2 items-start flex-wrap shrink-0">
         {/* Employer filter buttons */}
         <div className="pbi-card p-2 flex-1 min-w-[200px]">
-          
-          <div className="flex flex-wrap gap-1 max-h-[60px] overflow-auto">
+          <div className="flex flex-wrap gap-1 max-h-[40px] overflow-auto">
             {employeurs.map(e => (
               <button
                 key={e}
                 onClick={() => toggleEmployeur(e)}
-                className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors ${
+                className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm transition-colors ${
                   selectedEmployeurs.includes(e)
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-foreground hover:bg-secondary/80'
@@ -289,16 +288,14 @@ export function PointageTab({ data }: { data: PointageData[] }) {
           </div>
         </div>
 
-
         {/* Code libre Table filter */}
         <div className="pbi-card p-2">
-          
           <div className="flex flex-wrap gap-1">
             {codeLibreValues.map(c => (
               <button
                 key={c}
                 onClick={() => toggleCodeLibre(c)}
-                className={`px-2 py-1 text-[10px] font-semibold rounded-sm transition-colors ${
+                className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm transition-colors ${
                   selectedCodeLibre.includes(c)
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-foreground hover:bg-secondary/80'
@@ -312,34 +309,34 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       </div>
 
       {/* Main content row */}
-      <div className="flex gap-3">
+      <div className="flex gap-2 flex-1 min-h-0">
         {/* Left KPI column */}
-        <div className="flex flex-col gap-2 min-w-[160px]">
+        <div className="flex flex-col gap-2 min-w-[140px] shrink-0">
           <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
           <PbiKpiCard label="Nbre de personnes à bord" value={nbPersonnes} color="warning" />
         </div>
 
         {/* Center charts */}
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-2 min-w-0 min-h-0">
           {/* Stacked bar by month */}
-          <div className="pbi-card p-3">
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <span className="pbi-section-title">Code libre Table</span>
+          <div className="pbi-card p-2 flex-1 min-h-0 flex flex-col">
+            <div className="flex items-center gap-2 mb-1 flex-wrap shrink-0">
+              <span className="pbi-section-title text-[10px]">Code libre Table</span>
               {allCodeLibreKeys.map(k => (
-                <div key={k} className="flex items-center gap-1 text-[10px]">
-                  <div className="w-2.5 h-2.5 rounded-sm" style={{ background: CODE_LIBRE_COLORS[k] || 'hsl(215,15%,60%)' }} />
+                <div key={k} className="flex items-center gap-1 text-[9px]">
+                  <div className="w-2 h-2 rounded-sm" style={{ background: CODE_LIBRE_COLORS[k] || 'hsl(215,15%,60%)' }} />
                   <span className="text-muted-foreground">{k}</span>
                 </div>
               ))}
             </div>
-            <div className="h-[180px]">
+            <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData} margin={{ bottom: 20, left: 10, right: 10 }}>
+                <BarChart data={monthlyData} margin={{ bottom: 18, left: 5, right: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
                   <XAxis dataKey="month" tick={<MonthTick />} interval={0} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                  <YAxis tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} width={35} />
                   <Tooltip
-                    contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
+                    contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 10, color: 'hsl(210,20%,92%)' }}
                     formatter={(v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                   />
                   {allCodeLibreKeys.map(k => (
@@ -351,15 +348,15 @@ export function PointageTab({ data }: { data: PointageData[] }) {
           </div>
 
           {/* Weekly stacked bar */}
-          <div className="pbi-card p-3">
-            <div className="h-[160px]">
+          <div className="pbi-card p-2 flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData} margin={{ bottom: 20, left: 10, right: 10 }}>
+                <BarChart data={weeklyData} margin={{ bottom: 18, left: 5, right: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,20%,25%)" />
                   <XAxis dataKey="semaine" tick={<WeekTick />} interval={0} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(215,15%,60%)' }} />
+                  <YAxis tick={{ fontSize: 9, fill: 'hsl(215,15%,60%)' }} width={35} />
                   <Tooltip
-                    contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
+                    contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 10, color: 'hsl(210,20%,92%)' }}
                     formatter={(v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                   />
                   {allCodeLibreKeys.map(k => (
@@ -371,21 +368,21 @@ export function PointageTab({ data }: { data: PointageData[] }) {
           </div>
         </div>
 
-        {/* Right: Pie chart by employer */}
-        <div className="pbi-card p-3 min-w-[260px]">
-          <div className="h-[360px]">
+        {/* Right: Pie chart + employer table */}
+        <div className="pbi-card p-2 min-w-[220px] w-[240px] shrink-0 flex flex-col min-h-0">
+          <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={110}
-                  innerRadius={40}
+                  outerRadius={80}
+                  innerRadius={30}
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${percent}%`}
                   labelLine={{ stroke: 'hsl(215,15%,60%)' }}
-                  style={{ fontSize: 10, cursor: 'pointer' }}
+                  style={{ fontSize: 9, cursor: 'pointer' }}
                   onClick={(entry: any) => {
                     if (entry?.name) {
                       toggleEmployeur(entry.name);
@@ -403,36 +400,58 @@ export function PointageTab({ data }: { data: PointageData[] }) {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 11, color: 'hsl(210,20%,92%)' }}
+                  contentStyle={{ background: 'hsl(222,30%,18%)', border: '1px solid hsl(222,20%,25%)', borderRadius: '4px', fontSize: 10, color: 'hsl(210,20%,92%)' }}
                   formatter={(v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
+          {/* Employer percentage table */}
+          <div className="shrink-0 max-h-[120px] overflow-y-auto mt-1 border-t border-border/30 pt-1">
+            <table className="w-full text-[10px]">
+              <thead>
+                <tr className="text-muted-foreground">
+                  <th className="text-left px-1 py-0.5 font-semibold">Employeur</th>
+                  <th className="text-right px-1 py-0.5 font-semibold">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pieData.map((entry, i) => (
+                  <tr key={entry.name} className="hover:bg-secondary/30">
+                    <td className="px-1 py-0.5 flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-sm shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                      <span className="truncate">{entry.name}</span>
+                    </td>
+                    <td className="text-right px-1 py-0.5 font-mono">{entry.percent}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Bottom: Data table */}
-      <div className="pbi-card overflow-hidden">
-        <div className="overflow-auto max-h-[220px]">
-          <table className="w-full text-[11px]">
+      <div className="pbi-card overflow-hidden shrink-0" style={{ maxHeight: '30%' }}>
+        <div className="overflow-auto h-full">
+          <table className="w-full text-[10px]">
             <thead className="sticky top-0 bg-card z-10">
               <tr className="border-b border-border/50">
                 {TABLE_COLUMNS.map(col => (
-                  <th key={col.key} className={`${col.isNumeric ? 'text-right' : 'text-left'} px-3 py-2 font-semibold text-muted-foreground`}>
+                  <th key={col.key} className={`${col.isNumeric ? 'text-right' : 'text-left'} px-2 py-1 font-semibold text-muted-foreground`}>
                     {col.label}
                   </th>
                 ))}
               </tr>
               <tr className="border-b border-border/30">
                 {TABLE_COLUMNS.map(col => (
-                  <th key={col.key} className="px-2 py-1">
+                  <th key={col.key} className="px-1 py-0.5">
                     <input
                       type="text"
                       placeholder="🔍"
                       value={columnFilters[col.key] || ''}
                       onChange={e => setColumnFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
-                      className="w-full bg-secondary/50 text-foreground text-[10px] px-1.5 py-0.5 rounded-sm border border-border/30 focus:outline-none focus:border-primary/50 placeholder:text-muted-foreground/50"
+                      className="w-full bg-secondary/50 text-foreground text-[9px] px-1 py-0.5 rounded-sm border border-border/30 focus:outline-none focus:border-primary/50 placeholder:text-muted-foreground/50"
                     />
                   </th>
                 ))}
@@ -442,7 +461,7 @@ export function PointageTab({ data }: { data: PointageData[] }) {
               {tableData.map((row, i) => (
                 <tr key={i} className="border-b border-border/20 hover:bg-secondary/30">
                   {TABLE_COLUMNS.map(col => (
-                    <td key={col.key} className={`px-3 py-1.5 ${col.isNumeric ? 'text-right font-mono' : ''} ${col.key === 'intituleAffaire' || col.key === 'codeLibreAlpha' ? 'text-[10px]' : ''} ${col.key === 'codeLibreAlpha' ? 'font-mono' : ''}`}>
+                    <td key={col.key} className={`px-2 py-1 ${col.isNumeric ? 'text-right font-mono' : ''} ${col.key === 'intituleAffaire' || col.key === 'codeLibreAlpha' ? 'text-[9px]' : ''} ${col.key === 'codeLibreAlpha' ? 'font-mono' : ''}`}>
                       {col.isNumeric
                         ? (row as any)[col.key].toLocaleString('fr-FR', { minimumFractionDigits: 2 })
                         : (row as any)[col.key]}
@@ -453,8 +472,8 @@ export function PointageTab({ data }: { data: PointageData[] }) {
             </tbody>
             <tfoot className="border-t border-border bg-secondary/30 font-semibold">
               <tr>
-                <td className="px-3 py-1.5" colSpan={8}>Total</td>
-                <td className="px-3 py-1.5 text-right font-mono">
+                <td className="px-2 py-1" colSpan={8}>Total</td>
+                <td className="px-2 py-1 text-right font-mono">
                   {totalHeures.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
