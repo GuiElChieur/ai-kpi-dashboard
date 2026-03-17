@@ -97,16 +97,16 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
   };
 
   return (
-    <div className="flex flex-col h-full gap-3 animate-fade-in">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-        <KpiCard title="Qté besoin totale" value={Math.round(kpis.totalBesoin).toLocaleString('fr-FR')} icon={<Package className="h-5 w-5" />} />
-        <KpiCard title="Qté sortie" value={Math.round(kpis.totalSortie).toLocaleString('fr-FR')} icon={<TrendingUp className="h-5 w-5" />} />
-        <KpiCard title="Taux de sortie" value={`${kpis.tauxSortie.toFixed(1)}%`} icon={<BarChart3 className="h-5 w-5" />} />
-        <KpiCard title="Références" value={kpis.nbReferences.toLocaleString('fr-FR')} icon={<Layers className="h-5 w-5" />} />
+    <div className="flex flex-col h-full gap-2 animate-fade-in">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
+        <KpiCard title="Qté besoin totale" value={Math.round(kpis.totalBesoin).toLocaleString('fr-FR')} icon={<Package className="h-4 w-4" />} />
+        <KpiCard title="Qté sortie" value={Math.round(kpis.totalSortie).toLocaleString('fr-FR')} icon={<TrendingUp className="h-4 w-4" />} />
+        <KpiCard title="Taux de sortie" value={`${kpis.tauxSortie.toFixed(1)}%`} icon={<BarChart3 className="h-4 w-4" />} />
+        <KpiCard title="Références" value={kpis.nbReferences.toLocaleString('fr-FR')} icon={<Layers className="h-4 w-4" />} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
-        <Card className="glass-card flex flex-col min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 gap-2">
+        <Card className="glass-card flex flex-col flex-1 min-h-0">
           <CardHeader className="pb-1 pt-3 px-4 shrink-0">
             <div className="flex items-center justify-between flex-wrap gap-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -161,7 +161,7 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
           </CardContent>
         </Card>
 
-        <Card className="glass-card flex flex-col min-h-0">
+        <Card className="glass-card flex flex-col flex-1 min-h-0">
           <CardHeader className="pb-1 pt-3 px-4 shrink-0">
             <CardTitle className="text-xs font-medium text-muted-foreground">Coût cumulé des sorties par mois (Matière × Achats)</CardTitle>
           </CardHeader>
