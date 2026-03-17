@@ -137,19 +137,95 @@ export function parseOTCSV(text: string) {
 }
 
 export function parseMatiereCSV(text: string) {
-  return parseCSV(text, ';').map(row => ({
+  const rows = parseCSV(text, ';');
+  return rows.map(row => ({
     affaire: getVal(row, 'AFFAIRE', 'Affaire'),
     ot: getVal(row, 'OT'),
     lot: getVal(row, 'LOT', 'Lot'),
-    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début')),
+    date_debut: parseDate(getVal(row, 'DATE_DEBUT', 'Date début', 'DATE_DEBUT')),
+    date_livraison: parseDate(getVal(row, 'DATE_DE_LIVRAISON', 'Date de livraison', 'DATE_LIVRAISON', 'Date livraison')),
     tri: getVal(row, 'TRI'),
     rep: getVal(row, 'REP', 'Rep'),
-    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin')),
+    quantite_besoin: parseNumber(getVal(row, 'QUANTITE_BESOIN', 'Quantité Besoin', 'Quantité besoin')),
     quantite_preparation: parseNumber(getVal(row, 'QUANTITE_EN_PREPARATION', 'Quantité en préparation')),
     quantite_sortie: parseNumber(getVal(row, 'QUANTITE_SORTIE', 'Quantité sortie')),
     reference_interne: getVal(row, 'REFERENCE_INTERNE', 'Référence interne'),
     designation_produit: getVal(row, 'DESIGNATION_PRODUIT', 'Désignation produit'),
     statut_projet: getVal(row, 'STATUT_DU_PROJET', 'Statut du projet'),
+  }));
+}
+
+export function mapMatiereRows(rawRows: Record<string, unknown>[]) {
+  // Normalize: remove accents, all non-alphanumeric chars, uppercase
+  const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+  // Log first row keys for debugging
+  if (rawRows.length > 0) {
+    const keys = Object.keys(rawRows[0]);
+    console.log('[MATIERE XLSX] Column headers:', keys);
+    console.log('[MATIERE XLSX] Normalized headers:', keys.map(norm));
+    console.log('[MATIERE XLSX] First row values:', JSON.stringify(rawRows[0]));
+  }
+
+  const g = (row: Record<string, unknown>, ...keys: string[]) => {
+    const normKeys = keys.map(norm);
+    // Pass 1: exact normalized match only
+    for (const rk of Object.keys(row)) {
+      const nrk = norm(rk);
+      if (normKeys.includes(nrk)) return row[rk];
+    }
+    // Pass 2: partial match, but only for keys with length >= 5 to avoid false positives (e.g. LOT matching OT)
+    for (const rk of Object.keys(row)) {
+      const nrk = norm(rk);
+      for (const nk of normKeys) {
+        if (nk.length >= 5 && nrk.length >= 5 && (nrk.includes(nk) || nk.includes(nrk))) return row[rk];
+      }
+    }
+    return null;
+  };
+
+  function xlsxDate(v: unknown): string | null {
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') {
+      const d = new Date((v - 25569) * 86400 * 1000);
+      return d.toISOString().substring(0, 10);
+    }
+    if (typeof v === 'string') return parseDate(v);
+    return null;
+  }
+
+  const toNum = (v: unknown): number | null => {
+    if (v == null || v === '') return null;
+    if (typeof v === 'string') {
+      const n = Number(v.replace(',', '.'));
+      return isNaN(n) ? null : n;
+    }
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  };
+
+  // Log what g() finds for first row
+  if (rawRows.length > 0) {
+    const row = rawRows[0];
+    console.log('[MATIERE XLSX] g(Quantité Besoin):', g(row, 'Quantité Besoin', 'Quantite Besoin'));
+    console.log('[MATIERE XLSX] g(Quantité sortie):', g(row, 'Quantité sortie', 'Quantite sortie'));
+    console.log('[MATIERE XLSX] g(Date de livraison):', g(row, 'Date de livraison', 'Date livraison'));
+  }
+
+  return rawRows.map(row => ({
+    affaire: String(g(row, 'Affaire') ?? ''),
+    ot: String(g(row, 'OT') ?? ''),
+    lot: String(g(row, 'Lot') ?? ''),
+    date_debut: xlsxDate(g(row, 'Date début', 'Date debut', 'Datedebut')),
+    date_livraison: xlsxDate(g(row, 'Date de livraison', 'Date livraison', 'Datedelivraison')),
+    tri: String(g(row, 'TRI') ?? ''),
+    rep: String(g(row, 'Rep') ?? ''),
+    quantite_besoin: toNum(g(row, 'Quantité Besoin', 'Quantite Besoin', 'QuantiteBesoin')),
+    quantite_preparation: toNum(g(row, 'Quantité en préparation', 'Quantite en preparation', 'Quantiteenpreparation')),
+    quantite_sortie: toNum(g(row, 'Quantité sortie', 'Quantite sortie', 'Quantitesortie')),
+    reference_interne: String(g(row, 'Référence interne', 'Reference interne', 'Referenceinterne') ?? ''),
+    designation_produit: String(g(row, 'Désignation produit', 'Designation produit', 'Designationproduit') ?? ''),
+    statut_projet: String(g(row, 'Statut du projet', 'Statutduprojet') ?? ''),
   }));
 }
 

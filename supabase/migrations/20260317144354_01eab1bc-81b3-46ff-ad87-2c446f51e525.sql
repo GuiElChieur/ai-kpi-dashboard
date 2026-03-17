@@ -1,0 +1,1 @@
+ALTER TABLE public.matieres ADD COLUMN IF NOT EXISTS date_livraison date;

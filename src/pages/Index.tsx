@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useDashboardData, computeOTKpis, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
+import { useDashboardData, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
 import { useCableData } from '@/hooks/use-cable-data';
 import { useAuth } from '@/hooks/use-auth';
 import { PbiSidebar } from '@/components/dashboard/PbiSidebar';
@@ -26,13 +26,29 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
 
   const kpiSummary = useMemo(() => {
-    if (isLoading) return '';
-    const ot = computeOTKpis(otData);
+    if (isLoading || cableLoading) return '';
     const pt = computePointageKpis(pointageData);
     const mt = computeMatierKpis(matierData);
     const ac = computeAchatKpis(achatData);
-    return `## Avancement OT\n- Total OT: ${ot.total}, Terminés: ${ot.completed}, En cours: ${ot.inProgress}, Non démarrés: ${ot.notStarted}\n- Avancement moyen: ${ot.avgAvancement.toFixed(1)}%\n- Charge totale: ${Math.round(ot.totalCharge)}h, VBTR: ${Math.round(ot.totalVBTR)}h\n\n## Heures pointées\n- Total: ${Math.round(pt.totalHeures)}h, ${pt.nbIntervenants} intervenants\n\n## Matières\n- Besoin: ${Math.round(mt.totalBesoin)}, Sortie: ${Math.round(mt.totalSortie)} (${mt.tauxSortie.toFixed(1)}%)\n\n## Achats\n- Total HT: ${Math.round(ac.totalHT).toLocaleString('fr-FR')}€, ${ac.nbCommandes} commandes`;
-  }, [isLoading, otData, pointageData, matierData, achatData]);
+
+    // OT Lignes summary
+    const totalLignes = otLigneData.length;
+    const totalChargePrev = otLigneData.reduce((s, d) => s + d.chargePrevisionnelle, 0);
+    const totalVBTR = otLigneData.reduce((s, d) => s + d.vbtr, 0);
+    const totalTP = otLigneData.reduce((s, d) => s + d.tp, 0);
+    const avgAvancement = totalLignes > 0 ? otLigneData.reduce((s, d) => s + d.avancementEffectif, 0) / totalLignes : 0;
+    const byTypeOT: Record<string, number> = {};
+    otLigneData.forEach(d => { byTypeOT[d.typeOT || 'N/A'] = (byTypeOT[d.typeOT || 'N/A'] || 0) + 1; });
+
+    // Cable summary
+    const cables = cableData || [];
+    const gestCables = cables.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'O');
+    const totalLngM = gestCables.reduce((s, c) => s + (c.lngTotal || 0), 0) / 1000;
+    const totalTireM = gestCables.reduce((s, c) => s + (c.totLngTiree || 0), 0) / 1000;
+    const cablesTires = gestCables.filter(c => c.sttCblBord === 'T').length;
+
+    return `## OT Lignes (ot_lignes)\n- ${totalLignes} lignes OT\n- Charge prévisionnelle totale: ${Math.round(totalChargePrev)}h\n- VBTR total: ${Math.round(totalVBTR)}h, TP total: ${Math.round(totalTP)}h\n- Avancement effectif moyen: ${avgAvancement.toFixed(1)}%\n- Répartition par type OT: ${Object.entries(byTypeOT).map(([k, v]) => `${k}: ${v}`).join(', ')}\n\n## Heures pointées (pointages)\n- Total: ${Math.round(pt.totalHeures)}h, ${pt.nbIntervenants} intervenants\n- Top équipes: ${Object.entries(pt.byEquipe).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `${k}: ${Math.round(v)}h`).join(', ')}\n\n## Matières (matieres)\n- Besoin: ${Math.round(mt.totalBesoin)}, Sortie: ${Math.round(mt.totalSortie)} (${mt.tauxSortie.toFixed(1)}%)\n- En préparation: ${Math.round(mt.totalPreparation)}, ${mt.nbReferences} références\n\n## Achats (achats)\n- Total HT: ${Math.round(ac.totalHT).toLocaleString('fr-FR')}€, ${ac.nbCommandes} commandes, ${ac.nbLignes} lignes\n\n## Câbles (cables, filtre GEST + APPRO_CA=O)\n- ${gestCables.length} câbles dans le périmètre\n- Longueur totale: ${Math.round(totalLngM).toLocaleString('fr-FR')} m\n- Longueur tirée: ${Math.round(totalTireM).toLocaleString('fr-FR')} m (${totalLngM > 0 ? ((totalTireM / totalLngM) * 100).toFixed(1) : 0}%)\n- Câbles tirés (statut T): ${cablesTires} / ${gestCables.length}`;
+  }, [isLoading, cableLoading, otLigneData, pointageData, matierData, achatData, cableData]);
 
   if (isLoading) {
     return (
@@ -48,10 +64,10 @@ const Index = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <PbiSidebar activePage={activePage} onPageChange={setActivePage} />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top bar */}
         <header className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-card/50">
           <div className="flex items-center gap-3">
@@ -84,10 +100,10 @@ const Index = () => {
           <OTProgiPage otData={otData} otLigneData={otLigneData} pointageData={pointageData} />
         )}
         {activePage === 'pointage' && (
-          <div className="p-4"><PointageTab data={pointageData} /></div>
+          <div className="flex-1 min-h-0"><PointageTab data={pointageData} /></div>
         )}
         {activePage === 'matiere' && (
-          <div className="p-4"><MatierTab data={matierData} achatData={achatData} /></div>
+          <div className="p-4 h-full"><MatierTab data={matierData} achatData={achatData} /></div>
         )}
         {activePage === 'achat' && (
           <div className="p-4"><AchatTab data={achatData} /></div>
@@ -102,7 +118,7 @@ const Index = () => {
         )}
         {activePage === 'courbe-filerie' && (
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
-          <CourbeFileriePage allData={cableData || []} />
+          <div className="flex-1 min-h-0"><CourbeFileriePage allData={cableData || []} /></div>
         )}
         {activePage === 'import' && (
           <DataImport />

@@ -183,6 +183,7 @@ export type Database = {
         Row: {
           affaire: string | null
           date_debut: string | null
+          date_livraison: string | null
           designation_produit: string | null
           id: string
           imported_at: string
@@ -199,6 +200,7 @@ export type Database = {
         Insert: {
           affaire?: string | null
           date_debut?: string | null
+          date_livraison?: string | null
           designation_produit?: string | null
           id?: string
           imported_at?: string
@@ -215,6 +217,7 @@ export type Database = {
         Update: {
           affaire?: string | null
           date_debut?: string | null
+          date_livraison?: string | null
           designation_produit?: string | null
           id?: string
           imported_at?: string

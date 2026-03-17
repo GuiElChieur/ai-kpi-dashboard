@@ -27,7 +27,7 @@ interface PbiSidebarProps {
 
 export function PbiSidebar({ activePage, onPageChange }: PbiSidebarProps) {
   return (
-    <aside className="w-48 min-h-screen bg-sidebar border-r border-sidebar-border flex flex-col shrink-0">
+    <aside className="w-48 h-full bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 overflow-hidden">
       <div className="p-4 border-b border-sidebar-border">
         <div className="text-xs text-muted-foreground mb-1">Pages</div>
       </div>

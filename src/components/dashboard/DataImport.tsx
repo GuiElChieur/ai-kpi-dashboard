@@ -16,6 +16,7 @@ import {
   parseOTLigneCSV,
   parsePointageCSV,
   parseMatiereCSV,
+  mapMatiereRows,
   mapCableRows,
 } from '@/lib/csv-client-parser';
 
@@ -24,7 +25,7 @@ const FILE_TYPES = [
   { key: 'ot', label: 'OT', accept: '.csv', pattern: 'DATA_OT_Z' },
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
-  { key: 'matiere', label: 'Matières', accept: '.csv', pattern: 'MATIER' },
+  { key: 'matiere', label: 'Matières', accept: '.csv,.xlsx', pattern: 'MATIER' },
   { key: 'cables', label: 'Câbles (XLSX)', accept: '.xlsx', pattern: 'EXTRACTION' },
 ];
 
@@ -89,13 +90,19 @@ export function DataImport() {
         try {
           let mapped: any[];
 
-          if (key === 'cables') {
+          if (key === 'cables' || (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx'))) {
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: 'array' });
-            const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
-            const ws = wb.Sheets[sheetName];
-            const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-            mapped = mapCableRows(rawRows);
+            if (key === 'cables') {
+              const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
+              const ws = wb.Sheets[sheetName];
+              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+              mapped = mapCableRows(rawRows);
+            } else {
+              const ws = wb.Sheets[wb.SheetNames[0]];
+              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+              mapped = mapMatiereRows(rawRows);
+            }
           } else {
             const text = await file.text();
             switch (key) {
@@ -135,14 +142,20 @@ export function DataImport() {
       const successCount = allResults.filter(r => r.status === 'success').length;
       toast.success(`${successCount} table(s) importée(s) avec succès`);
 
+      // Invalidate all dashboard query keys
+      queryClient.invalidateQueries({ queryKey: ['achat-data'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
+      queryClient.invalidateQueries({ queryKey: ['ot-ligne-data'] });
+      queryClient.invalidateQueries({ queryKey: ['pointage-data'] });
+      queryClient.invalidateQueries({ queryKey: ['matier-data'] });
+      queryClient.invalidateQueries({ queryKey: ['cable-data'] });
+      queryClient.invalidateQueries({ queryKey: ['import-logs'] });
+      // Also invalidate db-* keys used by use-db-data hooks
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
-      queryClient.invalidateQueries({ queryKey: ['db-ots'] });
       queryClient.invalidateQueries({ queryKey: ['db-ot-lignes'] });
       queryClient.invalidateQueries({ queryKey: ['db-pointages'] });
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
-      queryClient.invalidateQueries({ queryKey: ['import-logs'] });
-      queryClient.invalidateQueries({ queryKey: ['ot-data'] });
 
       setFiles({});
     } catch (err: any) {
