@@ -46,13 +46,13 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
       prixUnitaire[ref] = v.totalQte > 0 ? v.totalHT / v.totalQte : 0;
     });
 
-    // Agréger coût des sorties par mois
+    // Agréger coût des sorties par mois (basé sur la date de livraison)
     const byMonth: Record<string, number> = {};
     data.forEach(d => {
       const ref = d.referenceInterne || '';
       const prix = prixUnitaire[ref];
       if (!prix || d.quantiteSortie === 0) return;
-      const month = d.dateDebut?.substring(0, 7) || 'N/A';
+      const month = d.dateLivraison?.substring(0, 7) || d.dateDebut?.substring(0, 7) || 'N/A';
       byMonth[month] = (byMonth[month] || 0) + d.quantiteSortie * prix;
     });
 
