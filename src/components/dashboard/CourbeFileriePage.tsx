@@ -322,13 +322,14 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div style={{ height: Math.max(360, fnData.length * 28 + 40) }}>
+          <div style={{ height: Math.max(400, fnData.length * 32 + 50) }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={fnData} layout="vertical" margin={{ left: 40, right: 50, top: 5, bottom: 5 }}
-                onClick={(e) => { if (e?.activeLabel) toggleFn(e.activeLabel); }}>
+              <BarChart data={fnData} layout="vertical" margin={{ left: 10, right: 60, top: 5, bottom: 5 }}
+                onClick={(e) => { if (e?.activeLabel) toggleFn(e.activeLabel); }}
+                barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#8899AA' }} tickFormatter={v => `${v}%`} />
-                <YAxis type="category" dataKey="fn" tick={{ fontSize: 11, fill: '#fff', fontWeight: 600 }} width={40} interval={0} />
+                <YAxis type="category" dataKey="fn" tick={{ fontSize: 10, fill: '#fff', fontWeight: 600 }} width={45} interval={0} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string, props: any) => [
                   `${v.toFixed(1)}% (${props.payload.tiree.toLocaleString('fr-FR')} / ${props.payload.total.toLocaleString('fr-FR')} m)`,
                   'Avancement'
