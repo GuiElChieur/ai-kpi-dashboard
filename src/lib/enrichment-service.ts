@@ -262,8 +262,8 @@ function buildY34Lookup(y34Data: AppareilRecord[]): { lookup: Map<string, Appare
   const ambiguous = new Set<string>();
 
   for (const rec of y34Data) {
-    if (!rec.app) continue;
-    const key = rec.app;
+    const key = rec.repereApp;
+    if (!key) continue;
     counts.set(key, (counts.get(key) || 0) + 1);
     if (counts.get(key)! > 1) {
       ambiguous.add(key);
@@ -273,9 +273,9 @@ function buildY34Lookup(y34Data: AppareilRecord[]): { lookup: Map<string, Appare
     }
   }
 
-  // Remove ambiguous from lookup
   for (const k of ambiguous) lookup.delete(k);
 
+  console.log(`[enrichment] Y34 lookup: ${lookup.size} unique REPERE_APP keys, ${ambiguous.size} ambiguous`);
   return { lookup, ambiguous };
 }
 
