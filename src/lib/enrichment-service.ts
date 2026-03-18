@@ -490,6 +490,7 @@ export async function exportEnrichedExcel(
     wb = XLSX.utils.book_new();
     const rows = enrichedData.map(r => ({
       APP: r.app,
+      REPERE_APP: r.repereApp,
       FN: r.fn,
       LOCAL: r.local,
       LIB_LOCAL: r.libLocal,
