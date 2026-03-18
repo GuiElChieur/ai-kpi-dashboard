@@ -4,7 +4,7 @@ import { KpiCard } from './KpiCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LabelList } from 'recharts';
 import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, PackageOpen, Percent } from 'lucide-react';
 import type { AppareilData } from '@/lib/appareils-parser';
 
