@@ -134,6 +134,10 @@ const Index = () => {
         {activePage === 'enrichment' && (
           <EnrichmentPage />
         )}
+        {activePage === 'pose-equipement' && (
+          (appareilsLoading || equipementLoading) ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <PoseEquipement allData={equipementData || []} />
+        )}
         {activePage === 'import' && (
           <DataImport />
         )}
