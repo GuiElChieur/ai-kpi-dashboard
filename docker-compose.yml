@@ -1,0 +1,13 @@
+services:
+  lovable-site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lovable-site:latest
+    ports:
+      - "3434:3434"
+    restart: unless-stopped
+    environment:
+      - VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+      - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
