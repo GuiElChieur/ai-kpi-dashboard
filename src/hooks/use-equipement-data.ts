@@ -56,15 +56,36 @@ function cleanRepere(raw: string): string | null {
   return trimmed;
 }
 
+interface OtLigneInfo {
+  trigramme: string;
+  lot: string;
+  suffixe: string; // last segment of identifiant_projet e.g. H7P
+}
+
 async function loadEquipementH7P(): Promise<EquipementItem[]> {
-  // Step 1: Load OT Lignes, filter H7P, clean repère
+  // Step 1: Load OT Lignes, filter H7P, clean repère + collect metadata
   const otLignes = await fetchAllPages('ot_lignes');
   const h7pReperes = new Set<string>();
+  const otInfoMap = new Map<string, OtLigneInfo>();
+
   for (const r of otLignes) {
     const idProjet = (r.identifiant_projet || '').trim().toUpperCase();
     if (!idProjet.endsWith('H7P')) continue;
     const cleaned = cleanRepere(r.repere || '');
-    if (cleaned) h7pReperes.add(cleaned);
+    if (!cleaned) continue;
+    h7pReperes.add(cleaned);
+
+    // Keep first OT ligne info per repère
+    if (!otInfoMap.has(cleaned)) {
+      // Extract suffix from identifiant_projet (last segment after -)
+      const projParts = idProjet.split('-');
+      const suffixe = projParts.length > 0 ? projParts[projParts.length - 1] : '';
+      otInfoMap.set(cleaned, {
+        trigramme: (r.trigramme || '').trim(),
+        lot: (r.lot || '').trim(),
+        suffixe,
+      });
+    }
   }
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
@@ -96,14 +117,12 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
       }
     }
 
-    // Keep first occurrence (dedup by APP)
     if (!appareilByApp.has(key)) {
       appareilByApp.set(key, item);
     }
   }
 
-  // Step 5: Match H7P repères with appareils — NO RESP_POSE filter
-  // Include ALL matched items + create stubs for unmatched repères
+  // Step 5: Match H7P repères with appareils + use OT ligne data for stubs
   const result: EquipementItem[] = [];
   const seen = new Set<string>();
 
@@ -112,19 +131,25 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     seen.add(repere);
 
     const appareil = appareilByApp.get(repere);
+    const otInfo = otInfoMap.get(repere);
+
     if (appareil) {
+      // Fill missing fields from OT ligne data
+      if (!appareil.fn && otInfo?.trigramme) appareil.fn = otInfo.trigramme;
+      if (!appareil.lotMtgApp && otInfo?.lot) appareil.lotMtgApp = otInfo.lot;
+      if (!appareil.tApp && otInfo?.suffixe) appareil.tApp = otInfo.suffixe;
       result.push({ ...appareil, repereApp: appareil.app });
     } else {
-      // Check enrichments for data
+      // Stub: use OT ligne + enrichment data
       const enrichment = enrichMap.get(repere);
       result.push({
         respPose: enrichment?.resp_pose || '',
-        fn: enrichment?.fn || '',
-        lotMtgApp: enrichment?.lot_mtg_app || '',
+        fn: otInfo?.trigramme || enrichment?.fn || '',
+        lotMtgApp: otInfo?.lot || enrichment?.lot_mtg_app || '',
         local: enrichment?.local || '',
         libLocal: enrichment?.lib_local || '',
         app: repere,
-        tApp: enrichment?.t_app || '',
+        tApp: otInfo?.suffixe || enrichment?.t_app || '',
         libDesign: '',
         respPretAPoser: '',
         indPretAPoser: '',
@@ -136,7 +161,7 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     }
   }
 
-  console.log(`[use-equipement-data] Final H7P equipements: ${result.length} (from ${h7pReperes.size} repères, ${appareilByApp.size} appareils in DB)`);
+  console.log(`[use-equipement-data] Final H7P equipements: ${result.length} (from ${h7pReperes.size} repères, ${appareilByApp.size} appareils in DB, ${result.length - seen.size + h7pReperes.size - (result.length - [...h7pReperes].filter(r => appareilByApp.has(r)).length)} stubs)`);
   return result;
 }
 
