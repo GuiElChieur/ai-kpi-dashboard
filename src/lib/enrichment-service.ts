@@ -2,10 +2,9 @@
  * Enrichment Service — Y34 → Z34 matching, enrichment, and persistence
  * 
  * MATCHING STRATEGY:
- * Primary key: APP column (appareil identifier, unique per project).
- * The APP column is the most stable and unique identifier across Y34/Z34.
+ * Primary key: REPERE_APP column (repère appareil, unique identifier across Y34/Z34).
  * Normalization: trim + uppercase + remove extra whitespace.
- * Ambiguity: if multiple Y34 rows have the same APP, the match is skipped (ambiguous).
+ * Ambiguity: if multiple Y34 rows have the same REPERE_APP, the match is skipped (ambiguous).
  * 
  * ENRICHMENT RULES:
  * - RESP_POSE: never overwrite if already set in Z34. Fill from Y34 match or persisted DB value.
@@ -24,7 +23,8 @@ export interface RawAppareilRow {
 }
 
 export interface AppareilRecord {
-  app: string;          // Primary match key
+  app: string;
+  repereApp: string;    // Primary match key (REPERE_APP)
   fn: string;
   local: string;
   libLocal: string;
@@ -77,7 +77,8 @@ export interface PersistedEnrichment {
 // ─── Column Detection (flexible) ────────────────────────────────
 
 const COLUMN_ALIASES: Record<string, string[]> = {
-  APP: ['APP', 'APPAREIL', 'CODE_APP', 'IDE_APP', 'REPERE_APP'],
+  APP: ['APP', 'APPAREIL', 'CODE_APP', 'IDE_APP'],
+  REPERE_APP: ['REPERE_APP', 'REPERE APP', 'REP_APP', 'REPERE_APPAREIL'],
   FN: ['FN', 'TRIGRAMME', 'CODE_FN'],
   LOCAL: ['LOCAL', 'CODE_LOCAL'],
   LIB_LOCAL: ['LIB_LOCAL', 'LIBELLE_LOCAL', 'LIB LOCAL'],
@@ -153,6 +154,7 @@ function parseSheet(wb: XLSX.WorkBook): Record<string, unknown>[] {
 function rowToRecord(row: Record<string, unknown>): AppareilRecord {
   return {
     app: normalizeMatchKey(getFlexVal(row, 'APP')),
+    repereApp: normalizeMatchKey(getFlexVal(row, 'REPERE_APP')),
     fn: String(getFlexVal(row, 'FN') ?? '').trim().toUpperCase(),
     local: String(getFlexVal(row, 'LOCAL') ?? ''),
     libLocal: String(getFlexVal(row, 'LIB_LOCAL') ?? ''),
@@ -196,6 +198,7 @@ export async function loadZ34FromDb(): Promise<AppareilRecord[]> {
   }
   return allData.map((r: any) => ({
     app: normalizeMatchKey(r.app),
+    repereApp: normalizeMatchKey(r.app), // DB doesn't have repere_app yet, fallback to app
     fn: (r.fn || '').toUpperCase(),
     local: r.local || '',
     libLocal: r.lib_local || '',
@@ -259,8 +262,8 @@ function buildY34Lookup(y34Data: AppareilRecord[]): { lookup: Map<string, Appare
   const ambiguous = new Set<string>();
 
   for (const rec of y34Data) {
-    if (!rec.app) continue;
-    const key = rec.app;
+    const key = rec.repereApp;
+    if (!key) continue;
     counts.set(key, (counts.get(key) || 0) + 1);
     if (counts.get(key)! > 1) {
       ambiguous.add(key);
@@ -270,9 +273,9 @@ function buildY34Lookup(y34Data: AppareilRecord[]): { lookup: Map<string, Appare
     }
   }
 
-  // Remove ambiguous from lookup
   for (const k of ambiguous) lookup.delete(k);
 
+  console.log(`[enrichment] Y34 lookup: ${lookup.size} unique REPERE_APP keys, ${ambiguous.size} ambiguous`);
   return { lookup, ambiguous };
 }
 
@@ -314,7 +317,7 @@ export async function enrichZ34(
 
   for (const z34Row of z34Data) {
     const enriched = { ...z34Row };
-    const matchKey = z34Row.app;
+    const matchKey = z34Row.repereApp; // Use REPERE_APP as match key
 
     if (!matchKey) {
       stats.linesIgnored++;
@@ -463,6 +466,7 @@ export async function exportEnrichedExcel(
     const sheetName = wb.SheetNames.find(n => n.toLowerCase() === 'appareils') || 'appareils';
     const rows = enrichedData.map(r => ({
       APP: r.app,
+      REPERE_APP: r.repereApp,
       FN: r.fn,
       LOCAL: r.local,
       LIB_LOCAL: r.libLocal,
@@ -486,6 +490,7 @@ export async function exportEnrichedExcel(
     wb = XLSX.utils.book_new();
     const rows = enrichedData.map(r => ({
       APP: r.app,
+      REPERE_APP: r.repereApp,
       FN: r.fn,
       LOCAL: r.local,
       LIB_LOCAL: r.libLocal,

@@ -320,7 +320,7 @@ export function EnrichmentPage() {
             )}
 
             <div className="text-[10px] text-muted-foreground space-y-1 pt-2 border-t border-border/50">
-              <p>• <strong>Matching</strong> : clé APP (trim + uppercase)</p>
+              <p>• <strong>Matching</strong> : clé REPERE_APP (trim + uppercase)</p>
               <p>• <strong>RESP_POSE</strong> : ne jamais écraser si déjà renseigné</p>
               <p>• <strong>DATE_CONTRAINTE</strong> : Y34 + 10 mois, ou Z34 si réimport</p>
             </div>
@@ -385,7 +385,7 @@ export function EnrichmentPage() {
             <table className="w-full text-[10px]">
               <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border">
-                  {['APP', 'FN', 'LOCAL', 'LIB_LOCAL', 'LOT', 'RESP_POSE', 'IND_POSE', 'DATE_CONTRAINTE'].map(h => (
+                  {['REPERE_APP', 'APP', 'FN', 'LOCAL', 'LOT', 'RESP_POSE', 'IND_POSE', 'DATE_CONTRAINTE'].map(h => (
                     <th key={h} className="px-2 py-1 text-left font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
@@ -393,10 +393,10 @@ export function EnrichmentPage() {
               <tbody>
                 {enrichedData.slice(0, 100).map((a, i) => (
                   <tr key={i} className="border-b border-border/30 hover:bg-secondary/20">
+                    <td className="px-2 py-0.5">{a.repereApp}</td>
                     <td className="px-2 py-0.5">{a.app}</td>
                     <td className="px-2 py-0.5">{a.fn}</td>
                     <td className="px-2 py-0.5">{a.local}</td>
-                    <td className="px-2 py-0.5 max-w-[100px] truncate">{a.libLocal}</td>
                     <td className="px-2 py-0.5">{a.lotMtgApp}</td>
                     <td className="px-2 py-0.5">
                       <Badge variant={a.respPose === 'GEST' ? 'default' : 'outline'} className="text-[9px] px-1 py-0">
