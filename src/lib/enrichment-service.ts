@@ -317,7 +317,7 @@ export async function enrichZ34(
 
   for (const z34Row of z34Data) {
     const enriched = { ...z34Row };
-    const matchKey = z34Row.app;
+    const matchKey = z34Row.repereApp; // Use REPERE_APP as match key
 
     if (!matchKey) {
       stats.linesIgnored++;
