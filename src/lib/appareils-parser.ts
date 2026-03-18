@@ -61,8 +61,7 @@ const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
 function applyBaseFilters(data: AppareilData[]): AppareilData[] {
   return data.filter(c =>
     c.respPose === 'GEST' &&
-    ALLOWED_FNS.includes(c.fn) &&
-    c.libLocal.toUpperCase() === 'ECR'
+    (ALLOWED_FNS.includes(c.fn) || c.libLocal.toUpperCase() === 'ECR')
   );
 }
 

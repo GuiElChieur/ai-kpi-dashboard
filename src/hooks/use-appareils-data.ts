@@ -36,7 +36,7 @@ async function loadFromDb(): Promise<AppareilData[]> {
   }
   if (allData.length > 0) {
     return allData.map(mapAppareil).filter(a =>
-      ALLOWED_FNS.includes(a.fn) && a.libLocal.toUpperCase() === 'ECR'
+      ALLOWED_FNS.includes(a.fn) || a.libLocal.toUpperCase() === 'ECR'
     );
   }
   return loadAppareilData();
