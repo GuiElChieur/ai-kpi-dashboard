@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { KpiCard } from './KpiCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { type CableData, getFilerieData } from '@/lib/cable-parser';
@@ -198,20 +199,11 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
     <div className="p-3 space-y-2 animate-fade-in h-full flex flex-col overflow-hidden" style={{ background: '#0A1628' }}>
       {/* KPIs */}
       <div className="grid grid-cols-5 gap-2">
-        {[
-          { title: 'Nbre Total Câbles', value: kpis.total.toLocaleString('fr-FR'), color: '#00D4FF' },
-          { title: 'Tiré (m)', value: `${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`, color: '#C084FC' },
-          { title: 'RAF (m)', value: `${Math.round(kpis.raf).toLocaleString('fr-FR')} m`, color: '#C084FC' },
-          { title: 'Avancement', value: `${kpis.avancement.toFixed(1)} %`, color: '#00D4FF' },
-          { title: 'Câbles Tirés', value: kpis.tires.toLocaleString('fr-FR'), color: '#2ECC71' },
-        ].map((kpi, i) => (
-          <Card key={i} className="border-0 shadow-lg" style={{ background: '#1B2A3E' }}>
-            <CardContent className="p-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: '#8899AA' }}>{kpi.title}</p>
-              <p className="text-xl font-bold font-mono mt-0.5" style={{ color: kpi.color }}>{kpi.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <KpiCard title="Nbre Total Câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} />
+        <KpiCard title="Tiré (m)" value={`${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
+        <KpiCard title="RAF (m)" value={`${Math.round(kpis.raf).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
+        <KpiCard title="Avancement" value={`${kpis.avancement.toFixed(1)} %`} icon={<TrendingUp className="h-5 w-5" />} />
+        <KpiCard title="Câbles Tirés" value={kpis.tires.toLocaleString('fr-FR')} icon={<CheckCircle className="h-5 w-5" />} />
       </div>
 
       {/* Active filters indicator */}
