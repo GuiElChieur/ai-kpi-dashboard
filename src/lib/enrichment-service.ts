@@ -141,7 +141,11 @@ function addTenMonths(dateStr: string): string {
 // ─── Normalization ──────────────────────────────────────────────
 
 function normalizeMatchKey(val: unknown): string {
-  return String(val ?? '').trim().toUpperCase().replace(/\s+/g, ' ');
+  return String(val ?? '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, ' ')
+    .replace(/^(?:Y34|Z34)\s*[-–—:]\s*/i, '');
 }
 
 // ─── Parse Excel Sheet ─────────────────────────────────────────
