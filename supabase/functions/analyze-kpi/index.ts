@@ -257,7 +257,7 @@ serve(async (req) => {
       },
     });
 
-    let query = supabaseAdmin.from("ot_lignes").select("*").limit(limit);
+    let query = supabaseAdmin.from("ot_lignes").select("*").limit(limit) as any;
 
     if (projectId !== null && projectId !== undefined) {
       query = query.eq(projectColumn, projectId);
