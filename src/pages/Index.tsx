@@ -10,6 +10,8 @@ import { AchatTab } from '@/components/dashboard/AchatTab';
 import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
+import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
+import { useAppareilsData } from '@/hooks/use-appareils-data';
 import { PerformancePage } from '@/components/dashboard/PerformancePage';
 import { DataImport } from '@/components/dashboard/DataImport';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
