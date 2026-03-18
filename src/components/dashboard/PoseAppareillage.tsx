@@ -9,9 +9,11 @@ import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, P
 import type { AppareilData } from '@/lib/appareils-parser';
 
 const FN_OPTIONS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
+const ECR_LABEL = 'ECR';
 
 interface Filters {
   fnFilter: string[];
+  ecrOnly: boolean;
   selectedFns: string[];
   selectedLots: string[];
   selectedMonths: string[];
@@ -20,15 +22,16 @@ interface Filters {
 export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
   const [filters, setFilters] = useState<Filters>({
     fnFilter: [],
+    ecrOnly: false,
     selectedFns: [],
     selectedLots: [],
     selectedMonths: [],
   });
 
-  const hasActiveFilters = filters.fnFilter.length > 0 || filters.selectedFns.length > 0 || filters.selectedLots.length > 0 || filters.selectedMonths.length > 0;
+  const hasActiveFilters = filters.fnFilter.length > 0 || filters.ecrOnly || filters.selectedFns.length > 0 || filters.selectedLots.length > 0 || filters.selectedMonths.length > 0;
 
   const resetFilters = useCallback(() => {
-    setFilters({ fnFilter: [], selectedFns: [], selectedLots: [], selectedMonths: [] });
+    setFilters({ fnFilter: [], ecrOnly: false, selectedFns: [], selectedLots: [], selectedMonths: [] });
   }, []);
 
   const toggleFilter = useCallback((key: keyof Filters, value: string) => {
@@ -39,12 +42,26 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
     });
   }, []);
 
-  // Base data: RESP_POSE = GEST (already filtered at load) + FN user filter
+  const toggleEcr = useCallback(() => {
+    setFilters(prev => ({ ...prev, ecrOnly: !prev.ecrOnly }));
+  }, []);
+
+  // Base data: RESP_POSE = GEST (already filtered at load) + FN/ECR user filter
   const baseData = useMemo(() => {
     let d = allData;
-    if (filters.fnFilter.length > 0) d = d.filter(a => filters.fnFilter.includes(a.fn));
+    const hasFn = filters.fnFilter.length > 0;
+    const hasEcr = filters.ecrOnly;
+    if (hasFn || hasEcr) {
+      d = d.filter(a => {
+        const matchFn = hasFn && filters.fnFilter.includes(a.fn);
+        const matchEcr = hasEcr && a.libLocal.toUpperCase() === 'ECR';
+        if (hasFn && hasEcr) return matchFn || matchEcr;
+        if (hasFn) return matchFn;
+        return matchEcr;
+      });
+    }
     return d;
-  }, [allData, filters.fnFilter]);
+  }, [allData, filters.fnFilter, filters.ecrOnly]);
 
   // Cross-filtered data
   const filteredData = useMemo(() => {
@@ -125,7 +142,7 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-3 gap-2">
-      {/* Row 0: FN filter badges + Reset */}
+      {/* Row 0: FN filter badges + ECR + Reset */}
       <div className="flex items-center gap-2 shrink-0 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground">Trigramme :</span>
         {FN_OPTIONS.map(fn => (
@@ -138,6 +155,14 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
             {fn}
           </Badge>
         ))}
+        <span className="text-xs text-muted-foreground mx-1">|</span>
+        <Badge
+          variant={filters.ecrOnly ? 'default' : 'outline'}
+          className="cursor-pointer text-xs"
+          onClick={toggleEcr}
+        >
+          {ECR_LABEL}
+        </Badge>
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={resetFilters} className="h-6 text-xs gap-1 ml-auto">
             <RotateCcw className="h-3 w-3" /> Reset
