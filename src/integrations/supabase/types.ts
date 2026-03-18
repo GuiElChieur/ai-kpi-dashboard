@@ -74,6 +74,66 @@ export type Database = {
         }
         Relationships: []
       }
+      appareil_enrichments: {
+        Row: {
+          app: string | null
+          created_at: string
+          date_contrainte: string | null
+          date_contrainte_source: string | null
+          fn: string | null
+          id: string
+          lib_local: string | null
+          local: string | null
+          lot_mtg_app: string | null
+          match_key: string
+          resp_pose: string | null
+          resp_pose_source: string | null
+          t_app: string | null
+          updated_at: string
+          y34_date_contrainte: string | null
+          y34_date_contrainte_calculated: string | null
+          y34_resp_pose: string | null
+        }
+        Insert: {
+          app?: string | null
+          created_at?: string
+          date_contrainte?: string | null
+          date_contrainte_source?: string | null
+          fn?: string | null
+          id?: string
+          lib_local?: string | null
+          local?: string | null
+          lot_mtg_app?: string | null
+          match_key: string
+          resp_pose?: string | null
+          resp_pose_source?: string | null
+          t_app?: string | null
+          updated_at?: string
+          y34_date_contrainte?: string | null
+          y34_date_contrainte_calculated?: string | null
+          y34_resp_pose?: string | null
+        }
+        Update: {
+          app?: string | null
+          created_at?: string
+          date_contrainte?: string | null
+          date_contrainte_source?: string | null
+          fn?: string | null
+          id?: string
+          lib_local?: string | null
+          local?: string | null
+          lot_mtg_app?: string | null
+          match_key?: string
+          resp_pose?: string | null
+          resp_pose_source?: string | null
+          t_app?: string | null
+          updated_at?: string
+          y34_date_contrainte?: string | null
+          y34_date_contrainte_calculated?: string | null
+          y34_resp_pose?: string | null
+        }
+        Relationships: []
+      }
       appareils: {
         Row: {
           app: string | null
@@ -200,6 +260,57 @@ export type Database = {
           resp_tirage?: string | null
           stt_cbl_bord?: string | null
           tot_lng_tiree?: number | null
+        }
+        Relationships: []
+      }
+      enrichment_imports: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_type: string
+          id: string
+          is_active: boolean | null
+          rows_ambiguous: number | null
+          rows_date_updated_from_z34: number | null
+          rows_enriched_date_contrainte: number | null
+          rows_enriched_resp_pose: number | null
+          rows_ignored: number | null
+          rows_matched: number | null
+          rows_read: number | null
+          rows_resp_pose_kept: number | null
+          rows_saved: number | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_type: string
+          id?: string
+          is_active?: boolean | null
+          rows_ambiguous?: number | null
+          rows_date_updated_from_z34?: number | null
+          rows_enriched_date_contrainte?: number | null
+          rows_enriched_resp_pose?: number | null
+          rows_ignored?: number | null
+          rows_matched?: number | null
+          rows_read?: number | null
+          rows_resp_pose_kept?: number | null
+          rows_saved?: number | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_type?: string
+          id?: string
+          is_active?: boolean | null
+          rows_ambiguous?: number | null
+          rows_date_updated_from_z34?: number | null
+          rows_enriched_date_contrainte?: number | null
+          rows_enriched_resp_pose?: number | null
+          rows_ignored?: number | null
+          rows_matched?: number | null
+          rows_read?: number | null
+          rows_resp_pose_kept?: number | null
+          rows_saved?: number | null
         }
         Relationships: []
       }
