@@ -320,7 +320,7 @@ export function EnrichmentPage() {
             )}
 
             <div className="text-[10px] text-muted-foreground space-y-1 pt-2 border-t border-border/50">
-              <p>• <strong>Matching</strong> : clé APP (trim + uppercase)</p>
+              <p>• <strong>Matching</strong> : clé REPERE_APP (trim + uppercase)</p>
               <p>• <strong>RESP_POSE</strong> : ne jamais écraser si déjà renseigné</p>
               <p>• <strong>DATE_CONTRAINTE</strong> : Y34 + 10 mois, ou Z34 si réimport</p>
             </div>
