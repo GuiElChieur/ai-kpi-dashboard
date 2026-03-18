@@ -393,10 +393,10 @@ export function EnrichmentPage() {
               <tbody>
                 {enrichedData.slice(0, 100).map((a, i) => (
                   <tr key={i} className="border-b border-border/30 hover:bg-secondary/20">
+                    <td className="px-2 py-0.5">{a.repereApp}</td>
                     <td className="px-2 py-0.5">{a.app}</td>
                     <td className="px-2 py-0.5">{a.fn}</td>
                     <td className="px-2 py-0.5">{a.local}</td>
-                    <td className="px-2 py-0.5 max-w-[100px] truncate">{a.libLocal}</td>
                     <td className="px-2 py-0.5">{a.lotMtgApp}</td>
                     <td className="px-2 py-0.5">
                       <Badge variant={a.respPose === 'GEST' ? 'default' : 'outline'} className="text-[9px] px-1 py-0">
