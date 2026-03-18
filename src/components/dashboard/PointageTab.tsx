@@ -185,7 +185,10 @@ export function PointageTab({ data }: { data: PointageData[] }) {
     }
 
     const moyenneJournaliere = heuresMoisCourant / joursSaisis;
-    const projection = Math.round(moyenneJournaliere * totalWorkingDays);
+    const projectionBrute = moyenneJournaliere * totalWorkingDays;
+    // Ajouter ~12% pour les heures de gestion saisies en fin de mois
+    const GESTION_RATIO = 0.12;
+    const projection = Math.round(projectionBrute / (1 - GESTION_RATIO));
 
     let trend: 'up' | 'down' | 'neutral' = 'neutral';
     let trendPct = 0;
