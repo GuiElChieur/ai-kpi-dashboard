@@ -466,6 +466,7 @@ export async function exportEnrichedExcel(
     const sheetName = wb.SheetNames.find(n => n.toLowerCase() === 'appareils') || 'appareils';
     const rows = enrichedData.map(r => ({
       APP: r.app,
+      REPERE_APP: r.repereApp,
       FN: r.fn,
       LOCAL: r.local,
       LIB_LOCAL: r.libLocal,
