@@ -121,20 +121,32 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
     return Object.values(map).sort((a, b) => (b.pose + b.nonPose) - (a.pose + a.nonPose));
   }, [baseData, filters.selectedFns, filters.selectedMonths]);
 
-  // Chart 3: by month (non posé only) using DATE_CONTRAINTE
+  // French month names
+  const MONTH_NAMES_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+  // Chart 3: by month (stacked: posé + reste) using DATE_CONTRAINTE
   const chartByMonth = useMemo(() => {
-    const map: Record<string, { month: string; count: number }> = {};
+    const map: Record<string, { monthKey: string; pose: number; reste: number }> = {};
     baseData.forEach(a => {
-      if (a.indPose === 'O') return;
       if (filters.selectedFns.length > 0 && !filters.selectedFns.includes(a.fn)) return;
       if (filters.selectedLots.length > 0 && !filters.selectedLots.includes(a.lotMtgApp)) return;
       const date = a.dateContrainte || a.dateFinOd;
       if (!date) return;
       const m = date.substring(0, 7);
-      if (!map[m]) map[m] = { month: m, count: 0 };
-      map[m].count++;
+      if (!map[m]) map[m] = { monthKey: m, pose: 0, reste: 0 };
+      if (a.indPose === 'O') map[m].pose++;
+      else map[m].reste++;
     });
-    return Object.values(map).sort((a, b) => a.month.localeCompare(b.month));
+    const sorted = Object.values(map).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+    // Detect if multiple years
+    const years = new Set(sorted.map(d => d.monthKey.substring(0, 4)));
+    const multiYear = years.size > 1;
+    return sorted.map(d => {
+      const [y, mStr] = d.monthKey.split('-');
+      const mIdx = parseInt(mStr, 10) - 1;
+      const label = multiYear ? `${MONTH_NAMES_FR[mIdx]} ${y}` : MONTH_NAMES_FR[mIdx];
+      return { ...d, month: label, total: d.pose + d.reste };
+    });
   }, [baseData, filters.selectedFns, filters.selectedLots]);
 
   const fnBarHeight = Math.max(chartByFn.length * 28, 100);
