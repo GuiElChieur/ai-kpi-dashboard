@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'courbe-filerie', label: 'Courbe Filerie (m)' },
   { id: 'filerie-lot', label: 'Filerie de Lot' },
   { id: 'pose-appareillage', label: 'Pose Appareillage' },
+  { id: 'enrichment', label: '🔗 Enrichissement Y34→Z34' },
   { id: 'import', label: '📥 Import données' },
   { id: 'ai', label: 'Analyse IA ✨' },
 ];
