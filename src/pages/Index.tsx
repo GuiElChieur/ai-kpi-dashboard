@@ -13,6 +13,7 @@ import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
 import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
 import { useAppareilsData } from '@/hooks/use-appareils-data';
 import { PerformancePage } from '@/components/dashboard/PerformancePage';
+import { EnrichmentPage } from '@/components/dashboard/EnrichmentPage';
 import { DataImport } from '@/components/dashboard/DataImport';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
 import { AIChat } from '@/components/dashboard/AIChat';
