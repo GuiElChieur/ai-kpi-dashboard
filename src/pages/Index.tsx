@@ -128,6 +128,9 @@ const Index = () => {
           appareilsLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <PoseAppareillage allData={appareilsData || []} />
         )}
+        {activePage === 'enrichment' && (
+          <EnrichmentPage />
+        )}
         {activePage === 'import' && (
           <DataImport />
         )}
