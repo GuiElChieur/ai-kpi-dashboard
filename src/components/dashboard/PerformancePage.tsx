@@ -108,7 +108,7 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
     });
 
     return Object.entries(byType)
-      .filter(([, v]) => v.tp > 0 || isForced100(v.name ?? ''))
+      .filter(([name, v]) => v.tp > 0 || isForced100(name))
       .map(([name, v]) => ({
         name,
         rendement: isForced100(name) ? 100 : (v.tp > 0 ? Math.round((v.vbtr / v.tp) * 100) : 0),
