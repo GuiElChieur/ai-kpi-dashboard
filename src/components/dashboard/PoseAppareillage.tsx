@@ -192,7 +192,7 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
       </div>
 
       {/* Row 2: Charts — takes remaining space minus table */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.2fr] gap-2">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2">
         {/* Left column: FN + LOT stacked */}
         <div className="flex flex-col gap-2 min-h-0">
           {/* Chart FN */}
