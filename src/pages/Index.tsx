@@ -11,7 +11,9 @@ import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
 import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
+import { PoseEquipement } from '@/components/dashboard/PoseEquipement';
 import { useAppareilsData } from '@/hooks/use-appareils-data';
+import { useEquipementData } from '@/hooks/use-equipement-data';
 import { PerformancePage } from '@/components/dashboard/PerformancePage';
 import { EnrichmentPage } from '@/components/dashboard/EnrichmentPage';
 import { DataImport } from '@/components/dashboard/DataImport';
@@ -25,6 +27,7 @@ const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
   const { data: cableData, isLoading: cableLoading } = useCableData();
   const { data: appareilsData, isLoading: appareilsLoading } = useAppareilsData();
+  const { data: equipementData, isLoading: equipementLoading } = useEquipementData(appareilsData);
   const { user, signOut } = useAuth();
   const [activePage, setActivePage] = useState('ot-progi');
   const [showUpload, setShowUpload] = useState(false);
@@ -130,6 +133,10 @@ const Index = () => {
         )}
         {activePage === 'enrichment' && (
           <EnrichmentPage />
+        )}
+        {activePage === 'pose-equipement' && (
+          (appareilsLoading || equipementLoading) ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <PoseEquipement allData={equipementData || []} />
         )}
         {activePage === 'import' && (
           <DataImport />
