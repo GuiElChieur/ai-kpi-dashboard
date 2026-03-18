@@ -16,6 +16,7 @@ function mapAppareil(r: any): AppareilData {
     indPretAPoser: r.ind_pret_a_poser || '',
     indPose: r.ind_pose || '',
     dateFinOd: r.date_fin_od || null,
+    dateContrainte: r.date_contrainte || null,
   };
 }
 

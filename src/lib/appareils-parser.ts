@@ -13,6 +13,7 @@ export interface AppareilData {
   indPretAPoser: string;
   indPose: string;
   dateFinOd: string | null;
+  dateContrainte: string | null;
 }
 
 function excelDateToString(v: unknown): string | null {
@@ -51,6 +52,7 @@ function parseRow(row: Record<string, unknown>): AppareilData {
     indPretAPoser: String(getVal(row, 'IND_PRET_A_POSER') ?? '').trim().toUpperCase(),
     indPose: String(getVal(row, 'IND_POSE') ?? '').trim().toUpperCase(),
     dateFinOd: excelDateToString(getVal(row, 'Date de Fin OD', 'DATE_FIN_OD', 'Date_Fin_OD')),
+    dateContrainte: excelDateToString(getVal(row, 'DATE_CONTRAINTE', 'Date_Contrainte', 'date_contrainte')),
   };
 }
 
