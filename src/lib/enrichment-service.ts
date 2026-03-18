@@ -154,6 +154,7 @@ function parseSheet(wb: XLSX.WorkBook): Record<string, unknown>[] {
 function rowToRecord(row: Record<string, unknown>): AppareilRecord {
   return {
     app: normalizeMatchKey(getFlexVal(row, 'APP')),
+    repereApp: normalizeMatchKey(getFlexVal(row, 'REPERE_APP')),
     fn: String(getFlexVal(row, 'FN') ?? '').trim().toUpperCase(),
     local: String(getFlexVal(row, 'LOCAL') ?? ''),
     libLocal: String(getFlexVal(row, 'LIB_LOCAL') ?? ''),
