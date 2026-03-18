@@ -40,7 +40,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   }, [latest, activeFilters]);
 
   const filteredLigne = useMemo(() => {
-    let data = otLigneData.map(normalizeOTLigne);
+    let data = otLigneData;
     if (activeFilters.length > 0) {
       const filteredIds = new Set(filtered.map(d => d.numOT));
       data = data.filter(d => filteredIds.has(d.identifiantProjet) || activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
