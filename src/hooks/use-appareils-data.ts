@@ -23,7 +23,11 @@ function mapAppareil(r: any): AppareilData {
 const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
 
 function normalizeKey(v: string): string {
-  return v.trim().toUpperCase().replace(/\s+/g, '');
+  return v
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '')
+    .replace(/^(?:Y34|Z34)[-–—:]?/, '');
 }
 
 async function fetchAllPages(table: string, filter?: { col: string; val: string }): Promise<any[]> {
