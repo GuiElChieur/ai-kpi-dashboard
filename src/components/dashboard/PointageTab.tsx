@@ -136,6 +136,66 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
+  // Projection mensuelle KPI
+  const projectionMensuelle = useMemo(() => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Helper: is working day (Mon-Fri, no public holidays for simplicity)
+    const isWorkingDay = (d: Date) => {
+      const day = d.getDay();
+      return day !== 0 && day !== 6;
+    };
+
+    // Count total working days in current month
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    let totalWorkingDays = 0;
+    let elapsedWorkingDays = 0;
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(currentYear, currentMonth, i);
+      if (isWorkingDay(d)) {
+        totalWorkingDays++;
+        if (i <= today.getDate()) elapsedWorkingDays++;
+      }
+    }
+
+    // Hours in current month from filtered data (respects employer/code filters)
+    const currentMonthData = filtered.filter(r => {
+      const date = parseDateFn(r.dateSaisie);
+      if (!date) return false;
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    });
+    const heuresMoisCourant = currentMonthData.reduce((s, r) => s + r.quantite, 0);
+    const joursSaisis = new Set(currentMonthData.map(r => r.dateSaisie).filter(Boolean)).size;
+
+    // Previous month hours
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonthData = filtered.filter(r => {
+      const date = parseDateFn(r.dateSaisie);
+      if (!date) return false;
+      return date.getMonth() === prevMonth && date.getFullYear() === prevYear;
+    });
+    const heuresMoisPrecedent = prevMonthData.reduce((s, r) => s + r.quantite, 0);
+
+    if (joursSaisis < 2 || elapsedWorkingDays === 0) {
+      return { projection: null, joursSaisis, trend: 'neutral' as const, trendPct: 0 };
+    }
+
+    const moyenneJournaliere = heuresMoisCourant / joursSaisis;
+    const projection = Math.round(moyenneJournaliere * totalWorkingDays);
+
+    let trend: 'up' | 'down' | 'neutral' = 'neutral';
+    let trendPct = 0;
+    if (heuresMoisPrecedent > 0) {
+      trendPct = Math.round(((projection - heuresMoisPrecedent) / heuresMoisPrecedent) * 100);
+      trend = trendPct > 2 ? 'up' : trendPct < -2 ? 'down' : 'neutral';
+    }
+
+    return { projection, joursSaisis, trend, trendPct };
+  }, [filtered]);
+
   // Stacked bar by month (uses `filtered` not `filteredFinal` so all months stay visible)
   const monthlyData = useMemo(() => {
     const byMonth: Record<string, { sortKey: string; label: string; codes: Record<string, number> }> = {};
