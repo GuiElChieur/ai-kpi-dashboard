@@ -37,8 +37,9 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
 
   // Filter data by codeLibreTable
   const filtered = useMemo(() => {
-    if (activeFilters.length === 0) return otLigneData;
-    return otLigneData.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
+    const normalized = otLigneData.map(normalizeOTLigne);
+    if (activeFilters.length === 0) return normalized;
+    return normalized.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
   }, [otLigneData, activeFilters]);
 
   // Global KPIs
