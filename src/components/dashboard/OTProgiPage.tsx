@@ -59,7 +59,14 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
     const avancementBudget = totalCharge > 0 ? (totalTP / totalCharge) * 100 : 0;
     const avancementReel = totalCharge > 0 ? (totalVBTR / totalCharge) * 100 : 0;
     const ecartAvancement = avancementReel - avancementBudget;
-    const rendement = totalTP > 0 ? (totalVBTR / totalTP) * 100 : 0;
+    // Rendement: forced-100% types contribute at exactly 100% (their TP counts as VBTR)
+    const forced = filteredLigne.filter(d => isForced100(d.typeOT));
+    const nonForced = filteredLigne.filter(d => !isForced100(d.typeOT));
+    const nfTP = nonForced.reduce((s, d) => s + d.tp, 0);
+    const nfVBTR = nonForced.reduce((s, d) => s + d.vbtr, 0);
+    const forcedTP = forced.reduce((s, d) => s + d.tp, 0);
+    const rendementDenom = nfTP + forcedTP;
+    const rendement = rendementDenom > 0 ? ((nfVBTR + forcedTP) / rendementDenom) * 100 : 0;
     return { totalCharge, totalVBTR, totalTP, totalHeuresPointees, resultat, avancementBudget, avancementReel, ecartAvancement, rendement };
   }, [filteredLigne, pointageData]);
 
