@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { GaugeChart } from './GaugeChart';
-import { PbiKpiCard } from './PbiKpiCard';
+import { KpiCard } from './KpiCard';
+import { Clock, Users, TrendingUp } from 'lucide-react';
 import type { PointageData } from '@/lib/csv-parser';
 
 const CODE_LIBRE_COLORS: Record<string, string> = {
@@ -368,29 +369,17 @@ export function PointageTab({ data }: { data: PointageData[] }) {
       {/* Main content row - charts */}
       <div className="flex gap-2 shrink-0" style={{ height: 'calc(48vh - 40px)' }}>
         {/* Left KPI column */}
-        <div className="flex flex-col gap-2 min-w-[130px] shrink-0">
-          <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
-          <PbiKpiCard label="Nbre de personnes à bord" value={nbPersonnes} color="warning" />
-          <PbiKpiCard
-            label="📈 Projection mensuelle"
+        <div className="flex flex-col gap-2 min-w-[160px] shrink-0">
+          <KpiCard title="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} icon={<Clock className="h-5 w-5" />} />
+          <KpiCard title="Nbre de personnes à bord" value={nbPersonnes} icon={<Users className="h-5 w-5" />} />
+          <KpiCard
+            title="Projection mensuelle"
             value={projectionMensuelle.projection !== null ? projectionMensuelle.projection.toLocaleString('fr-FR') : '—'}
-            color={projectionMensuelle.projection === null ? 'primary' : projectionMensuelle.trend === 'up' ? 'success' : projectionMensuelle.trend === 'down' ? 'destructive' : 'info'}
-            small
+            icon={<TrendingUp className="h-5 w-5" />}
+            subtitle={projectionMensuelle.projection !== null ? `Basé sur ${projectionMensuelle.joursSaisis} jours saisis` : 'Données insuffisantes'}
+            trend={projectionMensuelle.projection !== null ? projectionMensuelle.trend : 'neutral'}
+            trendValue={projectionMensuelle.projection !== null && projectionMensuelle.trendPct !== 0 ? `${projectionMensuelle.trendPct > 0 ? '+' : ''}${projectionMensuelle.trendPct}% vs mois préc.` : undefined}
           />
-          {projectionMensuelle.projection !== null && (
-            <div className="pbi-card px-2 py-1 text-center -mt-1">
-              <div className="text-[9px] text-muted-foreground">
-                Basé sur {projectionMensuelle.joursSaisis} jours saisis
-              </div>
-              {projectionMensuelle.trendPct !== 0 && (
-                <div className={`text-[9px] font-medium ${
-                  projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
-                }`}>
-                  {projectionMensuelle.trend === 'up' ? '↑' : projectionMensuelle.trend === 'down' ? '↓' : '→'} {projectionMensuelle.trendPct > 0 ? '+' : ''}{projectionMensuelle.trendPct}% vs mois préc.
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Center charts */}
