@@ -9,6 +9,7 @@ import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, P
 import type { AppareilData } from '@/lib/appareils-parser';
 
 const FN_OPTIONS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
+const ECR_LABEL = 'ECR';
 
 interface Filters {
   fnFilter: string[];
