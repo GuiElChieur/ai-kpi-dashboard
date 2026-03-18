@@ -10,6 +10,8 @@ import { AchatTab } from '@/components/dashboard/AchatTab';
 import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
+import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
+import { useAppareilsData } from '@/hooks/use-appareils-data';
 import { PerformancePage } from '@/components/dashboard/PerformancePage';
 import { DataImport } from '@/components/dashboard/DataImport';
 import { CSVUpload } from '@/components/dashboard/CSVUpload';
@@ -21,6 +23,7 @@ import { Upload, LogOut } from 'lucide-react';
 const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
   const { data: cableData, isLoading: cableLoading } = useCableData();
+  const { data: appareilsData, isLoading: appareilsLoading } = useAppareilsData();
   const { user, signOut } = useAuth();
   const [activePage, setActivePage] = useState('ot-progi');
   const [showUpload, setShowUpload] = useState(false);
@@ -119,6 +122,10 @@ const Index = () => {
         {activePage === 'courbe-filerie' && (
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <div className="flex-1 min-h-0"><CourbeFileriePage allData={cableData || []} /></div>
+        )}
+        {activePage === 'pose-appareillage' && (
+          appareilsLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <PoseAppareillage allData={appareilsData || []} />
         )}
         {activePage === 'import' && (
           <DataImport />

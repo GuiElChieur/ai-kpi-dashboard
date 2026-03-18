@@ -74,6 +74,57 @@ export type Database = {
         }
         Relationships: []
       }
+      appareils: {
+        Row: {
+          app: string | null
+          date_fin_od: string | null
+          fn: string | null
+          id: string
+          imported_at: string
+          ind_pose: string | null
+          ind_pret_a_poser: string | null
+          lib_design: string | null
+          lib_local: string | null
+          local: string | null
+          lot_mtg_app: string | null
+          resp_pose: string | null
+          resp_pret_a_poser: string | null
+          t_app: string | null
+        }
+        Insert: {
+          app?: string | null
+          date_fin_od?: string | null
+          fn?: string | null
+          id?: string
+          imported_at?: string
+          ind_pose?: string | null
+          ind_pret_a_poser?: string | null
+          lib_design?: string | null
+          lib_local?: string | null
+          local?: string | null
+          lot_mtg_app?: string | null
+          resp_pose?: string | null
+          resp_pret_a_poser?: string | null
+          t_app?: string | null
+        }
+        Update: {
+          app?: string | null
+          date_fin_od?: string | null
+          fn?: string | null
+          id?: string
+          imported_at?: string
+          ind_pose?: string | null
+          ind_pret_a_poser?: string | null
+          lib_design?: string | null
+          lib_local?: string | null
+          local?: string | null
+          lot_mtg_app?: string | null
+          resp_pose?: string | null
+          resp_pret_a_poser?: string | null
+          t_app?: string | null
+        }
+        Relationships: []
+      }
       cables: {
         Row: {
           apa: string | null
