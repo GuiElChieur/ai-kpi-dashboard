@@ -20,19 +20,25 @@ function mapAppareil(r: any): AppareilData {
   };
 }
 
+const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
+
 async function loadFromDb(): Promise<AppareilData[]> {
   let allData: any[] = [];
   let from = 0;
   const pageSize = 1000;
   while (true) {
-    const { data, error } = await (supabase as any).from('appareils').select('*').range(from, from + pageSize - 1);
+    const { data, error } = await (supabase as any).from('appareils').select('*').eq('resp_pose', 'GEST').range(from, from + pageSize - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  if (allData.length > 0) return allData.map(mapAppareil);
+  if (allData.length > 0) {
+    return allData.map(mapAppareil).filter(a =>
+      ALLOWED_FNS.includes(a.fn) && a.libLocal.toUpperCase() === 'ECR'
+    );
+  }
   return loadAppareilData();
 }
 

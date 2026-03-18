@@ -92,7 +92,7 @@ export function parseAppareilFile(file: File): Promise<AppareilData[]> {
         const wb = XLSX.read(buf, { type: 'array' });
         const ws = wb.Sheets['appareils'] || wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-        resolve(rows.map(parseRow).filter(c => c.respPose === 'GEST'));
+        resolve(applyBaseFilters(rows.map(parseRow)));
       } catch (err) {
         reject(err);
       }
