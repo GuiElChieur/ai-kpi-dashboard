@@ -8,6 +8,16 @@ import { fr } from 'date-fns/locale';
 
 const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT', 'MONTA', 'MODIF'] as const;
 
+// These OT types are forced to 100% rendement (VBTR = TP)
+const FORCED_100_TYPES = ['10_phase 1 cdc', '60_bouchage_surbaux'];
+function isForced100(typeOT: string) {
+  return FORCED_100_TYPES.some(t => typeOT.toLowerCase().includes(t));
+}
+function normalizeOTLigne(d: OTLigneData): OTLigneData {
+  if (isForced100(d.typeOT)) return { ...d, vbtr: d.tp };
+  return d;
+}
+
 interface PerformancePageProps {
   otLigneData: OTLigneData[];
 }
@@ -27,8 +37,9 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
 
   // Filter data by codeLibreTable
   const filtered = useMemo(() => {
-    if (activeFilters.length === 0) return otLigneData;
-    return otLigneData.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
+    const normalized = otLigneData.map(normalizeOTLigne);
+    if (activeFilters.length === 0) return normalized;
+    return normalized.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
   }, [otLigneData, activeFilters]);
 
   // Global KPIs

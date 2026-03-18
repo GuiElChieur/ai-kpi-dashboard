@@ -7,6 +7,16 @@ import type { OTData, OTLigneData, PointageData } from '@/lib/csv-parser';
 
 const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT', 'MONTA', 'MODIF'] as const;
 
+// These OT types are forced to 100% rendement (VBTR = TP)
+const FORCED_100_TYPES = ['10_phase 1 cdc', '60_bouchage_surbaux'];
+function isForced100(typeOT: string) {
+  return FORCED_100_TYPES.some(t => typeOT.toLowerCase().includes(t));
+}
+function normalizeOTLigne(d: OTLigneData): OTLigneData {
+  if (isForced100(d.typeOT)) return { ...d, vbtr: d.tp };
+  return d;
+}
+
 interface OTProgiPageProps {
   otData: OTData[];
   otLigneData: OTLigneData[];
@@ -34,7 +44,7 @@ export function OTProgiPage({ otData, otLigneData, pointageData }: OTProgiPagePr
   }, [latest, activeFilters]);
 
   const filteredLigne = useMemo(() => {
-    let data = otLigneData;
+    let data = otLigneData.map(normalizeOTLigne);
     if (activeFilters.length > 0) {
       const filteredIds = new Set(filtered.map(d => d.numOT));
       data = data.filter(d => filteredIds.has(d.identifiantProjet) || activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
