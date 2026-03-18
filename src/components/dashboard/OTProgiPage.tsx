@@ -7,6 +7,16 @@ import type { OTData, OTLigneData, PointageData } from '@/lib/csv-parser';
 
 const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT', 'MONTA', 'MODIF'] as const;
 
+// These OT types are forced to 100% rendement (VBTR = TP)
+const FORCED_100_TYPES = ['10_phase 1 cdc', '60_bouchage_surbaux'];
+function isForced100(typeOT: string) {
+  return FORCED_100_TYPES.some(t => typeOT.toLowerCase().includes(t));
+}
+function normalizeOTLigne(d: OTLigneData): OTLigneData {
+  if (isForced100(d.typeOT)) return { ...d, vbtr: d.tp };
+  return d;
+}
+
 interface OTProgiPageProps {
   otData: OTData[];
   otLigneData: OTLigneData[];
