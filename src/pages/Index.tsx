@@ -27,7 +27,7 @@ const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
   const { data: cableData, isLoading: cableLoading } = useCableData();
   const { data: appareilsData, isLoading: appareilsLoading } = useAppareilsData();
-  const { data: equipementData, isLoading: equipementLoading } = useEquipementData(appareilsData);
+  const { data: equipementData, isLoading: equipementLoading } = useEquipementData();
   const { user, signOut } = useAuth();
   const [activePage, setActivePage] = useState('ot-progi');
   const [showUpload, setShowUpload] = useState(false);
