@@ -77,7 +77,8 @@ export interface PersistedEnrichment {
 // ─── Column Detection (flexible) ────────────────────────────────
 
 const COLUMN_ALIASES: Record<string, string[]> = {
-  APP: ['APP', 'APPAREIL', 'CODE_APP', 'IDE_APP', 'REPERE_APP'],
+  APP: ['APP', 'APPAREIL', 'CODE_APP', 'IDE_APP'],
+  REPERE_APP: ['REPERE_APP', 'REPERE APP', 'REP_APP', 'REPERE_APPAREIL'],
   FN: ['FN', 'TRIGRAMME', 'CODE_FN'],
   LOCAL: ['LOCAL', 'CODE_LOCAL'],
   LIB_LOCAL: ['LIB_LOCAL', 'LIBELLE_LOCAL', 'LIB LOCAL'],
