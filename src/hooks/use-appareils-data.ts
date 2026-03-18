@@ -55,11 +55,12 @@ async function loadFromDb(): Promise<AppareilData[]> {
   // Load enrichment overrides
   const enrichments = await fetchAllPages('appareil_enrichments');
   
-  // Build enrichment lookup by normalized APP key
+  // Build enrichment lookup by normalized APP value (enrichments store 'app' field = APP column)
   const enrichMap = new Map<string, any>();
   for (const e of enrichments) {
-    if (e.match_key) {
-      enrichMap.set(normalizeKey(e.match_key), e);
+    const key = e.app ? normalizeKey(e.app) : (e.match_key ? normalizeKey(e.match_key) : null);
+    if (key) {
+      enrichMap.set(key, e);
     }
   }
 
