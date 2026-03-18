@@ -8,14 +8,10 @@ import { fr } from 'date-fns/locale';
 
 const FILTER_CATEGORIES = ['APPRO', 'ETUDE', 'GESTI', 'MAIT', 'MONTA', 'MODIF'] as const;
 
-// These OT types are forced to 100% rendement (VBTR = TP)
+// These OT types are forced to 100% rendement — excluded from rendement ratio
 const FORCED_100_TYPES = ['10_phase 1 cdc', '60_bouchage_surbaux'];
 function isForced100(typeOT: string) {
   return FORCED_100_TYPES.some(t => typeOT.toLowerCase().includes(t));
-}
-function normalizeOTLigne(d: OTLigneData): OTLigneData {
-  if (isForced100(d.typeOT)) return { ...d, vbtr: d.tp };
-  return d;
 }
 
 interface PerformancePageProps {
@@ -37,9 +33,8 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
 
   // Filter data by codeLibreTable
   const filtered = useMemo(() => {
-    const normalized = otLigneData.map(normalizeOTLigne);
-    if (activeFilters.length === 0) return normalized;
-    return normalized.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
+    if (activeFilters.length === 0) return otLigneData;
+    return otLigneData.filter(d => activeFilters.some(f => d.codeLibreTable?.toUpperCase().includes(f)));
   }, [otLigneData, activeFilters]);
 
   // Global KPIs
@@ -51,7 +46,14 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
     const avancementBudget = totalCharge > 0 ? (totalTP / totalCharge) * 100 : 0;
     const avancementReel = totalCharge > 0 ? (totalVBTR / totalCharge) * 100 : 0;
     const ecartAvancement = avancementReel - avancementBudget;
-    const rendement = totalTP > 0 ? (totalVBTR / totalTP) * 100 : 0;
+    // Rendement: forced-100% types contribute at exactly 100%
+    const forced = filtered.filter(d => isForced100(d.typeOT));
+    const nonForced = filtered.filter(d => !isForced100(d.typeOT));
+    const nfTP = nonForced.reduce((s, d) => s + d.tp, 0);
+    const nfVBTR = nonForced.reduce((s, d) => s + d.vbtr, 0);
+    const forcedTP = forced.reduce((s, d) => s + d.tp, 0);
+    const rendementDenom = nfTP + forcedTP;
+    const rendement = rendementDenom > 0 ? ((nfVBTR + forcedTP) / rendementDenom) * 100 : 0;
 
     return { totalCharge, totalVBTR, totalTP, avancementBudget, avancementReel, ecartAvancement, rendement };
   }, [filtered]);
@@ -106,10 +108,10 @@ export function PerformancePage({ otLigneData }: PerformancePageProps) {
     });
 
     return Object.entries(byType)
-      .filter(([, v]) => v.tp > 0) // exclude TP=0
+      .filter(([name, v]) => v.tp > 0 || isForced100(name))
       .map(([name, v]) => ({
         name,
-        rendement: Math.round((v.vbtr / v.tp) * 100),
+        rendement: isForced100(name) ? 100 : (v.tp > 0 ? Math.round((v.vbtr / v.tp) * 100) : 0),
         vbtr: Math.round(v.vbtr),
         tp: Math.round(v.tp),
       }))
