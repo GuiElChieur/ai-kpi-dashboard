@@ -2,10 +2,9 @@
  * Enrichment Service — Y34 → Z34 matching, enrichment, and persistence
  * 
  * MATCHING STRATEGY:
- * Primary key: APP column (appareil identifier, unique per project).
- * The APP column is the most stable and unique identifier across Y34/Z34.
+ * Primary key: REPERE_APP column (repère appareil, unique identifier across Y34/Z34).
  * Normalization: trim + uppercase + remove extra whitespace.
- * Ambiguity: if multiple Y34 rows have the same APP, the match is skipped (ambiguous).
+ * Ambiguity: if multiple Y34 rows have the same REPERE_APP, the match is skipped (ambiguous).
  * 
  * ENRICHMENT RULES:
  * - RESP_POSE: never overwrite if already set in Z34. Fill from Y34 match or persisted DB value.
