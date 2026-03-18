@@ -1,0 +1,1 @@
+ALTER TABLE public.appareils ADD COLUMN IF NOT EXISTS date_contrainte date;

@@ -77,6 +77,7 @@ export type Database = {
       appareils: {
         Row: {
           app: string | null
+          date_contrainte: string | null
           date_fin_od: string | null
           fn: string | null
           id: string
@@ -93,6 +94,7 @@ export type Database = {
         }
         Insert: {
           app?: string | null
+          date_contrainte?: string | null
           date_fin_od?: string | null
           fn?: string | null
           id?: string
@@ -109,6 +111,7 @@ export type Database = {
         }
         Update: {
           app?: string | null
+          date_contrainte?: string | null
           date_fin_od?: string | null
           fn?: string | null
           id?: string
