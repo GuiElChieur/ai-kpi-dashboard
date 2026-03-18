@@ -286,7 +286,7 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
       {/* Table */}
       <Card className="glass-card flex flex-col shrink-0" style={{ maxHeight: '25vh' }}>
         <CardHeader className="py-1.5 px-3 shrink-0">
-          <CardTitle className="text-xs">Détail équipements G7P ({filteredData.length})</CardTitle>
+          <CardTitle className="text-xs">Détail équipements ({filteredData.length})</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 min-h-0 overflow-auto p-0">
           <Table>
