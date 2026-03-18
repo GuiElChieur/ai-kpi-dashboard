@@ -4,7 +4,7 @@ import { KpiCard } from './KpiCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LabelList } from 'recharts';
 import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, PackageOpen, Percent } from 'lucide-react';
 import type { AppareilData } from '@/lib/appareils-parser';
 
@@ -121,20 +121,32 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
     return Object.values(map).sort((a, b) => (b.pose + b.nonPose) - (a.pose + a.nonPose));
   }, [baseData, filters.selectedFns, filters.selectedMonths]);
 
-  // Chart 3: by month (non posé only) using DATE_CONTRAINTE
+  // French month names
+  const MONTH_NAMES_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+  // Chart 3: by month (stacked: posé + reste) using DATE_CONTRAINTE
   const chartByMonth = useMemo(() => {
-    const map: Record<string, { month: string; count: number }> = {};
+    const map: Record<string, { monthKey: string; pose: number; reste: number }> = {};
     baseData.forEach(a => {
-      if (a.indPose === 'O') return;
       if (filters.selectedFns.length > 0 && !filters.selectedFns.includes(a.fn)) return;
       if (filters.selectedLots.length > 0 && !filters.selectedLots.includes(a.lotMtgApp)) return;
       const date = a.dateContrainte || a.dateFinOd;
       if (!date) return;
       const m = date.substring(0, 7);
-      if (!map[m]) map[m] = { month: m, count: 0 };
-      map[m].count++;
+      if (!map[m]) map[m] = { monthKey: m, pose: 0, reste: 0 };
+      if (a.indPose === 'O') map[m].pose++;
+      else map[m].reste++;
     });
-    return Object.values(map).sort((a, b) => a.month.localeCompare(b.month));
+    const sorted = Object.values(map).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+    // Detect if multiple years
+    const years = new Set(sorted.map(d => d.monthKey.substring(0, 4)));
+    const multiYear = years.size > 1;
+    return sorted.map(d => {
+      const [y, mStr] = d.monthKey.split('-');
+      const mIdx = parseInt(mStr, 10) - 1;
+      const label = multiYear ? `${MONTH_NAMES_FR[mIdx]} ${y}` : MONTH_NAMES_FR[mIdx];
+      return { ...d, month: label, total: d.pose + d.reste };
+    });
   }, [baseData, filters.selectedFns, filters.selectedLots]);
 
   const fnBarHeight = Math.max(chartByFn.length * 28, 100);
@@ -248,23 +260,83 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
 
         {/* Center column: removed, LOT is now in left stack */}
 
-        {/* Right column: Monthly histogram */}
+        {/* Right column: Monthly stacked bar chart — spans remaining space */}
         <Card className="glass-card flex flex-col min-h-0 lg:col-span-1">
           <CardHeader className="py-1.5 px-3 shrink-0">
             <CardTitle className="text-xs">À poser par mois (DATE_CONTRAINTE)</CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0 p-1">
+          <CardContent className="flex-1 min-h-0 p-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartByMonth} margin={{ top: 5, right: 10, left: 0, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                <XAxis dataKey="month" tick={{ fontSize: 9 }} interval={0} angle={-45} textAnchor="end" height={50} />
-                <YAxis tick={{ fontSize: 9 }} />
-                <Tooltip contentStyle={{ fontSize: 11, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', color: 'hsl(var(--foreground))' }} />
-                <Bar dataKey="count" name="À poser" cursor="pointer"
-                  onClick={(d: any) => d && toggleFilter('selectedMonths', d.month)}>
+              <BarChart data={chartByMonth} margin={{ top: 10, right: 8, left: 0, bottom: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                  interval={0}
+                  angle={-40}
+                  textAnchor="end"
+                  height={55}
+                />
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                <Tooltip
+                  contentStyle={{
+                    fontSize: 11,
+                    background: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(var(--foreground))',
+                    borderRadius: 6,
+                  }}
+                  formatter={(value: number, name: string) => [value, name]}
+                  labelFormatter={(label: string) => label}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const pose = payload.find(p => p.dataKey === 'pose')?.value as number || 0;
+                    const reste = payload.find(p => p.dataKey === 'reste')?.value as number || 0;
+                    return (
+                      <div className="rounded-md border border-border/50 bg-card px-3 py-2 text-xs shadow-xl">
+                        <p className="font-semibold text-foreground mb-1">{label}</p>
+                        <p className="text-foreground">Total : <span className="font-mono font-bold">{pose + reste}</span></p>
+                        <p className="text-success">Posé : <span className="font-mono font-bold">{pose}</span></p>
+                        <p className="text-destructive">Reste à poser : <span className="font-mono font-bold">{reste}</span></p>
+                      </div>
+                    );
+                  }}
+                />
+                <Legend
+                  verticalAlign="top"
+                  height={20}
+                  iconSize={10}
+                  wrapperStyle={{ fontSize: 10, color: 'hsl(var(--muted-foreground))' }}
+                />
+                <Bar
+                  dataKey="pose"
+                  stackId="monthly"
+                  name="Posé"
+                  fill="hsl(var(--success))"
+                  cursor="pointer"
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                  onClick={(d: any) => d && toggleFilter('selectedMonths', d.monthKey)}
+                >
                   {chartByMonth.map((e, i) => (
-                    <Cell key={i} fill={filters.selectedMonths.includes(e.month) ? 'hsl(217, 91%, 65%)' : 'hsl(217, 91%, 50%)'} />
+                    <Cell key={i} fill={filters.selectedMonths.includes(e.monthKey) ? 'hsl(142, 76%, 55%)' : 'hsl(var(--success))'} />
                   ))}
+                  <LabelList dataKey="pose" position="center" style={{ fontSize: 8, fill: 'hsl(var(--success-foreground))' }} formatter={(v: number) => v > 0 ? v : ''} />
+                </Bar>
+                <Bar
+                  dataKey="reste"
+                  stackId="monthly"
+                  name="Reste à poser"
+                  fill="hsl(var(--destructive))"
+                  cursor="pointer"
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                  onClick={(d: any) => d && toggleFilter('selectedMonths', d.monthKey)}
+                >
+                  {chartByMonth.map((e, i) => (
+                    <Cell key={i} fill={filters.selectedMonths.includes(e.monthKey) ? 'hsl(0, 84%, 65%)' : 'hsl(var(--destructive))'} />
+                  ))}
+                  <LabelList dataKey="reste" position="center" style={{ fontSize: 8, fill: 'hsl(var(--destructive-foreground))' }} formatter={(v: number) => v > 0 ? v : ''} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
