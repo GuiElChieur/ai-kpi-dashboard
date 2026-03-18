@@ -385,7 +385,7 @@ export function EnrichmentPage() {
             <table className="w-full text-[10px]">
               <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border">
-                  {['APP', 'FN', 'LOCAL', 'LIB_LOCAL', 'LOT', 'RESP_POSE', 'IND_POSE', 'DATE_CONTRAINTE'].map(h => (
+                  {['REPERE_APP', 'APP', 'FN', 'LOCAL', 'LOT', 'RESP_POSE', 'IND_POSE', 'DATE_CONTRAINTE'].map(h => (
                     <th key={h} className="px-2 py-1 text-left font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
