@@ -198,6 +198,7 @@ export async function loadZ34FromDb(): Promise<AppareilRecord[]> {
   }
   return allData.map((r: any) => ({
     app: normalizeMatchKey(r.app),
+    repereApp: normalizeMatchKey(r.app), // DB doesn't have repere_app yet, fallback to app
     fn: (r.fn || '').toUpperCase(),
     local: r.local || '',
     libLocal: r.lib_local || '',
