@@ -56,6 +56,16 @@ function parseRow(row: Record<string, unknown>): AppareilData {
   };
 }
 
+const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
+
+function applyBaseFilters(data: AppareilData[]): AppareilData[] {
+  return data.filter(c =>
+    c.respPose === 'GEST' &&
+    ALLOWED_FNS.includes(c.fn) &&
+    c.libLocal.toUpperCase() === 'ECR'
+  );
+}
+
 export async function loadAppareilData(): Promise<AppareilData[]> {
   const res = await fetch('/data/Extraction_NEC_Z34.xlsx');
   const buf = await res.arrayBuffer();
@@ -68,8 +78,8 @@ export async function loadAppareilData(): Promise<AppareilData[]> {
     console.log('[appareils-parser] Total rows:', rows.length);
   }
 
-  const result = rows.map(parseRow).filter(c => c.respPose === 'GEST');
-  console.log('[appareils-parser] GEST count:', result.length);
+  const result = applyBaseFilters(rows.map(parseRow));
+  console.log('[appareils-parser] Filtered count:', result.length);
   return result;
 }
 
