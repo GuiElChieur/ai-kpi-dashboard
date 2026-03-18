@@ -371,32 +371,26 @@ export function PointageTab({ data }: { data: PointageData[] }) {
         <div className="flex flex-col gap-2 min-w-[130px] shrink-0">
           <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
           <PbiKpiCard label="Nbre de personnes à bord" value={nbPersonnes} color="warning" />
-          <div className="pbi-card px-3 py-2 text-center">
-            <div className="pbi-section-title mb-1 flex items-center justify-center gap-1">
-              <span>📈</span> Projection mensuelle
-            </div>
-            {projectionMensuelle.projection !== null ? (
-              <>
-                <div className={`font-mono font-bold tracking-tight text-xl ${
-                  projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-info'
+          <PbiKpiCard
+            label="📈 Projection mensuelle"
+            value={projectionMensuelle.projection !== null ? projectionMensuelle.projection.toLocaleString('fr-FR') : '—'}
+            color={projectionMensuelle.projection === null ? 'primary' : projectionMensuelle.trend === 'up' ? 'success' : projectionMensuelle.trend === 'down' ? 'destructive' : 'info'}
+            small
+          />
+          {projectionMensuelle.projection !== null && (
+            <div className="pbi-card px-2 py-1 text-center -mt-1">
+              <div className="text-[9px] text-muted-foreground">
+                Basé sur {projectionMensuelle.joursSaisis} jours saisis
+              </div>
+              {projectionMensuelle.trendPct !== 0 && (
+                <div className={`text-[9px] font-medium ${
+                  projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
                 }`}>
-                  {projectionMensuelle.projection.toLocaleString('fr-FR')}
+                  {projectionMensuelle.trend === 'up' ? '↑' : projectionMensuelle.trend === 'down' ? '↓' : '→'} {projectionMensuelle.trendPct > 0 ? '+' : ''}{projectionMensuelle.trendPct}% vs mois préc.
                 </div>
-                <div className="text-[9px] text-muted-foreground mt-0.5">
-                  Basé sur {projectionMensuelle.joursSaisis} jours saisis
-                </div>
-                {projectionMensuelle.trendPct !== 0 && (
-                  <div className={`text-[9px] font-medium mt-0.5 ${
-                    projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
-                  }`}>
-                    {projectionMensuelle.trend === 'up' ? '↑' : projectionMensuelle.trend === 'down' ? '↓' : '→'} {projectionMensuelle.trendPct > 0 ? '+' : ''}{projectionMensuelle.trendPct}% vs mois préc.
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-[10px] text-muted-foreground italic">Données insuffisantes</div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Center charts */}
