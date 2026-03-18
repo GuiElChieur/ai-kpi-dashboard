@@ -142,7 +142,7 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-3 gap-2">
-      {/* Row 0: FN filter badges + Reset */}
+      {/* Row 0: FN filter badges + ECR + Reset */}
       <div className="flex items-center gap-2 shrink-0 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground">Trigramme :</span>
         {FN_OPTIONS.map(fn => (
@@ -155,6 +155,14 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
             {fn}
           </Badge>
         ))}
+        <span className="text-xs text-muted-foreground mx-1">|</span>
+        <Badge
+          variant={filters.ecrOnly ? 'default' : 'outline'}
+          className="cursor-pointer text-xs"
+          onClick={toggleEcr}
+        >
+          {ECR_LABEL}
+        </Badge>
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={resetFilters} className="h-6 text-xs gap-1 ml-auto">
             <RotateCcw className="h-3 w-3" /> Reset
