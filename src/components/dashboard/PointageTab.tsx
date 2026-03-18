@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { GaugeChart } from './GaugeChart';
-import { PbiKpiCard } from './PbiKpiCard';
+import { KpiCard } from './KpiCard';
+import { Clock, Users, TrendingUp } from 'lucide-react';
 import type { PointageData } from '@/lib/csv-parser';
 
 const CODE_LIBRE_COLORS: Record<string, string> = {
