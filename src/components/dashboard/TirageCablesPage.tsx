@@ -216,9 +216,15 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
     }));
 
     // Delta on last date with real data
-    let lastRealIdx = -1;
-    for (let i = realCumulative.length - 1; i >= 0; i--) { if (realCumulative[i] > 0) { lastRealIdx = i; break; } }
-    const delta = lastRealIdx >= 0 ? realCumulative[lastRealIdx] - Math.round(target[lastRealIdx]) : 0;
+    // Find today's index (or last real data index if today is out of range)
+    const todayKey = new Date().toISOString().substring(0, 10);
+    let todayIdx = allDates.findIndex(d => toKey(d) === todayKey);
+    if (todayIdx < 0) {
+      // If today is beyond range, use last index with real data
+      for (let i = realCumulative.length - 1; i >= 0; i--) { if (realCumulative[i] > 0) { todayIdx = i; break; } }
+    }
+    // Delta = écart entre réel et min. requis à la date du jour
+    const delta = todayIdx >= 0 ? realCumulative[todayIdx] - minimumRequired[todayIdx] : 0;
 
     return { data, delta, dateFin: dateFinStr, objectifTotal: OBJECTIF_TOTAL };
   }, [filtered]);
