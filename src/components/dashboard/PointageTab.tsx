@@ -136,6 +136,66 @@ export function PointageTab({ data }: { data: PointageData[] }) {
   const totalChargePrev = useMemo(() => data.reduce((s, d) => s + d.quantite, 0), [data]);
   const budgetTP = totalChargePrev > 0 ? (totalHeures / totalChargePrev) * 10000 : 0;
 
+  // Projection mensuelle KPI
+  const projectionMensuelle = useMemo(() => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Helper: is working day (Mon-Fri, no public holidays for simplicity)
+    const isWorkingDay = (d: Date) => {
+      const day = d.getDay();
+      return day !== 0 && day !== 6;
+    };
+
+    // Count total working days in current month
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    let totalWorkingDays = 0;
+    let elapsedWorkingDays = 0;
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(currentYear, currentMonth, i);
+      if (isWorkingDay(d)) {
+        totalWorkingDays++;
+        if (i <= today.getDate()) elapsedWorkingDays++;
+      }
+    }
+
+    // Hours in current month from filtered data (respects employer/code filters)
+    const currentMonthData = filtered.filter(r => {
+      const date = parseDateFn(r.dateSaisie);
+      if (!date) return false;
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    });
+    const heuresMoisCourant = currentMonthData.reduce((s, r) => s + r.quantite, 0);
+    const joursSaisis = new Set(currentMonthData.map(r => r.dateSaisie).filter(Boolean)).size;
+
+    // Previous month hours
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonthData = filtered.filter(r => {
+      const date = parseDateFn(r.dateSaisie);
+      if (!date) return false;
+      return date.getMonth() === prevMonth && date.getFullYear() === prevYear;
+    });
+    const heuresMoisPrecedent = prevMonthData.reduce((s, r) => s + r.quantite, 0);
+
+    if (joursSaisis < 2 || elapsedWorkingDays === 0) {
+      return { projection: null, joursSaisis, trend: 'neutral' as const, trendPct: 0 };
+    }
+
+    const moyenneJournaliere = heuresMoisCourant / joursSaisis;
+    const projection = Math.round(moyenneJournaliere * totalWorkingDays);
+
+    let trend: 'up' | 'down' | 'neutral' = 'neutral';
+    let trendPct = 0;
+    if (heuresMoisPrecedent > 0) {
+      trendPct = Math.round(((projection - heuresMoisPrecedent) / heuresMoisPrecedent) * 100);
+      trend = trendPct > 2 ? 'up' : trendPct < -2 ? 'down' : 'neutral';
+    }
+
+    return { projection, joursSaisis, trend, trendPct };
+  }, [filtered]);
+
   // Stacked bar by month (uses `filtered` not `filteredFinal` so all months stay visible)
   const monthlyData = useMemo(() => {
     const byMonth: Record<string, { sortKey: string; label: string; codes: Record<string, number> }> = {};
@@ -311,6 +371,32 @@ export function PointageTab({ data }: { data: PointageData[] }) {
         <div className="flex flex-col gap-2 min-w-[130px] shrink-0">
           <PbiKpiCard label="Temps Passé" value={Math.round(totalHeures).toLocaleString('fr-FR')} color="info" />
           <PbiKpiCard label="Nbre de personnes à bord" value={nbPersonnes} color="warning" />
+          <div className="pbi-card px-3 py-2 text-center">
+            <div className="pbi-section-title mb-1 flex items-center justify-center gap-1">
+              <span>📈</span> Projection mensuelle
+            </div>
+            {projectionMensuelle.projection !== null ? (
+              <>
+                <div className={`font-mono font-bold tracking-tight text-xl ${
+                  projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-info'
+                }`}>
+                  {projectionMensuelle.projection.toLocaleString('fr-FR')}
+                </div>
+                <div className="text-[9px] text-muted-foreground mt-0.5">
+                  Basé sur {projectionMensuelle.joursSaisis} jours saisis
+                </div>
+                {projectionMensuelle.trendPct !== 0 && (
+                  <div className={`text-[9px] font-medium mt-0.5 ${
+                    projectionMensuelle.trend === 'up' ? 'text-success' : projectionMensuelle.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
+                  }`}>
+                    {projectionMensuelle.trend === 'up' ? '↑' : projectionMensuelle.trend === 'down' ? '↓' : '→'} {projectionMensuelle.trendPct > 0 ? '+' : ''}{projectionMensuelle.trendPct}% vs mois préc.
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-[10px] text-muted-foreground italic">Données insuffisantes</div>
+            )}
+          </div>
         </div>
 
         {/* Center charts */}
