@@ -23,7 +23,8 @@ export interface RawAppareilRow {
 }
 
 export interface AppareilRecord {
-  app: string;          // Primary match key
+  app: string;
+  repereApp: string;    // Primary match key (REPERE_APP)
   fn: string;
   local: string;
   libLocal: string;
