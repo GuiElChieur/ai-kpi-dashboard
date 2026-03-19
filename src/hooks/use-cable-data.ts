@@ -24,6 +24,12 @@ function mapCable(r: any): CableData {
     gam: r.gam || '',
     nav: r.nav || '',
     fn: r.fn || '',
+    cblRaccRespO: r.cbl_racc_resp_o || '',
+    cblRaccRespA: r.cbl_racc_resp_a || '',
+    cblRaccordeO: r.cbl_raccorde_o || '',
+    cblRaccordeA: r.cbl_raccorde_a || '',
+    sttCblBe: r.stt_cbl_be || '',
+    localApo: r.local_apo || '',
   };
 }
 
