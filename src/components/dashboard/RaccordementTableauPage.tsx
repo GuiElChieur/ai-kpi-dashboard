@@ -34,6 +34,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     search: '',
     selectedArmoires: [],
     selectedMonths: [],
+    selectedFns: [],
     selectedKpi: null,
   });
 
