@@ -29,7 +29,25 @@ const COLORS = {
   tirage: '#F59E0B',
 };
 
-export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
+const TABLE_COLUMNS = [
+  { key: 'fn', label: 'FN' },
+  { key: 'lotMtgApo', label: 'LOT_MTG_APO' },
+  { key: 'localApo', label: 'LOCAL_APO' },
+  { key: 'apo', label: 'APO' },
+  { key: 'cblRaccRespO', label: 'CBL_RACC_RESP_O' },
+  { key: 'cblRaccordeO', label: 'CBL_RACCORDE_O' },
+  { key: 'sttCblBe', label: 'STT_CBL_BE' },
+  { key: 'respTirage', label: 'RESP_TIRAGE' },
+  { key: 'sttCblBord', label: 'STT_CBL_BORD' },
+  { key: 'gam', label: 'GAM' },
+  { key: 'cbl', label: 'CBL' },
+  { key: 'cblRaccRespA', label: 'CBL_RACC_RESP_A' },
+  { key: 'cblRaccordeA', label: 'CBL_RACCORDE_A' },
+  { key: 'apa', label: 'APA' },
+] as const;
+
+type ColKey = typeof TABLE_COLUMNS[number]['key'];
+
   const [filters, setFilters] = useState<Filters>({
     search: '',
     selectedArmoires: [],
