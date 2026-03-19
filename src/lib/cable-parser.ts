@@ -86,7 +86,7 @@ function parseRow(row: Record<string, unknown>): CableData {
 }
 
 export async function loadCableData(): Promise<CableData[]> {
-  const res = await fetch('/data/Extraction_NEC_Z34.xlsx');
+  const res = await fetch('/data/Extraction_Z34.xlsx');
   const buf = await res.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array' });
   const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
