@@ -25,6 +25,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Upload, LogOut } from 'lucide-react';
 
+function RaccordementWrapper() {
+  const { data, isLoading } = useRaccordementData();
+  if (isLoading) return <div className="p-6"><Skeleton className="h-[400px]" /></div>;
+  return <RaccordementTableauPage allData={data || []} />;
+}
+
 const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
   const { data: cableData, isLoading: cableLoading } = useCableData();
