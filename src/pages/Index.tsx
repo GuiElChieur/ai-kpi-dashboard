@@ -128,6 +128,10 @@ const Index = () => {
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <div className="flex-1 min-h-0"><CourbeFileriePage allData={cableData || []} /></div>
         )}
+        {activePage === 'raccordement-tableau' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <RaccordementTableauPage allData={cableData || []} />
+        )}
         {activePage === 'pose-appareillage' && (
           appareilsLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <PoseAppareillage allData={appareilsData || []} />

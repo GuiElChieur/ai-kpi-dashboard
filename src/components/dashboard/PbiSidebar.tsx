@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'achat', label: 'Achats' },
   { id: 'tirage-cables', label: 'Tirage Câbles' },
   { id: 'courbe-filerie', label: 'Courbe Filerie (m)' },
+  { id: 'raccordement-tableau', label: 'Raccordement Tableau' },
   { id: 'filerie-lot', label: 'Filerie de Lot' },
   { id: 'pose-appareillage', label: 'Pose Appareillage' },
   { id: 'pose-equipement', label: 'Pose Équipement' },
