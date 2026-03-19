@@ -83,7 +83,8 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     };
     return allData.filter(c =>
       (c.cblRaccRespO === 'GEST' || c.cblRaccRespA === 'GEST') &&
-      !isTB(c.apo) && !isTB(c.apa)
+      !isTB(c.apo) && !isTB(c.apa) &&
+      ALLOWED_FNS.includes(c.fn.toUpperCase())
     );
   }, [allData]);
 
