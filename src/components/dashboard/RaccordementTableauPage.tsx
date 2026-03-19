@@ -38,10 +38,10 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     selectedKpi: null,
   });
 
-  const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedKpi !== null;
+  const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedFns.length > 0 || filters.selectedKpi !== null;
 
   const resetFilters = useCallback(() => {
-    setFilters({ search: '', selectedArmoires: [], selectedMonths: [], selectedKpi: null });
+    setFilters({ search: '', selectedArmoires: [], selectedMonths: [], selectedFns: [], selectedKpi: null });
   }, []);
 
   const toggleArmoire = useCallback((armoire: string) => {
