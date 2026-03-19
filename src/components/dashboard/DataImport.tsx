@@ -89,21 +89,50 @@ export function DataImport() {
         setImportProgress(`${idx + 1}/${entries.length} — ${tableName}`);
 
         try {
-          let mapped: any[];
-
-          if (key === 'cables' || (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx'))) {
+          if (key === 'extraction') {
+            // Extraction Z34: import both cables and appareils sheets
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: 'array' });
-            if (key === 'cables') {
-              const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
-              const ws = wb.Sheets[sheetName];
-              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-              mapped = mapCableRows(rawRows);
+
+            // --- Cables sheet ---
+            const cableSheet = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
+            const cableWs = wb.Sheets[cableSheet];
+            const cableRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(cableWs);
+            const mappedCables = mapCableRows(cableRows);
+
+            await (supabase as any).from('cables').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            const cableCount = await insertBatch('cables', mappedCables);
+
+            await supabase.from('import_logs').insert({ table_name: 'cables', rows_imported: cableCount, status: 'success' });
+            allResults.push({ table: 'cables', rows: cableCount, status: 'success' });
+
+            // --- Appareils sheet ---
+            const appSheet = wb.SheetNames.find(n => n.toLowerCase().includes('appareil'));
+            if (appSheet) {
+              const appWs = wb.Sheets[appSheet];
+              const appRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(appWs);
+              const mappedApps = mapAppareilRows(appRows);
+
+              await (supabase as any).from('appareils').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+              const appCount = await insertBatch('appareils', mappedApps);
+
+              await supabase.from('import_logs').insert({ table_name: 'appareils', rows_imported: appCount, status: 'success' });
+              allResults.push({ table: 'appareils', rows: appCount, status: 'success' });
             } else {
-              const ws = wb.Sheets[wb.SheetNames[0]];
-              const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
-              mapped = mapMatiereRows(rawRows);
+              console.warn('[DataImport] No "appareils" sheet found in Extraction file');
             }
+
+            continue; // skip the default insert below
+          }
+
+          let mapped: any[];
+
+          if (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx')) {
+            const buf = await file.arrayBuffer();
+            const wb = XLSX.read(buf, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+            mapped = mapMatiereRows(rawRows);
           } else {
             const text = await file.text();
             switch (key) {

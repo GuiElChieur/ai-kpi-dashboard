@@ -239,6 +239,39 @@ function excelDateToISO(v: unknown): string | null {
   return null;
 }
 
+export function mapAppareilRows(rawRows: Record<string, unknown>[]) {
+  const g = (row: Record<string, unknown>, ...keys: string[]) => {
+    for (const k of keys) {
+      for (const rk of Object.keys(row)) {
+        if (rk.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '') === k.toUpperCase().replace(/[^A-Z0-9_]/g, '')) {
+          return row[rk];
+        }
+      }
+    }
+    return null;
+  };
+
+  if (rawRows.length > 0) {
+    console.log('[APPAREILS XLSX] Columns:', Object.keys(rawRows[0]));
+  }
+
+  return rawRows.map(row => ({
+    resp_pose: String(g(row, 'RESP_POSE') ?? '').trim().toUpperCase(),
+    fn: String(g(row, 'FN') ?? '').trim().toUpperCase(),
+    lot_mtg_app: String(g(row, 'LOT_MTG_APP') ?? ''),
+    local: String(g(row, 'LOCAL') ?? ''),
+    lib_local: String(g(row, 'LIB_LOCAL') ?? ''),
+    app: String(g(row, 'APP') ?? ''),
+    t_app: String(g(row, 'T_APP') ?? ''),
+    lib_design: String(g(row, 'LIB_DESIGN') ?? ''),
+    resp_pret_a_poser: String(g(row, 'RESP_PRET_A_POSER') ?? ''),
+    ind_pret_a_poser: String(g(row, 'IND_PRET_A_POSER') ?? '').trim().toUpperCase(),
+    ind_pose: String(g(row, 'IND_POSE') ?? '').trim().toUpperCase(),
+    date_fin_od: excelDateToISO(g(row, 'Date de Fin OD', 'DATE_FIN_OD')),
+    date_contrainte: excelDateToISO(g(row, 'DATE_CONTRAINTE', 'Date_Contrainte')),
+  }));
+}
+
 export function mapCableRows(rawRows: Record<string, unknown>[]) {
   const g = (row: Record<string, unknown>, ...keys: string[]) => {
     for (const k of keys) {
@@ -273,6 +306,11 @@ export function mapCableRows(rawRows: Record<string, unknown>[]) {
       gam: String(g(row, 'GAM') ?? ''),
       nav: String(g(row, 'NAV') ?? ''),
       fn: String(g(row, 'FN') ?? ''),
-    }))
-    .filter(c => c.resp_tirage === 'GEST');
+      cbl_racc_resp_o: String(g(row, 'CBL_RACC_RESP_O') ?? '').trim().toUpperCase(),
+      cbl_racc_resp_a: String(g(row, 'CBL_RACC_RESP_A') ?? '').trim().toUpperCase(),
+      cbl_raccorde_o: String(g(row, 'CBL_RACCORDE_O') ?? '').trim().toUpperCase(),
+      cbl_raccorde_a: String(g(row, 'CBL_RACCORDE_A') ?? '').trim().toUpperCase(),
+      stt_cbl_be: String(g(row, 'STT_CBL_BE') ?? '').trim().toUpperCase(),
+      local_apo: String(g(row, 'LOCAL_APO') ?? ''),
+    }));
 }
