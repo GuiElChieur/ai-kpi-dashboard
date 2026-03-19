@@ -67,7 +67,15 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     }));
   }, []);
 
-  // Base: cables where CBL_RACC_RESP_O="GEST" or CBL_RACC_RESP_A="GEST"
+  const toggleFn = useCallback((fn: string) => {
+    setFilters(prev => {
+      const arr = prev.selectedFns;
+      const next = arr.includes(fn) ? arr.filter(v => v !== fn) : [...arr, fn];
+      return { ...prev, selectedFns: next };
+    });
+  }, []);
+
+  // Base: cables where CBL_RACC_RESP_O="GEST" or CBL_RACC_RESP_A="GEST", FN in allowed list
   const baseData = useMemo(() => {
     const isTB = (v: string) => {
       const u = v.toUpperCase();
