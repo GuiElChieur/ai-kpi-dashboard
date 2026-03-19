@@ -246,6 +246,19 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             <RotateCcw className="h-3 w-3" /> Réinitialiser
           </Button>
         )}
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground mr-1">FN:</span>
+          {ALLOWED_FNS.map(fn => (
+            <Badge
+              key={fn}
+              variant={filters.selectedFns.includes(fn) ? 'default' : 'outline'}
+              className="text-[10px] cursor-pointer px-1.5 py-0"
+              onClick={() => toggleFn(fn)}
+            >
+              {fn}
+            </Badge>
+          ))}
+        </div>
         <div className="flex-1" />
         <Badge variant="outline" className="text-xs">{baseData.length} câbles dans le périmètre</Badge>
       </div>
