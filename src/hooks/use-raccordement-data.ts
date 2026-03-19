@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { loadAllCableData, type CableData } from '@/lib/cable-parser';
+import type { CableData } from '@/lib/cable-parser';
 
 /**
  * Hook dédié au raccordement : charge les câbles depuis la DB si les colonnes

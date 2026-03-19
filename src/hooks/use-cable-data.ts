@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { loadCableData, type CableData } from '@/lib/cable-parser';
+import type { CableData } from '@/lib/cable-parser';
 
 function mapCable(r: any): CableData {
   return {
