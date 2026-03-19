@@ -194,6 +194,10 @@ export type Database = {
           apo: string | null
           cat_cablage: string | null
           cbl: string | null
+          cbl_racc_resp_a: string | null
+          cbl_racc_resp_o: string | null
+          cbl_raccorde_a: string | null
+          cbl_raccorde_o: string | null
           cod_zone_tirage: string | null
           date_tir_plus_tard: string | null
           date_tir_plus_tot: string | null
@@ -204,12 +208,14 @@ export type Database = {
           imported_at: string
           ind_appro_ca: string | null
           lng_total: number | null
+          local_apo: string | null
           lot_mtg_apo: string | null
           lot_ou_app_cbl: string | null
           nav: string | null
           pt_cbl: string | null
           repere_cbl: string | null
           resp_tirage: string | null
+          stt_cbl_be: string | null
           stt_cbl_bord: string | null
           tot_lng_tiree: number | null
         }
@@ -218,6 +224,10 @@ export type Database = {
           apo?: string | null
           cat_cablage?: string | null
           cbl?: string | null
+          cbl_racc_resp_a?: string | null
+          cbl_racc_resp_o?: string | null
+          cbl_raccorde_a?: string | null
+          cbl_raccorde_o?: string | null
           cod_zone_tirage?: string | null
           date_tir_plus_tard?: string | null
           date_tir_plus_tot?: string | null
@@ -228,12 +238,14 @@ export type Database = {
           imported_at?: string
           ind_appro_ca?: string | null
           lng_total?: number | null
+          local_apo?: string | null
           lot_mtg_apo?: string | null
           lot_ou_app_cbl?: string | null
           nav?: string | null
           pt_cbl?: string | null
           repere_cbl?: string | null
           resp_tirage?: string | null
+          stt_cbl_be?: string | null
           stt_cbl_bord?: string | null
           tot_lng_tiree?: number | null
         }
@@ -242,6 +254,10 @@ export type Database = {
           apo?: string | null
           cat_cablage?: string | null
           cbl?: string | null
+          cbl_racc_resp_a?: string | null
+          cbl_racc_resp_o?: string | null
+          cbl_raccorde_a?: string | null
+          cbl_raccorde_o?: string | null
           cod_zone_tirage?: string | null
           date_tir_plus_tard?: string | null
           date_tir_plus_tot?: string | null
@@ -252,12 +268,14 @@ export type Database = {
           imported_at?: string
           ind_appro_ca?: string | null
           lng_total?: number | null
+          local_apo?: string | null
           lot_mtg_apo?: string | null
           lot_ou_app_cbl?: string | null
           nav?: string | null
           pt_cbl?: string | null
           repere_cbl?: string | null
           resp_tirage?: string | null
+          stt_cbl_be?: string | null
           stt_cbl_bord?: string | null
           tot_lng_tiree?: number | null
         }

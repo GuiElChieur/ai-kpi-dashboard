@@ -11,6 +11,7 @@ import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
 import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
+import { RaccordementTableauPage } from '@/components/dashboard/RaccordementTableauPage';
 import { PoseEquipement } from '@/components/dashboard/PoseEquipement';
 import { useAppareilsData } from '@/hooks/use-appareils-data';
 import { useEquipementData } from '@/hooks/use-equipement-data';
@@ -126,6 +127,10 @@ const Index = () => {
         {activePage === 'courbe-filerie' && (
           cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
           <div className="flex-1 min-h-0"><CourbeFileriePage allData={cableData || []} /></div>
+        )}
+        {activePage === 'raccordement-tableau' && (
+          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
+          <RaccordementTableauPage allData={cableData || []} />
         )}
         {activePage === 'pose-appareillage' && (
           appareilsLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
