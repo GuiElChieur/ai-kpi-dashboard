@@ -76,6 +76,12 @@ function parseRow(row: Record<string, unknown>): CableData {
     gam: String(getVal(row, 'GAM') ?? ''),
     nav: String(getVal(row, 'NAV') ?? ''),
     fn: String(getVal(row, 'FN') ?? '').trim().toUpperCase(),
+    cblRaccRespO: String(getVal(row, 'CBL_RACC_RESP_O') ?? '').trim().toUpperCase(),
+    cblRaccRespA: String(getVal(row, 'CBL_RACC_RESP_A') ?? '').trim().toUpperCase(),
+    cblRaccordeO: String(getVal(row, 'CBL_RACCORDE_O') ?? '').trim().toUpperCase(),
+    cblRaccordeA: String(getVal(row, 'CBL_RACCORDE_A') ?? '').trim().toUpperCase(),
+    sttCblBe: String(getVal(row, 'STT_CBL_BE') ?? '').trim().toUpperCase(),
+    localApo: String(getVal(row, 'LOCAL_APO') ?? ''),
   };
 }
 
