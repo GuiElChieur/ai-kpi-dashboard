@@ -136,15 +136,21 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     return d;
   }, [kpiFiltered, filters.selectedFns, filters.selectedArmoires, filters.selectedMonths]);
 
+  // Data with FN filter applied (for KPIs)
+  const fnFiltered = useMemo(() => {
+    if (filters.selectedFns.length === 0) return searchFiltered;
+    return searchFiltered.filter(c => filters.selectedFns.includes(c.fn.toUpperCase()));
+  }, [searchFiltered, filters.selectedFns]);
+
   // KPIs
   const kpis = useMemo(() => {
-    const total = searchFiltered.length;
-    const raccorde = searchFiltered.filter(isRaccorde).length;
-    const raccordable = searchFiltered.filter(isRaccordable).length;
-    const nonRaccorde = searchFiltered.filter(isNonRaccorde).length;
+    const total = fnFiltered.length;
+    const raccorde = fnFiltered.filter(isRaccorde).length;
+    const raccordable = fnFiltered.filter(isRaccordable).length;
+    const nonRaccorde = fnFiltered.filter(isNonRaccorde).length;
     const pctAvancement = total > 0 ? Math.round((raccorde / total) * 100) : 0;
     return { total, raccorde, raccordable, nonRaccorde, pctAvancement };
-  }, [searchFiltered]);
+  }, [fnFiltered]);
 
   // RAF Tirage - cables not yet tiré among our scope
   const rafTirage = useMemo(() => {
