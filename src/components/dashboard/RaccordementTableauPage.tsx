@@ -12,7 +12,7 @@ import {
 import { RotateCcw, Cable, CheckCircle2, CircleDot, CircleOff, Percent, Search } from 'lucide-react';
 import type { CableData } from '@/lib/cable-parser';
 
-const ALLOWED_FNS = ['ESD', 'FBT', 'FDD', 'FDG', 'FDS', 'FDT', 'SNC'];
+const ALLOWED_FNS = ['ESD', 'FBT', 'FDD', 'FDS', 'FDT', 'SNC'];
 
 interface Filters {
   search: string;
