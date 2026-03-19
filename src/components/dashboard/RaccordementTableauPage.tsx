@@ -47,7 +47,7 @@ const TABLE_COLUMNS = [
 ] as const;
 
 type ColKey = typeof TABLE_COLUMNS[number]['key'];
-
+export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
   const [filters, setFilters] = useState<Filters>({
     search: '',
     selectedArmoires: [],
@@ -55,6 +55,8 @@ type ColKey = typeof TABLE_COLUMNS[number]['key'];
     selectedFns: [],
     selectedKpi: null,
   });
+
+  const [columnFilters, setColumnFilters] = useState<Partial<Record<ColKey, string>>>({});
 
   const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedFns.length > 0 || filters.selectedKpi !== null;
 
