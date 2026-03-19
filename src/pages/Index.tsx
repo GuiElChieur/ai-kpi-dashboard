@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDashboardData, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
 import { useCableData } from '@/hooks/use-cable-data';
+import { useRaccordementData } from '@/hooks/use-raccordement-data';
 import { useAuth } from '@/hooks/use-auth';
 import { PbiSidebar } from '@/components/dashboard/PbiSidebar';
 import { OTProgiPage } from '@/components/dashboard/OTProgiPage';
