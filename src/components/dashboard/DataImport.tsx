@@ -36,7 +36,7 @@ const TABLE_MAP: Record<string, string> = {
   ot_ligne: 'ot_lignes',
   pointage: 'pointages',
   matiere: 'matieres',
-  cables: 'cables',
+  extraction: 'cables', // primary table, appareils handled separately
 };
 
 async function insertBatch(tableName: string, data: any[], batchSize = 500) {
