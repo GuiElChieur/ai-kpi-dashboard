@@ -506,21 +506,8 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
       {/* Detail table */}
       <Card className="glass-card flex-1 min-h-0 flex flex-col">
         <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
-          {/* Column filters */}
-          <div className="flex gap-0 border-b border-border overflow-x-auto shrink-0">
-            {TABLE_COLUMNS.map(col => (
-              <div key={col.key} className="shrink-0" style={{ minWidth: col.key === 'cbl' ? 120 : 90 }}>
-                <Input
-                  placeholder={col.label}
-                  value={columnFilters[col.key] || ''}
-                  onChange={e => setColumnFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
-                  className="h-6 text-[9px] rounded-none border-0 border-r border-border px-1.5 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-            ))}
-          </div>
-          {/* Scrollable table */}
-          <div className="flex-1 min-h-0 overflow-auto">
+          {/* Scrollable table (vertical only) */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -532,7 +519,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tableData.slice(0, 500).map((c, i) => (
+                {filteredData.slice(0, 500).map((c, i) => (
                   <TableRow key={i} className="text-[10px]">
                     <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.fn}</TableCell>
                     <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.lotMtgApo}</TableCell>
@@ -566,7 +553,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             </Table>
           </div>
           <div className="text-[10px] text-muted-foreground px-2 py-1 border-t border-border shrink-0">
-            {tableData.length} ligne{tableData.length > 1 ? 's' : ''}{tableData.length > 500 ? ' (500 affichées)' : ''}
+            {filteredData.length} ligne{filteredData.length > 1 ? 's' : ''}{filteredData.length > 500 ? ' (500 affichées)' : ''}
           </div>
         </CardContent>
       </Card>
