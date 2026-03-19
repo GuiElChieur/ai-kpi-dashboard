@@ -11,6 +11,7 @@ import { TirageCablesPage } from '@/components/dashboard/TirageCablesPage';
 import { FilerieLotPage } from '@/components/dashboard/FilerieLotPage';
 import { CourbeFileriePage } from '@/components/dashboard/CourbeFileriePage';
 import { PoseAppareillage } from '@/components/dashboard/PoseAppareillage';
+import { RaccordementTableauPage } from '@/components/dashboard/RaccordementTableauPage';
 import { PoseEquipement } from '@/components/dashboard/PoseEquipement';
 import { useAppareilsData } from '@/hooks/use-appareils-data';
 import { useEquipementData } from '@/hooks/use-equipement-data';
