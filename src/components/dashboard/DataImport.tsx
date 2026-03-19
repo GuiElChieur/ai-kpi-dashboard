@@ -18,6 +18,7 @@ import {
   parseMatiereCSV,
   mapMatiereRows,
   mapCableRows,
+  mapAppareilRows,
 } from '@/lib/csv-client-parser';
 
 const FILE_TYPES = [
