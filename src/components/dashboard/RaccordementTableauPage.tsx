@@ -56,7 +56,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     selectedKpi: null,
   });
 
-  const [columnFilters, setColumnFilters] = useState<Partial<Record<ColKey, string>>>({});
+  
 
   const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedFns.length > 0 || filters.selectedKpi !== null;
 
