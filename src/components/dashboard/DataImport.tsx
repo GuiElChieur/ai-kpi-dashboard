@@ -179,6 +179,9 @@ export function DataImport() {
       queryClient.invalidateQueries({ queryKey: ['pointage-data'] });
       queryClient.invalidateQueries({ queryKey: ['matier-data'] });
       queryClient.invalidateQueries({ queryKey: ['cable-data'] });
+      queryClient.invalidateQueries({ queryKey: ['raccordement-data'] });
+      queryClient.invalidateQueries({ queryKey: ['appareils-data'] });
+      queryClient.invalidateQueries({ queryKey: ['equipement-h7p'] });
       queryClient.invalidateQueries({ queryKey: ['import-logs'] });
       // Also invalidate db-* keys used by use-db-data hooks
       queryClient.invalidateQueries({ queryKey: ['db-achats'] });
