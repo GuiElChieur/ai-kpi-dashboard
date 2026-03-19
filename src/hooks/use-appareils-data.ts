@@ -53,7 +53,8 @@ async function loadFromDb(): Promise<AppareilData[]> {
   const allAppareils = await fetchAllPages('appareils');
   
   if (allAppareils.length === 0) {
-    return loadAppareilData();
+    console.warn('[use-appareils-data] Aucune donnée en base. Importez le fichier Extraction_Z34.xlsx via la page Import.');
+    return [];
   }
 
   // Load enrichment overrides

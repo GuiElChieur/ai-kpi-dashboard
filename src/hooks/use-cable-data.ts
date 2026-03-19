@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { loadCableData, type CableData } from '@/lib/cable-parser';
+import type { CableData } from '@/lib/cable-parser';
 
 function mapCable(r: any): CableData {
   return {
@@ -45,8 +45,7 @@ async function loadCablesFromDb(): Promise<CableData[]> {
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  if (allData.length > 0) return allData.map(mapCable);
-  return loadCableData();
+  return allData.map(mapCable);
 }
 
 export function useCableData() {

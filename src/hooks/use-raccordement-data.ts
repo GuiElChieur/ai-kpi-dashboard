@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { loadAllCableData, type CableData } from '@/lib/cable-parser';
+import type { CableData } from '@/lib/cable-parser';
 
 /**
  * Hook dédié au raccordement : charge les câbles depuis la DB si les colonnes
@@ -51,17 +51,7 @@ async function loadRaccordementData(): Promise<CableData[]> {
     from += pageSize;
   }
 
-  // Check if raccordement columns are populated
-  if (allData.length > 0) {
-    const hasRaccData = allData.some(r => r.cbl_racc_resp_o || r.cbl_racc_resp_a);
-    if (hasRaccData) {
-      return allData.map(mapCable);
-    }
-  }
-
-  // Fallback: load from Extraction_Z34.xlsx (all cables, no GEST filter)
-  console.log('[raccordement] DB has no raccordement columns, loading from Extraction_Z34.xlsx');
-  return loadAllCableData();
+  return allData.map(mapCable);
 }
 
 export function useRaccordementData() {
