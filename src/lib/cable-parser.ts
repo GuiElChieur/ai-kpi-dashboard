@@ -21,6 +21,12 @@ export interface CableData {
   gam: string;
   nav: string;
   fn: string;
+  cblRaccRespO: string;
+  cblRaccRespA: string;
+  cblRaccordeO: string;
+  cblRaccordeA: string;
+  sttCblBe: string;
+  localApo: string;
 }
 
 function excelDateToString(v: unknown): string | null {
