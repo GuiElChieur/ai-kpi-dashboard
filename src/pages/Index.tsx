@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDashboardData, computePointageKpis, computeMatierKpis, computeAchatKpis } from '@/hooks/use-dashboard-data';
 import { useCableData } from '@/hooks/use-cable-data';
+import { useRaccordementData } from '@/hooks/use-raccordement-data';
 import { useAuth } from '@/hooks/use-auth';
 import { PbiSidebar } from '@/components/dashboard/PbiSidebar';
 import { OTProgiPage } from '@/components/dashboard/OTProgiPage';
@@ -23,6 +24,12 @@ import { AIChat } from '@/components/dashboard/AIChat';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Upload, LogOut } from 'lucide-react';
+
+function RaccordementWrapper() {
+  const { data, isLoading } = useRaccordementData();
+  if (isLoading) return <div className="p-6"><Skeleton className="h-[400px]" /></div>;
+  return <RaccordementTableauPage allData={data || []} />;
+}
 
 const Index = () => {
   const { otData, otLigneData, pointageData, matierData, achatData, isLoading } = useDashboardData();
@@ -129,8 +136,7 @@ const Index = () => {
           <div className="flex-1 min-h-0"><CourbeFileriePage allData={cableData || []} /></div>
         )}
         {activePage === 'raccordement-tableau' && (
-          cableLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :
-          <RaccordementTableauPage allData={cableData || []} />
+          <RaccordementWrapper />
         )}
         {activePage === 'pose-appareillage' && (
           appareilsLoading ? <div className="p-6"><Skeleton className="h-[400px]" /></div> :

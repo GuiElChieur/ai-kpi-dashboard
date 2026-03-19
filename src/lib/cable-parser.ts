@@ -114,6 +114,22 @@ export async function loadCableData(): Promise<CableData[]> {
   return result;
 }
 
+/** Charge TOUS les câbles sans filtre GEST (pour raccordement) */
+export async function loadAllCableData(): Promise<CableData[]> {
+  const res = await fetch('/data/Extraction_Z34.xlsx');
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const ws = wb.Sheets['cables'] || wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+  console.log('[cable-parser] loadAllCableData: Total rows:', rows.length);
+  if (rows.length > 0) {
+    console.log('[cable-parser] Sample columns:', Object.keys(rows[0]));
+    const raccCols = Object.keys(rows[0]).filter(c => c.toUpperCase().includes('RACC'));
+    console.log('[cable-parser] RACC columns:', raccCols);
+  }
+  return rows.map(parseRow);
+}
+
 export function parseCableFile(file: File): Promise<CableData[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
