@@ -45,8 +45,7 @@ async function loadCablesFromDb(): Promise<CableData[]> {
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  if (allData.length > 0) return allData.map(mapCable);
-  return loadCableData();
+  return allData.map(mapCable);
 }
 
 export function useCableData() {
