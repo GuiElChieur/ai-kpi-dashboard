@@ -12,10 +12,13 @@ import {
 import { RotateCcw, Cable, CheckCircle2, CircleDot, CircleOff, Percent, Search } from 'lucide-react';
 import type { CableData } from '@/lib/cable-parser';
 
+const ALLOWED_FNS = ['ESD', 'FBT', 'FDD', 'FDG', 'FDS', 'FDT', 'SNC'];
+
 interface Filters {
   search: string;
   selectedArmoires: string[];
   selectedMonths: string[];
+  selectedFns: string[];
   selectedKpi: string | null;
 }
 
@@ -31,13 +34,14 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     search: '',
     selectedArmoires: [],
     selectedMonths: [],
+    selectedFns: [],
     selectedKpi: null,
   });
 
-  const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedKpi !== null;
+  const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedFns.length > 0 || filters.selectedKpi !== null;
 
   const resetFilters = useCallback(() => {
-    setFilters({ search: '', selectedArmoires: [], selectedMonths: [], selectedKpi: null });
+    setFilters({ search: '', selectedArmoires: [], selectedMonths: [], selectedFns: [], selectedKpi: null });
   }, []);
 
   const toggleArmoire = useCallback((armoire: string) => {
@@ -63,7 +67,15 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     }));
   }, []);
 
-  // Base: cables where CBL_RACC_RESP_O="GEST" or CBL_RACC_RESP_A="GEST"
+  const toggleFn = useCallback((fn: string) => {
+    setFilters(prev => {
+      const arr = prev.selectedFns;
+      const next = arr.includes(fn) ? arr.filter(v => v !== fn) : [...arr, fn];
+      return { ...prev, selectedFns: next };
+    });
+  }, []);
+
+  // Base: cables where CBL_RACC_RESP_O="GEST" or CBL_RACC_RESP_A="GEST", FN in allowed list
   const baseData = useMemo(() => {
     const isTB = (v: string) => {
       const u = v.toUpperCase();
@@ -71,7 +83,8 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     };
     return allData.filter(c =>
       (c.cblRaccRespO === 'GEST' || c.cblRaccRespA === 'GEST') &&
-      !isTB(c.apo) && !isTB(c.apa)
+      !isTB(c.apo) && !isTB(c.apa) &&
+      ALLOWED_FNS.includes(c.fn.toUpperCase())
     );
   }, [allData]);
 
@@ -107,6 +120,9 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
   // Cross-filtered data
   const filteredData = useMemo(() => {
     let d = kpiFiltered;
+    if (filters.selectedFns.length > 0) {
+      d = d.filter(c => filters.selectedFns.includes(c.fn.toUpperCase()));
+    }
     if (filters.selectedArmoires.length > 0) {
       d = d.filter(c => filters.selectedArmoires.includes(c.apo || c.apa));
     }
@@ -118,7 +134,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
       });
     }
     return d;
-  }, [kpiFiltered, filters.selectedArmoires, filters.selectedMonths]);
+  }, [kpiFiltered, filters.selectedFns, filters.selectedArmoires, filters.selectedMonths]);
 
   // KPIs
   const kpis = useMemo(() => {
@@ -230,6 +246,19 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             <RotateCcw className="h-3 w-3" /> Réinitialiser
           </Button>
         )}
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground mr-1">FN:</span>
+          {ALLOWED_FNS.map(fn => (
+            <Badge
+              key={fn}
+              variant={filters.selectedFns.includes(fn) ? 'default' : 'outline'}
+              className="text-[10px] cursor-pointer px-1.5 py-0"
+              onClick={() => toggleFn(fn)}
+            >
+              {fn}
+            </Badge>
+          ))}
+        </div>
         <div className="flex-1" />
         <Badge variant="outline" className="text-xs">{baseData.length} câbles dans le périmètre</Badge>
       </div>
