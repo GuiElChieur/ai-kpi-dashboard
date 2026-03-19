@@ -27,7 +27,7 @@ const FILE_TYPES = [
   { key: 'ot_ligne', label: 'OT Lignes', accept: '.csv', pattern: 'OT_LIGNE' },
   { key: 'pointage', label: 'Pointage', accept: '.csv', pattern: 'POINTAGE' },
   { key: 'matiere', label: 'Matières', accept: '.csv,.xlsx', pattern: 'MATIER' },
-  { key: 'cables', label: 'Câbles (XLSX)', accept: '.xlsx', pattern: 'EXTRACTION' },
+  { key: 'extraction', label: 'Extraction Z34 (Câbles + Appareils)', accept: '.xlsx', pattern: 'EXTRACTION' },
 ];
 
 const TABLE_MAP: Record<string, string> = {
