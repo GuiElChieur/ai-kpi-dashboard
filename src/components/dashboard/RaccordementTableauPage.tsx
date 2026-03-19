@@ -156,6 +156,18 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     return d;
   }, [kpiFiltered, filters.selectedFns, filters.selectedArmoires, filters.selectedMonths]);
 
+  // Table data with column filters applied
+  const tableData = useMemo(() => {
+    const activeColFilters = Object.entries(columnFilters).filter(([, v]) => v && v.length > 0) as [ColKey, string][];
+    if (activeColFilters.length === 0) return filteredData;
+    return filteredData.filter(c =>
+      activeColFilters.every(([key, val]) => {
+        const cellVal = (c[key as keyof CableData] ?? '').toString().toUpperCase();
+        return cellVal.includes(val!.toUpperCase());
+      })
+    );
+  }, [filteredData, columnFilters]);
+
   // Data with FN filter applied (for KPIs)
   const fnFiltered = useMemo(() => {
     if (filters.selectedFns.length === 0) return searchFiltered;
