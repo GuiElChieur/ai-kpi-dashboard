@@ -59,9 +59,9 @@ async function loadRaccordementData(): Promise<CableData[]> {
     }
   }
 
-  // Fallback: load from Extraction_Z34.xlsx (which has all columns)
+  // Fallback: load from Extraction_Z34.xlsx (all cables, no GEST filter)
   console.log('[raccordement] DB has no raccordement columns, loading from Extraction_Z34.xlsx');
-  return loadCableData();
+  return loadAllCableData();
 }
 
 export function useRaccordementData() {
