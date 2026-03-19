@@ -65,7 +65,11 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
 
   // Base: cables where CBL_RACC_RESP_O="GEST" or CBL_RACC_RESP_A="GEST"
   const baseData = useMemo(() => {
-    return allData.filter(c => c.cblRaccRespO === 'GEST' || c.cblRaccRespA === 'GEST');
+    return allData.filter(c =>
+      (c.cblRaccRespO === 'GEST' || c.cblRaccRespA === 'GEST') &&
+      !c.apo.toUpperCase().startsWith('TB') &&
+      !c.apa.toUpperCase().startsWith('TB')
+    );
   }, [allData]);
 
   // Search filter
