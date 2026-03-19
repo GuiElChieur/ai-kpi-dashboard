@@ -29,6 +29,24 @@ const COLORS = {
   tirage: '#F59E0B',
 };
 
+const TABLE_COLUMNS = [
+  { key: 'fn', label: 'FN' },
+  { key: 'lotMtgApo', label: 'LOT_MTG_APO' },
+  { key: 'localApo', label: 'LOCAL_APO' },
+  { key: 'apo', label: 'APO' },
+  { key: 'cblRaccRespO', label: 'CBL_RACC_RESP_O' },
+  { key: 'cblRaccordeO', label: 'CBL_RACCORDE_O' },
+  { key: 'sttCblBe', label: 'STT_CBL_BE' },
+  { key: 'respTirage', label: 'RESP_TIRAGE' },
+  { key: 'sttCblBord', label: 'STT_CBL_BORD' },
+  { key: 'gam', label: 'GAM' },
+  { key: 'cbl', label: 'CBL' },
+  { key: 'cblRaccRespA', label: 'CBL_RACC_RESP_A' },
+  { key: 'cblRaccordeA', label: 'CBL_RACCORDE_A' },
+  { key: 'apa', label: 'APA' },
+] as const;
+
+type ColKey = typeof TABLE_COLUMNS[number]['key'];
 export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
   const [filters, setFilters] = useState<Filters>({
     search: '',
@@ -37,6 +55,8 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     selectedFns: [],
     selectedKpi: null,
   });
+
+  const [columnFilters, setColumnFilters] = useState<Partial<Record<ColKey, string>>>({});
 
   const hasActiveFilters = filters.search !== '' || filters.selectedArmoires.length > 0 || filters.selectedMonths.length > 0 || filters.selectedFns.length > 0 || filters.selectedKpi !== null;
 
@@ -135,6 +155,18 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
     }
     return d;
   }, [kpiFiltered, filters.selectedFns, filters.selectedArmoires, filters.selectedMonths]);
+
+  // Table data with column filters applied
+  const tableData = useMemo(() => {
+    const activeColFilters = Object.entries(columnFilters).filter(([, v]) => v && v.length > 0) as [ColKey, string][];
+    if (activeColFilters.length === 0) return filteredData;
+    return filteredData.filter(c =>
+      activeColFilters.every(([key, val]) => {
+        const cellVal = (c[key as keyof CableData] ?? '').toString().toUpperCase();
+        return cellVal.includes(val!.toUpperCase());
+      })
+    );
+  }, [filteredData, columnFilters]);
 
   // Data with FN filter applied (for KPIs)
   const fnFiltered = useMemo(() => {
@@ -472,61 +504,69 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
       </div>
 
       {/* Detail table */}
-      <Card className="glass-card shrink-0" style={{ maxHeight: '25%' }}>
-        <CardContent className="p-0">
-          <div className="overflow-auto" style={{ maxHeight: '100%' }}>
+      <Card className="glass-card flex-1 min-h-0 flex flex-col">
+        <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
+          {/* Column filters */}
+          <div className="flex gap-0 border-b border-border overflow-x-auto shrink-0">
+            {TABLE_COLUMNS.map(col => (
+              <div key={col.key} className="shrink-0" style={{ minWidth: col.key === 'cbl' ? 120 : 90 }}>
+                <Input
+                  placeholder={col.label}
+                  value={columnFilters[col.key] || ''}
+                  onChange={e => setColumnFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
+                  className="h-6 text-[9px] rounded-none border-0 border-r border-border px-1.5 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
+            ))}
+          </div>
+          {/* Scrollable table */}
+          <div className="flex-1 min-h-0 overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-[10px] px-2 py-1">FN</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">LOT_MTG_APO</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">LOCAL_APO</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">APO</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">CBL_RACC_RESP_O</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">CBL_RACCORDE_O</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">STT_CBL_BE</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">RESP_TIRAGE</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">STT_CBL_BORD</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">GAM</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">CBL</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">CBL_RACC_RESP_A</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">CBL_RACCORDE_A</TableHead>
-                  <TableHead className="text-[10px] px-2 py-1">APA</TableHead>
+                  {TABLE_COLUMNS.map(col => (
+                    <TableHead key={col.key} className="text-[10px] px-2 py-1 whitespace-nowrap sticky top-0 bg-card z-10">
+                      {col.label}
+                    </TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredData.slice(0, 200).map((c, i) => (
+                {tableData.slice(0, 500).map((c, i) => (
                   <TableRow key={i} className="text-[10px]">
-                    <TableCell className="px-2 py-0.5">{c.fn}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.lotMtgApo}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.localApo}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.apo}</TableCell>
-                    <TableCell className="px-2 py-0.5">
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.fn}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.lotMtgApo}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.localApo}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.apo}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">
                       <span className={c.cblRaccRespO === 'GEST' ? 'text-primary font-medium' : ''}>{c.cblRaccRespO}</span>
                     </TableCell>
-                    <TableCell className="px-2 py-0.5">
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">
                       <span className={c.cblRaccordeO === 'O' ? 'text-success font-medium' : c.cblRaccordeO === 'N' ? 'text-destructive font-medium' : ''}>
                         {c.cblRaccordeO}
                       </span>
                     </TableCell>
-                    <TableCell className="px-2 py-0.5">{c.sttCblBe}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.respTirage}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.sttCblBord}</TableCell>
-                    <TableCell className="px-2 py-0.5">{c.gam}</TableCell>
-                    <TableCell className="px-2 py-0.5 font-mono text-[9px]">{c.cbl}</TableCell>
-                    <TableCell className="px-2 py-0.5">
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.sttCblBe}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.respTirage}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.sttCblBord}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.gam}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap font-mono text-[9px]">{c.cbl}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">
                       <span className={c.cblRaccRespA === 'GEST' ? 'text-primary font-medium' : ''}>{c.cblRaccRespA}</span>
                     </TableCell>
-                    <TableCell className="px-2 py-0.5">
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">
                       <span className={c.cblRaccordeA === 'O' ? 'text-success font-medium' : c.cblRaccordeA === 'N' ? 'text-destructive font-medium' : ''}>
                         {c.cblRaccordeA}
                       </span>
                     </TableCell>
-                    <TableCell className="px-2 py-0.5">{c.apa}</TableCell>
+                    <TableCell className="px-2 py-0.5 whitespace-nowrap">{c.apa}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+          </div>
+          <div className="text-[10px] text-muted-foreground px-2 py-1 border-t border-border shrink-0">
+            {tableData.length} ligne{tableData.length > 1 ? 's' : ''}{tableData.length > 500 ? ' (500 affichées)' : ''}
           </div>
         </CardContent>
       </Card>
