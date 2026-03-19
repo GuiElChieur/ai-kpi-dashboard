@@ -120,6 +120,9 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
   // Cross-filtered data
   const filteredData = useMemo(() => {
     let d = kpiFiltered;
+    if (filters.selectedFns.length > 0) {
+      d = d.filter(c => filters.selectedFns.includes(c.fn.toUpperCase()));
+    }
     if (filters.selectedArmoires.length > 0) {
       d = d.filter(c => filters.selectedArmoires.includes(c.apo || c.apa));
     }
@@ -131,7 +134,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
       });
     }
     return d;
-  }, [kpiFiltered, filters.selectedArmoires, filters.selectedMonths]);
+  }, [kpiFiltered, filters.selectedFns, filters.selectedArmoires, filters.selectedMonths]);
 
   // KPIs
   const kpis = useMemo(() => {
