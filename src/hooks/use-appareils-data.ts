@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { loadAppareilData, type AppareilData } from '@/lib/appareils-parser';
+import type { AppareilData } from '@/lib/appareils-parser';
 
-function mapAppareil(r: any): AppareilData {
+const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
+
+function mapAppareilEnriched(r: any): AppareilData {
   return {
     respPose: r.resp_pose || '',
     fn: r.fn || '',
@@ -16,29 +18,16 @@ function mapAppareil(r: any): AppareilData {
     indPretAPoser: r.ind_pret_a_poser || '',
     indPose: r.ind_pose || '',
     dateFinOd: r.date_fin_od || null,
-    dateContrainte: r.date_contrainte || null,
+    dateContrainte: r.date_contrainte ? (typeof r.date_contrainte === 'string' ? r.date_contrainte.substring(0, 10) : null) : null,
   };
 }
 
-const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
-
-function normalizeKey(v: string): string {
-  return v
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, '')
-    .replace(/^(?:Y34|Z34)[-–—:]?/, '');
-}
-
-async function fetchAllPages(table: string, filter?: { col: string; val: string }): Promise<any[]> {
+async function fetchAllPages(table: string): Promise<any[]> {
   let allData: any[] = [];
   let from = 0;
   const pageSize = 1000;
   while (true) {
-    let query = (supabase as any).from(table).select('*');
-    if (filter) query = query.eq(filter.col, filter.val);
-    query = query.range(from, from + pageSize - 1);
-    const { data, error } = await query;
+    const { data, error } = await (supabase as any).from(table).select('*').range(from, from + pageSize - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
@@ -49,53 +38,19 @@ async function fetchAllPages(table: string, filter?: { col: string; val: string 
 }
 
 async function loadFromDb(): Promise<AppareilData[]> {
-  // Load all appareils (not just GEST) so we can apply enrichments first
-  const allAppareils = await fetchAllPages('appareils');
+  // Use the pre-joined view instead of fetching 118k+ enrichments separately
+  const allAppareils = await fetchAllPages('appareils_enriched');
   
   if (allAppareils.length === 0) {
-    console.warn('[use-appareils-data] Aucune donnée en base. Importez le fichier Extraction_Z34.xlsx via la page Import.');
+    console.warn('[use-appareils-data] Aucune donnée en base.');
     return [];
   }
 
-  // Load enrichment overrides
-  const enrichments = await fetchAllPages('appareil_enrichments');
-  
-  // Build enrichment lookup by normalized APP value (enrichments store 'app' field = APP column)
-  const enrichMap = new Map<string, any>();
-  for (const e of enrichments) {
-    const key = e.app ? normalizeKey(e.app) : (e.match_key ? normalizeKey(e.match_key) : null);
-    if (key) {
-      enrichMap.set(key, e);
-    }
-  }
+  console.log(`[use-appareils-data] Loaded ${allAppareils.length} appareils from enriched view`);
 
-  console.log(`[use-appareils-data] Appareils: ${allAppareils.length}, Enrichments: ${enrichments.length}`);
+  const mapped = allAppareils.map(mapAppareilEnriched);
 
-  // Map and apply enrichments
-  const mapped = allAppareils.map(r => {
-    const item = mapAppareil(r);
-    const key = normalizeKey(item.app);
-    const enrichment = enrichMap.get(key);
-    
-    if (enrichment) {
-      // RESP_POSE: if empty in appareils, apply enriched value
-      if (!item.respPose && enrichment.resp_pose) {
-        item.respPose = enrichment.resp_pose;
-      }
-      // DATE_CONTRAINTE: if empty in appareils, apply enriched value
-      // Use the best available: date_contrainte (final), y34_date_contrainte_calculated, or y34_date_contrainte
-      if (!item.dateContrainte) {
-        const enrichedDate = enrichment.date_contrainte || enrichment.y34_date_contrainte_calculated || enrichment.y34_date_contrainte;
-        if (enrichedDate) {
-          item.dateContrainte = typeof enrichedDate === 'string' ? enrichedDate.substring(0, 10) : null;
-        }
-      }
-    }
-    
-    return item;
-  });
-
-  // Now filter: RESP_POSE = GEST AND (FN in allowed OR LIB_LOCAL = ECR)
+  // Filter: RESP_POSE = GEST AND (FN in allowed OR LIB_LOCAL = ECR)
   return mapped.filter(a =>
     a.respPose === 'GEST' &&
     (ALLOWED_FNS.includes(a.fn) || a.libLocal.toUpperCase() === 'ECR')

@@ -25,7 +25,7 @@ function normalizeKey(v: string): string {
   return v.trim().toUpperCase().replace(/\s+/g, '').replace(/^(?:Y34|Z34)[-–—:]?/, '');
 }
 
-function mapAppareil(r: any): AppareilData {
+function mapAppareilEnriched(r: any): AppareilData {
   return {
     respPose: r.resp_pose || '',
     fn: r.fn || '',
@@ -39,13 +39,10 @@ function mapAppareil(r: any): AppareilData {
     indPretAPoser: r.ind_pret_a_poser || '',
     indPose: r.ind_pose || '',
     dateFinOd: r.date_fin_od || null,
-    dateContrainte: r.date_contrainte || null,
+    dateContrainte: r.date_contrainte ? (typeof r.date_contrainte === 'string' ? r.date_contrainte.substring(0, 10) : null) : null,
   };
 }
 
-/**
- * Extract the middle segment from repere: XXX-VALEUR-YYY → VALEUR
- */
 function cleanRepere(raw: string): string | null {
   if (!raw) return null;
   const trimmed = raw.trim().toUpperCase();
@@ -59,11 +56,11 @@ function cleanRepere(raw: string): string | null {
 interface OtLigneInfo {
   trigramme: string;
   lot: string;
-  suffixe: string; // last segment of identifiant_projet e.g. H7P
+  suffixe: string;
 }
 
 async function loadEquipementH7P(): Promise<EquipementItem[]> {
-  // Step 1: Load OT Lignes, filter H7P, clean repère + collect metadata
+  // Step 1: Load OT Lignes, filter H7P
   const otLignes = await fetchAllPages('ot_lignes');
   const h7pReperes = new Set<string>();
   const otInfoMap = new Map<string, OtLigneInfo>();
@@ -75,9 +72,7 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     if (!cleaned) continue;
     h7pReperes.add(cleaned);
 
-    // Keep first OT ligne info per repère
     if (!otInfoMap.has(cleaned)) {
-      // Extract suffix from identifiant_projet (last segment after -)
       const projParts = idProjet.split('-');
       const suffixe = projParts.length > 0 ? projParts[projParts.length - 1] : '';
       otInfoMap.set(cleaned, {
@@ -90,39 +85,44 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
 
-  // Step 2: Load ALL appareils from DB
-  const allAppareils = await fetchAllPages('appareils');
+  // Step 2: Use pre-joined view instead of separate appareils + 118k enrichments
+  const allAppareils = await fetchAllPages('appareils_enriched');
 
-  // Step 3: Load enrichment overrides
-  const enrichments = await fetchAllPages('appareil_enrichments');
-  const enrichMap = new Map<string, any>();
-  for (const e of enrichments) {
-    const key = e.app ? normalizeKey(e.app) : (e.match_key ? normalizeKey(e.match_key) : null);
-    if (key) enrichMap.set(key, e);
-  }
-
-  // Step 4: Map appareils and apply enrichments
+  // Step 3: Build lookup by normalized APP
   const appareilByApp = new Map<string, AppareilData>();
   for (const r of allAppareils) {
-    const item = mapAppareil(r);
+    const item = mapAppareilEnriched(r);
     const key = normalizeKey(item.app);
     if (!key) continue;
-
-    const enrichment = enrichMap.get(key);
-    if (enrichment) {
-      if (!item.respPose && enrichment.resp_pose) item.respPose = enrichment.resp_pose;
-      if (!item.dateContrainte) {
-        const enrichedDate = enrichment.date_contrainte || enrichment.y34_date_contrainte_calculated || enrichment.y34_date_contrainte;
-        if (enrichedDate) item.dateContrainte = typeof enrichedDate === 'string' ? enrichedDate.substring(0, 10) : null;
-      }
-    }
-
     if (!appareilByApp.has(key)) {
       appareilByApp.set(key, item);
     }
   }
 
-  // Step 5: Match H7P repères with appareils + use OT ligne data for stubs
+  // Step 4: Also load enrichments for stubs (only the ones we need)
+  // We still need enrichment data for stubs not found in appareils
+  // But now we can filter: only load enrichments matching H7P repères
+  const enrichMap = new Map<string, any>();
+  const missingReperes = [...h7pReperes].filter(r => !appareilByApp.has(r));
+  
+  if (missingReperes.length > 0) {
+    // Fetch only needed enrichments in batches
+    for (let i = 0; i < missingReperes.length; i += 50) {
+      const batch = missingReperes.slice(i, i + 50);
+      const { data } = await supabase
+        .from('appareil_enrichments')
+        .select('*')
+        .in('match_key', batch);
+      if (data) {
+        for (const e of data) {
+          const key = e.app ? normalizeKey(e.app) : normalizeKey(e.match_key);
+          if (key) enrichMap.set(key, e);
+        }
+      }
+    }
+  }
+
+  // Step 5: Match H7P repères with appareils
   const result: EquipementItem[] = [];
   const seen = new Set<string>();
 
@@ -134,13 +134,11 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     const otInfo = otInfoMap.get(repere);
 
     if (appareil) {
-      // Fill missing fields from OT ligne data
       if (!appareil.fn && otInfo?.trigramme) appareil.fn = otInfo.trigramme;
       if (!appareil.lotMtgApp && otInfo?.lot) appareil.lotMtgApp = otInfo.lot;
       if (!appareil.tApp && otInfo?.suffixe) appareil.tApp = otInfo.suffixe;
       result.push({ ...appareil, repereApp: appareil.app });
     } else {
-      // Stub: use OT ligne + enrichment data
       const enrichment = enrichMap.get(repere);
       result.push({
         respPose: enrichment?.resp_pose || '',
@@ -161,7 +159,7 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     }
   }
 
-  console.log(`[use-equipement-data] Final H7P equipements: ${result.length} (from ${h7pReperes.size} repères, ${appareilByApp.size} appareils in DB, ${result.length - seen.size + h7pReperes.size - (result.length - [...h7pReperes].filter(r => appareilByApp.has(r)).length)} stubs)`);
+  console.log(`[use-equipement-data] Final H7P equipements: ${result.length}`);
   return result;
 }
 

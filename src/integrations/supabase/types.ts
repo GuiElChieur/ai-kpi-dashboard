@@ -685,7 +685,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      appareils_enriched: {
+        Row: {
+          app: string | null
+          date_contrainte: string | null
+          date_fin_od: string | null
+          fn: string | null
+          id: string | null
+          ind_pose: string | null
+          ind_pret_a_poser: string | null
+          lib_design: string | null
+          lib_local: string | null
+          local: string | null
+          lot_mtg_app: string | null
+          resp_pose: string | null
+          resp_pret_a_poser: string | null
+          t_app: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
