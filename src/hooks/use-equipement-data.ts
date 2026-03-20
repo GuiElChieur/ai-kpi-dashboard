@@ -97,41 +97,20 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
 
-  // Step 2: Load appareils from enriched view (only needed columns)
+  // Step 2: Load appareils from enriched view
   const allAppareils = await fetchAllPages('appareils_enriched', APPAREIL_COLUMNS);
 
-  // Step 3: Build lookup by normalized APP
-  const appareilByApp = new Map<string, AppareilData>();
+  // Step 3: Build lookup by normalized APP — store all keys for prefix matching
+  const allAppareilItems: { key: string; item: AppareilData }[] = [];
   for (const r of allAppareils) {
     const item = mapAppareilEnriched(r);
     const key = normalizeKey(item.app);
     if (!key) continue;
-    if (!appareilByApp.has(key)) {
-      appareilByApp.set(key, item);
-    }
+    allAppareilItems.push({ key, item });
   }
 
-  // Step 4: Load enrichments only for missing repères
-  const enrichMap = new Map<string, any>();
-  const missingReperes = [...h7pReperes].filter(r => !appareilByApp.has(r));
-
-  if (missingReperes.length > 0) {
-    for (let i = 0; i < missingReperes.length; i += 50) {
-      const batch = missingReperes.slice(i, i + 50);
-      const { data } = await supabase
-        .from('appareil_enrichments')
-        .select('match_key,app,resp_pose,fn,lot_mtg_app,local,lib_local,t_app,date_contrainte,y34_date_contrainte_calculated')
-        .in('match_key', batch);
-      if (data) {
-        for (const e of data) {
-          const key = e.app ? normalizeKey(e.app) : normalizeKey(e.match_key);
-          if (key) enrichMap.set(key, e);
-        }
-      }
-    }
-  }
-
-  // Step 5: Match H7P repères with appareils
+  // Step 4: Match H7P repères with appareils using PREFIX matching
+  // ot_lignes repere (e.g. A7AB42A) is a prefix of the real app name (e.g. A7AB42AA)
   const result: EquipementItem[] = [];
   const seen = new Set<string>();
 
@@ -139,30 +118,35 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     if (seen.has(repere)) continue;
     seen.add(repere);
 
-    const appareil = appareilByApp.get(repere);
     const otInfo = otInfoMap.get(repere);
 
-    if (appareil) {
-      if (!appareil.fn && otInfo?.trigramme) appareil.fn = otInfo.trigramme;
-      if (!appareil.lotMtgApp && otInfo?.lot) appareil.lotMtgApp = otInfo.lot;
-      if (!appareil.tApp && otInfo?.suffixe) appareil.tApp = otInfo.suffixe;
-      result.push({ ...appareil, repereApp: appareil.app });
+    // Find all appareils whose normalized key starts with the repere
+    const matchedAppareils = allAppareilItems.filter(a => a.key === repere || a.key.startsWith(repere));
+
+    if (matchedAppareils.length > 0) {
+      for (const { item } of matchedAppareils) {
+        const enriched = { ...item };
+        if (!enriched.fn && otInfo?.trigramme) enriched.fn = otInfo.trigramme;
+        if (!enriched.lotMtgApp && otInfo?.lot) enriched.lotMtgApp = otInfo.lot;
+        if (!enriched.tApp && otInfo?.suffixe) enriched.tApp = otInfo.suffixe;
+        result.push({ ...enriched, repereApp: enriched.app });
+      }
     } else {
-      const enrichment = enrichMap.get(repere);
+      // Fallback: check appareil_enrichments
       result.push({
-        respPose: enrichment?.resp_pose || '',
-        fn: otInfo?.trigramme || enrichment?.fn || '',
-        lotMtgApp: otInfo?.lot || enrichment?.lot_mtg_app || '',
-        local: enrichment?.local || '',
-        libLocal: enrichment?.lib_local || '',
+        respPose: '',
+        fn: otInfo?.trigramme || '',
+        lotMtgApp: otInfo?.lot || '',
+        local: '',
+        libLocal: '',
         app: repere,
-        tApp: otInfo?.suffixe || enrichment?.t_app || '',
+        tApp: otInfo?.suffixe || '',
         libDesign: '',
         respPretAPoser: '',
         indPretAPoser: '',
         indPose: '',
         dateFinOd: null,
-        dateContrainte: enrichment?.date_contrainte || enrichment?.y34_date_contrainte_calculated || null,
+        dateContrainte: null,
         repereApp: repere,
       });
     }
