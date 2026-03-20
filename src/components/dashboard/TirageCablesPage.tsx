@@ -266,15 +266,37 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
   return (
     <div className="p-4 space-y-4 animate-fade-in overflow-auto">
       {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 [&>div]:h-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 [&>div]:h-full">
         <div className="cursor-pointer" onClick={() => { setStatusFilter('all'); setPage(0); }}>
           <KpiCard title="Total câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} className={`h-full ${statusFilter === 'all' ? 'ring-2 ring-primary' : ''}`} />
         </div>
         <div>
           <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} className="h-full" />
         </div>
-        <div>
-          <KpiCard title="Métré tiré" value={`${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`} subtitle={`${kpis.lngTotal ? ((kpis.lngTiree / kpis.lngTotal) * 100).toFixed(1) : 0}%`} icon={<CheckCircle className="h-5 w-5" />} className="h-full" />
+        {/* KPI phare : % métré tiré */}
+        <div className="col-span-2 sm:col-span-1 lg:col-span-1">
+          <Card className="glass-card h-full overflow-hidden border-primary/30 bg-primary/5">
+            <CardContent className="p-4 flex flex-col justify-between h-full">
+              <p className="text-xs font-medium uppercase tracking-wider text-primary/70">Avancement tirage</p>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-3xl font-black font-mono tracking-tight text-primary">
+                  {kpis.lngTotal ? ((kpis.lngTiree / kpis.lngTotal) * 100).toFixed(1) : '0.0'}
+                </span>
+                <span className="text-lg font-bold text-primary/70">%</span>
+              </div>
+              <div className="mt-2 space-y-1">
+                <div className="w-full h-2 rounded-full bg-primary/15 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                    style={{ width: `${kpis.lngTotal ? Math.min((kpis.lngTiree / kpis.lngTotal) * 100, 100) : 0}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {Math.round(kpis.lngTiree).toLocaleString('fr-FR')} / {Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <div>
           <KpiCard title="Non tirés" value={`${kpis.nonTires}`} icon={<XCircle className="h-5 w-5" />} className="h-full" />
