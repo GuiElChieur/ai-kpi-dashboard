@@ -51,8 +51,14 @@ async function insertBatch(tableName: string, data: any[], batchSize = 500) {
   return inserted;
 }
 
+interface StoredFile {
+  name: string;
+  key: string;
+  data: ArrayBuffer;
+}
+
 export function DataImport() {
-  const [files, setFiles] = useState<Record<string, File>>({});
+  const [storedFiles, setStoredFiles] = useState<Record<string, StoredFile>>({});
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -60,19 +66,28 @@ export function DataImport() {
   const { data: logs } = useImportLogs();
   const queryClient = useQueryClient();
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const newFiles: Record<string, File> = { ...files };
-    Array.from(e.target.files).forEach(file => {
+    const newFiles: Record<string, StoredFile> = { ...storedFiles };
+    const fileList = Array.from(e.target.files);
+    for (const file of fileList) {
       const name = file.name.toUpperCase();
       const type = FILE_TYPES.find(t => name.includes(t.pattern));
-      if (type) newFiles[type.key] = file;
-    });
-    setFiles(newFiles);
+      if (type) {
+        try {
+          const data = await file.arrayBuffer();
+          newFiles[type.key] = { name: file.name, key: type.key, data };
+        } catch (err) {
+          console.error('[DataImport] Failed to read file:', file.name, err);
+          toast.error(`Impossible de lire le fichier ${file.name}`);
+        }
+      }
+    }
+    setStoredFiles(newFiles);
   };
 
   const handleImport = async () => {
-    const entries = Object.entries(files);
+    const entries = Object.entries(storedFiles);
     if (entries.length === 0) {
       toast.error('Sélectionnez au moins un fichier');
       return;
@@ -84,15 +99,13 @@ export function DataImport() {
 
     try {
       for (let idx = 0; idx < entries.length; idx++) {
-        const [key, file] = entries[idx];
+        const [key, storedFile] = entries[idx];
         const tableName = TABLE_MAP[key];
         setImportProgress(`${idx + 1}/${entries.length} — ${tableName}`);
 
         try {
           if (key === 'extraction') {
-            // Extraction Z34: import both cables and appareils sheets
-            const buf = await file.arrayBuffer();
-            const wb = XLSX.read(buf, { type: 'array' });
+            const wb = XLSX.read(storedFile.data, { type: 'array' });
 
             // --- Cables sheet ---
             const cableSheet = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
@@ -122,19 +135,18 @@ export function DataImport() {
               console.warn('[DataImport] No "appareils" sheet found in Extraction file');
             }
 
-            continue; // skip the default insert below
+            continue;
           }
 
           let mapped: any[];
 
-          if (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx')) {
-            const buf = await file.arrayBuffer();
-            const wb = XLSX.read(buf, { type: 'array' });
+          if (key === 'matiere' && storedFile.name.toLowerCase().endsWith('.xlsx')) {
+            const wb = XLSX.read(storedFile.data, { type: 'array' });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
             mapped = mapMatiereRows(rawRows);
           } else {
-            const text = await file.text();
+            const text = new TextDecoder().decode(storedFile.data);
             switch (key) {
               case 'achat': mapped = parseAchatCSV(text); break;
               case 'ot': mapped = parseOTCSV(text); break;
@@ -190,7 +202,7 @@ export function DataImport() {
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
 
-      setFiles({});
+      setStoredFiles({});
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -217,9 +229,9 @@ export function DataImport() {
               >
                 <FileText className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                 <p className="text-xs font-medium text-foreground">{type.label}</p>
-                {files[type.key] ? (
+                {storedFiles[type.key] ? (
                   <Badge variant="secondary" className="mt-1 text-[10px]">
-                    {files[type.key].name.substring(0, 20)}
+                    {storedFiles[type.key].name.substring(0, 20)}
                   </Badge>
                 ) : (
                   <p className="text-[10px] text-muted-foreground mt-1">{type.accept}</p>
@@ -248,7 +260,7 @@ export function DataImport() {
             <Button
               size="sm"
               onClick={handleImport}
-              disabled={importing || Object.keys(files).length === 0}
+              disabled={importing || Object.keys(storedFiles).length === 0}
             >
               {importing ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
