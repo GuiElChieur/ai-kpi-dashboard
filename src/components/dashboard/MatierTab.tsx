@@ -98,7 +98,7 @@ export function MatierTab({ data, achatData }: { data: MatierData[]; achatData: 
 
   return (
     <div className="flex flex-col h-full gap-2 animate-fade-in">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 [&>div]:h-full shrink-0">
         <KpiCard title="Qté besoin totale" value={Math.round(kpis.totalBesoin).toLocaleString('fr-FR')} icon={<Package className="h-4 w-4" />} />
         <KpiCard title="Qté sortie" value={Math.round(kpis.totalSortie).toLocaleString('fr-FR')} icon={<TrendingUp className="h-4 w-4" />} />
         <KpiCard title="Taux de sortie" value={`${kpis.tauxSortie.toFixed(1)}%`} icon={<BarChart3 className="h-4 w-4" />} />

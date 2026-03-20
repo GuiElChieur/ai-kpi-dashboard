@@ -291,7 +291,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
       </div>
 
       {/* KPIs row */}
-      <div className="grid grid-cols-5 gap-2 shrink-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 [&>div]:h-full shrink-0">
         <div onClick={() => toggleKpi('total')} className="cursor-pointer">
           <KpiCard
             title="Nombre total"
