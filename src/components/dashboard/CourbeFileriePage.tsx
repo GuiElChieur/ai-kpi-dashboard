@@ -198,7 +198,7 @@ export function CourbeFileriePage({ allData }: { allData: CableData[] }) {
   return (
     <div className="p-3 space-y-2 animate-fade-in h-full flex flex-col overflow-hidden" style={{ background: '#0A1628' }}>
       {/* KPIs */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 [&>div]:h-full">
         <KpiCard title="Nbre Total Câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} />
         <KpiCard title="Tiré (m)" value={`${Math.round(kpis.lngTiree).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
         <KpiCard title="RAF (m)" value={`${Math.round(kpis.raf).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />

@@ -26,7 +26,7 @@ export function OTTab({ data }: { data: OTData[] }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 [&>div]:h-full">
         <KpiCard title="Total OT" value={kpis.total} icon={<ClipboardList className="h-5 w-5" />} subtitle="Ordres de travail" />
         <KpiCard title="Terminés" value={kpis.completed} icon={<CheckCircle className="h-5 w-5" />} subtitle={`${kpis.total > 0 ? ((kpis.completed / kpis.total) * 100).toFixed(1) : 0}%`} />
         <KpiCard title="En cours" value={kpis.inProgress} icon={<Clock className="h-5 w-5" />} />

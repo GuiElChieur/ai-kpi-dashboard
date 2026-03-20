@@ -24,7 +24,7 @@ export function AchatTab({ data }: { data: AchatData[] }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 [&>div]:h-full">
         <KpiCard title="Total HT" value={`${Math.round(kpis.totalHT).toLocaleString('fr-FR')} €`} icon={<CreditCard className="h-5 w-5" />} />
         <KpiCard title="Commandes" value={kpis.nbCommandes} icon={<ShoppingCart className="h-5 w-5" />} />
         <KpiCard title="Lignes d'achat" value={kpis.nbLignes} icon={<FileText className="h-5 w-5" />} />
