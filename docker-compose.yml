@@ -1,17 +1,14 @@
 services:
   lovable-site:
-    image: ghcr.io/guielchieur/ai-kpi-dashboard:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lovable-site:latest
     container_name: lovable-site
     ports:
       - "3434:3434"
     restart: unless-stopped
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-
-  watchtower:
-    image: containrrr/watchtower:latest
-    container_name: watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 30 --label-enable
+    environment:
+      - VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+      - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}

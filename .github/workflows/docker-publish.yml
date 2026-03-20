@@ -1,4 +1,4 @@
-name: Build and publish Docker image
+name: Build, publish and deploy Docker image
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  publish:
+  publish-and-deploy:
     runs-on: ubuntu-latest
 
     permissions:
@@ -34,3 +34,15 @@ jobs:
 
       - name: Push image
         run: docker push ghcr.io/guielchieur/ai-kpi-dashboard:latest
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd C:\docker\ai-kpi-dashboard
+            docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} -p ${{ secrets.GHCR_TOKEN }}
+            docker compose pull
+            docker compose up -d
