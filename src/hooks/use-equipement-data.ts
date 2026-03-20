@@ -12,9 +12,9 @@ const APPAREIL_COLUMNS = '*';
 async function fetchAllPages(table: string, columns: string, filters?: { column: string; op: string; value: string }[]): Promise<any[]> {
   let allData: any[] = [];
   let from = 0;
-  const pageSize = 5000;
+  const pageSize = 1000;
   while (true) {
-    let query = (supabase as any).from(table).select(columns).range(from, from + pageSize - 1);
+    let query = (supabase as any).from(table).select(columns).order('id', { ascending: true }).range(from, from + pageSize - 1);
     if (filters) {
       for (const f of filters) {
         if (f.op === 'ilike') query = query.ilike(f.column, f.value);
@@ -37,17 +37,17 @@ function normalizeKey(v: string): string {
 
 function mapAppareilEnriched(r: any): AppareilData {
   return {
-    respPose: r.resp_pose || '',
-    fn: r.fn || '',
-    lotMtgApp: r.lot_mtg_app || '',
-    local: r.local || '',
-    libLocal: r.lib_local || '',
-    app: r.app || '',
-    tApp: r.t_app || '',
-    libDesign: r.lib_design || '',
-    respPretAPoser: r.resp_pret_a_poser || '',
-    indPretAPoser: r.ind_pret_a_poser || '',
-    indPose: r.ind_pose || '',
+    respPose: typeof r.resp_pose === 'string' ? r.resp_pose.trim().toUpperCase() : '',
+    fn: typeof r.fn === 'string' ? r.fn.trim().toUpperCase() : '',
+    lotMtgApp: typeof r.lot_mtg_app === 'string' ? r.lot_mtg_app.trim() : '',
+    local: typeof r.local === 'string' ? r.local.trim() : '',
+    libLocal: typeof r.lib_local === 'string' ? r.lib_local.trim() : '',
+    app: typeof r.app === 'string' ? r.app.trim() : '',
+    tApp: typeof r.t_app === 'string' ? r.t_app.trim() : '',
+    libDesign: typeof r.lib_design === 'string' ? r.lib_design.trim() : '',
+    respPretAPoser: typeof r.resp_pret_a_poser === 'string' ? r.resp_pret_a_poser.trim() : '',
+    indPretAPoser: typeof r.ind_pret_a_poser === 'string' ? r.ind_pret_a_poser.trim().toUpperCase() : '',
+    indPose: typeof r.ind_pose === 'string' ? r.ind_pose.trim().toUpperCase() : '',
     dateFinOd: r.date_fin_od || null,
     dateContrainte: r.date_contrainte ? (typeof r.date_contrainte === 'string' ? r.date_contrainte.substring(0, 10) : null) : null,
   };
