@@ -6,8 +6,9 @@ export interface EquipementItem extends AppareilData {
   repereApp: string;
 }
 
-const OT_LIGNE_COLUMNS = '*';
-const APPAREIL_COLUMNS = '*';
+// Only fetch columns we actually need
+const OT_LIGNE_COLUMNS = 'identifiant_projet,trigramme,repere,lot';
+const APPAREIL_COLUMNS = 'app,fn,lot_mtg_app,local,lib_local,t_app,lib_design,resp_pret_a_poser,ind_pret_a_poser,ind_pose,date_fin_od,date_contrainte,resp_pose';
 
 async function fetchAllPages(table: string, columns: string, filters?: { column: string; op: string; value: string }[]): Promise<any[]> {
   let allData: any[] = [];
@@ -69,10 +70,42 @@ interface OtLigneInfo {
   suffixe: string;
 }
 
+/**
+ * Build a sorted index for efficient prefix matching.
+ * Instead of O(n) filter per repere, we use binary search → O(log n) per lookup.
+ */
+function buildSortedIndex(items: { key: string; item: AppareilData }[]) {
+  const sorted = items.slice().sort((a, b) => a.key.localeCompare(b.key));
+
+  return {
+    findByPrefix(prefix: string): { key: string; item: AppareilData }[] {
+      // Binary search for first element >= prefix
+      let lo = 0, hi = sorted.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (sorted[mid].key < prefix) lo = mid + 1;
+        else hi = mid;
+      }
+      // Collect all entries starting with prefix
+      const results: { key: string; item: AppareilData }[] = [];
+      while (lo < sorted.length && sorted[lo].key.startsWith(prefix)) {
+        results.push(sorted[lo]);
+        lo++;
+      }
+      return results;
+    },
+  };
+}
+
 async function loadEquipementH7P(): Promise<EquipementItem[]> {
-  // Step 1: Load ONLY H7P OT Lignes (server-side filter)
-  const otLignes = await fetchAllPages('ot_lignes', OT_LIGNE_COLUMNS, [
-    { column: 'identifiant_projet', op: 'ilike', value: '%H7P' },
+  // Step 1 & 2: Load OT lignes H7P and appareils GEST in parallel
+  const [otLignes, allAppareils] = await Promise.all([
+    fetchAllPages('ot_lignes', OT_LIGNE_COLUMNS, [
+      { column: 'identifiant_projet', op: 'ilike', value: '%H7P' },
+    ]),
+    fetchAllPages('appareils_enriched', APPAREIL_COLUMNS, [
+      { column: 'resp_pose', op: 'eq', value: 'GEST' },
+    ]),
   ]);
 
   const h7pReperes = new Set<string>();
@@ -97,12 +130,7 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
 
-  // Step 2: Load appareils from enriched view (GEST only, like Pose Appareillage)
-  const allAppareils = await fetchAllPages('appareils_enriched', APPAREIL_COLUMNS, [
-    { column: 'resp_pose', op: 'eq', value: 'GEST' },
-  ]);
-
-  // Step 3: Build lookup by normalized APP — store all keys for prefix matching
+  // Step 3: Build sorted index for O(log n) prefix matching
   const allAppareilItems: { key: string; item: AppareilData }[] = [];
   for (const r of allAppareils) {
     const item = mapAppareilEnriched(r);
@@ -111,8 +139,9 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     allAppareilItems.push({ key, item });
   }
 
+  const index = buildSortedIndex(allAppareilItems);
+
   // Step 4: Match H7P repères with appareils using PREFIX matching
-  // ot_lignes repere (e.g. A7AB42A) is a prefix of the real app name (e.g. A7AB42AA)
   const result: EquipementItem[] = [];
   const seen = new Set<string>();
 
@@ -121,9 +150,7 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     seen.add(repere);
 
     const otInfo = otInfoMap.get(repere);
-
-    // Find all appareils whose normalized key starts with the repere
-    const matchedAppareils = allAppareilItems.filter(a => a.key === repere || a.key.startsWith(repere));
+    const matchedAppareils = index.findByPrefix(repere);
 
     if (matchedAppareils.length > 0) {
       for (const { item } of matchedAppareils) {
@@ -134,7 +161,6 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
         result.push({ ...enriched, repereApp: enriched.app });
       }
     } else {
-      // Fallback: check appareil_enrichments
       result.push({
         respPose: '',
         fn: otInfo?.trigramme || '',
