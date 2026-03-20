@@ -23,7 +23,7 @@ function StatusBadge({ cable }: { cable: CableData }) {
 }
 
 export function TirageCablesPage({ allData }: { allData: CableData[] }) {
-  const baseData = useMemo(() => getTirageData(allData), [allData]);
+  const baseData = useMemo(() => allData.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'O'), [allData]);
   const [showMinReq, setShowMinReq] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
