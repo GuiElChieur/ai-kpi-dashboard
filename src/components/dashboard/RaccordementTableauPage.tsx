@@ -297,7 +297,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             title="Nombre total"
             value={kpis.total}
             icon={<Cable className="h-5 w-5" />}
-            className={filters.selectedKpi === 'total' ? 'ring-2 ring-primary' : ''}
+            className={`h-full ${filters.selectedKpi === 'total' ? 'ring-2 ring-primary' : ''}`}
           />
         </div>
         <div onClick={() => toggleKpi('raccorde')} className="cursor-pointer">
@@ -305,7 +305,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             title="Raccordé"
             value={kpis.raccorde}
             icon={<CheckCircle2 className="h-5 w-5" />}
-            className={filters.selectedKpi === 'raccorde' ? 'ring-2 ring-success' : ''}
+            className={`h-full ${filters.selectedKpi === 'raccorde' ? 'ring-2 ring-success' : ''}`}
           />
         </div>
         <div onClick={() => toggleKpi('raccordable')} className="cursor-pointer">
@@ -313,7 +313,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             title="Raccordable"
             value={kpis.raccordable}
             icon={<CircleDot className="h-5 w-5" />}
-            className={filters.selectedKpi === 'raccordable' ? 'ring-2 ring-info' : ''}
+            className={`h-full ${filters.selectedKpi === 'raccordable' ? 'ring-2 ring-info' : ''}`}
           />
         </div>
         <div onClick={() => toggleKpi('non-raccorde')} className="cursor-pointer">
@@ -321,7 +321,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
             title="Non raccordé"
             value={kpis.nonRaccorde}
             icon={<CircleOff className="h-5 w-5" />}
-            className={filters.selectedKpi === 'non-raccorde' ? 'ring-2 ring-destructive' : ''}
+            className={`h-full ${filters.selectedKpi === 'non-raccorde' ? 'ring-2 ring-destructive' : ''}`}
           />
         </div>
         <KpiCard
@@ -329,6 +329,7 @@ export function RaccordementTableauPage({ allData }: { allData: CableData[] }) {
           value={`${kpis.pctAvancement}%`}
           icon={<Percent className="h-5 w-5" />}
           subtitle={`${kpis.raccorde} / ${kpis.total}`}
+          className="h-full"
         />
       </div>
 

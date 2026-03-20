@@ -122,12 +122,12 @@ export function FilerieLotPage({ allData }: { allData: CableData[] }) {
     <div className="p-4 space-y-4 animate-fade-in overflow-auto">
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 [&>div]:h-full">
-        <KpiCard title="Total câbles filerie" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} />
-        <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} />
-        <KpiCard title="Lots distincts" value={kpis.nbLots.toString()} icon={<Layers className="h-5 w-5" />} />
-        <KpiCard title="Dans la fenêtre" value={kpis.dansFenetre.toString()} icon={<CalendarClock className="h-5 w-5" />} />
+        <KpiCard title="Total câbles filerie" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} className="h-full" />
+        <KpiCard title="Longueur totale" value={`${Math.round(kpis.lngTotal).toLocaleString('fr-FR')} m`} icon={<Ruler className="h-5 w-5" />} className="h-full" />
+        <KpiCard title="Lots distincts" value={kpis.nbLots.toString()} icon={<Layers className="h-5 w-5" />} className="h-full" />
+        <KpiCard title="Dans la fenêtre" value={kpis.dansFenetre.toString()} icon={<CalendarClock className="h-5 w-5" />} className="h-full" />
         <div className="cursor-pointer" onClick={() => { setStatusFilter(statusFilter === 'retard' ? 'all' : 'retard'); setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
-          <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} className={statusFilter === 'retard' ? 'ring-2 ring-destructive' : ''} />
+          <KpiCard title="En retard" value={kpis.retard.toString()} icon={<AlertTriangle className="h-5 w-5" />} className={`h-full ${statusFilter === 'retard' ? 'ring-2 ring-destructive' : ''}`} />
         </div>
       </div>
 
