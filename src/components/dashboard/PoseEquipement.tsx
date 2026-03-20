@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LabelList } from 'recharts';
-import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, Percent } from 'lucide-react';
+import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, Percent, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { EquipementItem } from '@/hooks/use-equipement-data';
 
 interface Filters {
@@ -22,6 +22,8 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
     selectedLots: [],
     selectedMonths: [],
   });
+  const [tablePage, setTablePage] = useState(0);
+  const PAGE_SIZE = 100;
 
   // Derive available FN values from data
   const availableFns = useMemo(() => {
@@ -34,6 +36,7 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
 
   const resetFilters = useCallback(() => {
     setFilters({ fnFilter: [], selectedFns: [], selectedLots: [], selectedMonths: [] });
+    setTablePage(0);
   }, []);
 
   const toggleFilter = useCallback((key: keyof Filters, value: string) => {
@@ -285,8 +288,21 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
 
       {/* Table */}
       <Card className="glass-card flex flex-col shrink-0" style={{ maxHeight: '25vh' }}>
-        <CardHeader className="py-1.5 px-3 shrink-0">
+        <CardHeader className="py-1.5 px-3 shrink-0 flex flex-row items-center justify-between">
           <CardTitle className="text-xs">Détail équipements ({filteredData.length})</CardTitle>
+          {filteredData.length > PAGE_SIZE && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0" disabled={tablePage === 0}
+                onClick={() => setTablePage(p => p - 1)}>
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <span>{tablePage * PAGE_SIZE + 1}–{Math.min((tablePage + 1) * PAGE_SIZE, filteredData.length)}</span>
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0" disabled={(tablePage + 1) * PAGE_SIZE >= filteredData.length}
+                onClick={() => setTablePage(p => p + 1)}>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="flex-1 min-h-0 overflow-auto p-0">
           <Table>
@@ -308,8 +324,8 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredData.map((a, i) => (
-                <TableRow key={i} className="text-[10px]">
+              {filteredData.slice(tablePage * PAGE_SIZE, (tablePage + 1) * PAGE_SIZE).map((a, i) => (
+                <TableRow key={tablePage * PAGE_SIZE + i} className="text-[10px]">
                   <TableCell className="px-2 py-0.5">{a.lotMtgApp}</TableCell>
                   <TableCell className="px-2 py-0.5">{a.local}</TableCell>
                   <TableCell className="px-2 py-0.5 max-w-[120px] truncate">{a.libLocal}</TableCell>
