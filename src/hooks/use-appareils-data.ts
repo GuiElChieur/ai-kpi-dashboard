@@ -4,6 +4,8 @@ import type { AppareilData } from '@/lib/appareils-parser';
 
 const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
 
+const APPAREIL_COLUMNS = 'resp_pose,fn,lot_mtg_app,local,lib_local,app,t_app,lib_design,resp_pret_a_poser,ind_pret_a_poser,ind_pose,date_fin_od,date_contrainte';
+
 function mapAppareilEnriched(r: any): AppareilData {
   return {
     respPose: r.resp_pose || '',
@@ -22,38 +24,36 @@ function mapAppareilEnriched(r: any): AppareilData {
   };
 }
 
-async function fetchAllPages(table: string): Promise<any[]> {
+async function loadFromDb(): Promise<AppareilData[]> {
+  // Server-side filter: only GEST resp_pose
   let allData: any[] = [];
   let from = 0;
-  const pageSize = 1000;
+  const pageSize = 5000;
   while (true) {
-    const { data, error } = await (supabase as any).from(table).select('*').range(from, from + pageSize - 1);
+    const { data, error } = await (supabase as any)
+      .from('appareils_enriched')
+      .select(APPAREIL_COLUMNS)
+      .eq('resp_pose', 'GEST')
+      .range(from, from + pageSize - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  return allData;
-}
 
-async function loadFromDb(): Promise<AppareilData[]> {
-  // Use the pre-joined view instead of fetching 118k+ enrichments separately
-  const allAppareils = await fetchAllPages('appareils_enriched');
-  
-  if (allAppareils.length === 0) {
+  if (allData.length === 0) {
     console.warn('[use-appareils-data] Aucune donnée en base.');
     return [];
   }
 
-  console.log(`[use-appareils-data] Loaded ${allAppareils.length} appareils from enriched view`);
+  console.log(`[use-appareils-data] Loaded ${allData.length} appareils (server-filtered GEST)`);
 
-  const mapped = allAppareils.map(mapAppareilEnriched);
+  const mapped = allData.map(mapAppareilEnriched);
 
-  // Filter: RESP_POSE = GEST AND (FN in allowed OR LIB_LOCAL = ECR)
+  // Client-side: FN in allowed OR LIB_LOCAL = ECR
   return mapped.filter(a =>
-    a.respPose === 'GEST' &&
-    (ALLOWED_FNS.includes(a.fn) || a.libLocal.toUpperCase() === 'ECR')
+    ALLOWED_FNS.includes(a.fn) || a.libLocal.toUpperCase() === 'ECR'
   );
 }
 
