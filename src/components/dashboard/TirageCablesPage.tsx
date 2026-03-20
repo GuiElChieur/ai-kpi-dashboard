@@ -266,7 +266,7 @@ export function TirageCablesPage({ allData }: { allData: CableData[] }) {
   return (
     <div className="p-4 space-y-4 animate-fade-in overflow-auto">
       {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 [&>div]:h-full">
+      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-3 [&>div]:h-full">
         <div className="cursor-pointer" onClick={() => { setStatusFilter('all'); setPage(0); }}>
           <KpiCard title="Total câbles" value={kpis.total.toLocaleString('fr-FR')} icon={<Cable className="h-5 w-5" />} className={`h-full ${statusFilter === 'all' ? 'ring-2 ring-primary' : ''}`} />
         </div>
