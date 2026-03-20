@@ -51,8 +51,14 @@ async function insertBatch(tableName: string, data: any[], batchSize = 500) {
   return inserted;
 }
 
+interface StoredFile {
+  name: string;
+  key: string;
+  data: ArrayBuffer;
+}
+
 export function DataImport() {
-  const [files, setFiles] = useState<Record<string, File>>({});
+  const [storedFiles, setStoredFiles] = useState<Record<string, StoredFile>>({});
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -60,15 +66,24 @@ export function DataImport() {
   const { data: logs } = useImportLogs();
   const queryClient = useQueryClient();
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const newFiles: Record<string, File> = { ...files };
-    Array.from(e.target.files).forEach(file => {
+    const newFiles: Record<string, StoredFile> = { ...storedFiles };
+    const fileList = Array.from(e.target.files);
+    for (const file of fileList) {
       const name = file.name.toUpperCase();
       const type = FILE_TYPES.find(t => name.includes(t.pattern));
-      if (type) newFiles[type.key] = file;
-    });
-    setFiles(newFiles);
+      if (type) {
+        try {
+          const data = await file.arrayBuffer();
+          newFiles[type.key] = { name: file.name, key: type.key, data };
+        } catch (err) {
+          console.error('[DataImport] Failed to read file:', file.name, err);
+          toast.error(`Impossible de lire le fichier ${file.name}`);
+        }
+      }
+    }
+    setStoredFiles(newFiles);
   };
 
   const handleImport = async () => {
