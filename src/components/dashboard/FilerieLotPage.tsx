@@ -20,7 +20,7 @@ const LOT_COLORS = [
 const PAGE_SIZE = 50;
 
 export function FilerieLotPage({ allData }: { allData: CableData[] }) {
-  const baseData = useMemo(() => getFilerieData(allData), [allData]);
+  const baseData = useMemo(() => allData.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'N'), [allData]);
   const tableRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
   const [lotFilter, setLotFilter] = useState<string>('');
