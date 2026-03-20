@@ -87,7 +87,7 @@ export function DataImport() {
   };
 
   const handleImport = async () => {
-    const entries = Object.entries(files);
+    const entries = Object.entries(storedFiles);
     if (entries.length === 0) {
       toast.error('Sélectionnez au moins un fichier');
       return;
@@ -99,15 +99,13 @@ export function DataImport() {
 
     try {
       for (let idx = 0; idx < entries.length; idx++) {
-        const [key, file] = entries[idx];
+        const [key, storedFile] = entries[idx];
         const tableName = TABLE_MAP[key];
         setImportProgress(`${idx + 1}/${entries.length} — ${tableName}`);
 
         try {
           if (key === 'extraction') {
-            // Extraction Z34: import both cables and appareils sheets
-            const buf = await file.arrayBuffer();
-            const wb = XLSX.read(buf, { type: 'array' });
+            const wb = XLSX.read(storedFile.data, { type: 'array' });
 
             // --- Cables sheet ---
             const cableSheet = wb.SheetNames.find(n => n.toLowerCase().includes('cable')) || wb.SheetNames[0];
@@ -137,19 +135,18 @@ export function DataImport() {
               console.warn('[DataImport] No "appareils" sheet found in Extraction file');
             }
 
-            continue; // skip the default insert below
+            continue;
           }
 
           let mapped: any[];
 
-          if (key === 'matiere' && file.name.toLowerCase().endsWith('.xlsx')) {
-            const buf = await file.arrayBuffer();
-            const wb = XLSX.read(buf, { type: 'array' });
+          if (key === 'matiere' && storedFile.name.toLowerCase().endsWith('.xlsx')) {
+            const wb = XLSX.read(storedFile.data, { type: 'array' });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
             mapped = mapMatiereRows(rawRows);
           } else {
-            const text = await file.text();
+            const text = new TextDecoder().decode(storedFile.data);
             switch (key) {
               case 'achat': mapped = parseAchatCSV(text); break;
               case 'ot': mapped = parseOTCSV(text); break;
