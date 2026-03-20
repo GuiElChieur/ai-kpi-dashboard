@@ -4,7 +4,7 @@ import type { AppareilData } from '@/lib/appareils-parser';
 
 const ALLOWED_FNS = ['DES', 'DHA', 'ECD', 'ELP', 'ORD', 'RDI'];
 
-const APPAREIL_COLUMNS = 'resp_pose,fn,lot_mtg_app,local,lib_local,app,t_app,lib_design,resp_pret_a_poser,ind_pret_a_poser,ind_pose,date_fin_od,date_contrainte';
+const APPAREIL_COLUMNS = '*';
 
 function mapAppareilEnriched(r: any): AppareilData {
   return {
