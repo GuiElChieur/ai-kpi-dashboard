@@ -97,8 +97,10 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
 
-  // Step 2: Load appareils from enriched view
-  const allAppareils = await fetchAllPages('appareils_enriched', APPAREIL_COLUMNS);
+  // Step 2: Load appareils from enriched view (GEST only, like Pose Appareillage)
+  const allAppareils = await fetchAllPages('appareils_enriched', APPAREIL_COLUMNS, [
+    { column: 'resp_pose', op: 'eq', value: 'GEST' },
+  ]);
 
   // Step 3: Build lookup by normalized APP — store all keys for prefix matching
   const allAppareilItems: { key: string; item: AppareilData }[] = [];
