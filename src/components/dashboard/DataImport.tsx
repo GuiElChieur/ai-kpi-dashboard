@@ -260,7 +260,7 @@ export function DataImport() {
             <Button
               size="sm"
               onClick={handleImport}
-              disabled={importing || Object.keys(files).length === 0}
+              disabled={importing || Object.keys(storedFiles).length === 0}
             >
               {importing ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
