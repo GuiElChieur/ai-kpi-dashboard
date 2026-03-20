@@ -183,7 +183,7 @@ export function PoseAppareillage({ allData }: { allData: AppareilData[] }) {
       </div>
 
       {/* Row 1: KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 shrink-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 [&>div]:h-full shrink-0">
         <KpiCard title="Total à poser" value={kpis.total} icon={<Package className="h-5 w-5" />} />
         <KpiCard title="Posés" value={kpis.poses} icon={<PackageCheck className="h-5 w-5" />} className="border-l-2 border-l-success" />
         <KpiCard title="Reste à poser" value={kpis.reste} icon={<PackageMinus className="h-5 w-5" />} className="border-l-2 border-l-destructive" />
