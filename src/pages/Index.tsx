@@ -58,8 +58,8 @@ const Index = () => {
     // Cable summary
     const cables = cableData || [];
     const gestCables = cables.filter(c => c.respTirage === 'GEST' && c.indApproCa === 'O');
-    const totalLngM = gestCables.reduce((s, c) => s + (c.lngTotal || 0), 0) / 1000;
-    const totalTireM = gestCables.reduce((s, c) => s + (c.totLngTiree || 0), 0) / 1000;
+    const totalLngM = gestCables.reduce((s, c) => s + (c.lngTotal || 0), 0);
+    const totalTireM = gestCables.reduce((s, c) => s + (c.totLngTiree || 0), 0);
     const cablesTires = gestCables.filter(c => c.sttCblBord === 'T').length;
 
     return `## OT Lignes (ot_lignes)\n- ${totalLignes} lignes OT\n- Charge prévisionnelle totale: ${Math.round(totalChargePrev)}h\n- VBTR total: ${Math.round(totalVBTR)}h, TP total: ${Math.round(totalTP)}h\n- Avancement effectif moyen: ${avgAvancement.toFixed(1)}%\n- Répartition par type OT: ${Object.entries(byTypeOT).map(([k, v]) => `${k}: ${v}`).join(', ')}\n\n## Heures pointées (pointages)\n- Total: ${Math.round(pt.totalHeures)}h, ${pt.nbIntervenants} intervenants\n- Top équipes: ${Object.entries(pt.byEquipe).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `${k}: ${Math.round(v)}h`).join(', ')}\n\n## Matières (matieres)\n- Besoin: ${Math.round(mt.totalBesoin)}, Sortie: ${Math.round(mt.totalSortie)} (${mt.tauxSortie.toFixed(1)}%)\n- En préparation: ${Math.round(mt.totalPreparation)}, ${mt.nbReferences} références\n\n## Achats (achats)\n- Total HT: ${Math.round(ac.totalHT).toLocaleString('fr-FR')}€, ${ac.nbCommandes} commandes, ${ac.nbLignes} lignes\n\n## Câbles (cables, filtre GEST + APPRO_CA=O)\n- ${gestCables.length} câbles dans le périmètre\n- Longueur totale: ${Math.round(totalLngM).toLocaleString('fr-FR')} m\n- Longueur tirée: ${Math.round(totalTireM).toLocaleString('fr-FR')} m (${totalLngM > 0 ? ((totalTireM / totalLngM) * 100).toFixed(1) : 0}%)\n- Câbles tirés (statut T): ${cablesTires} / ${gestCables.length}`;

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CableData } from '@/lib/cable-parser';
 
-const CABLE_COLUMNS = 'cbl,repere_cbl,resp_tirage,ind_appro_ca,lng_total,tot_lng_tiree,date_tir_plus_tot,date_tir_plus_tard,date_tirage_cbl,stt_cbl_bord,lot_mtg_apo,apo,apa,pt_cbl,cat_cablage,cod_zone_tirage,lot_ou_app_cbl,gam,nav,fn,cbl_racc_resp_o,cbl_racc_resp_a,cbl_raccorde_o,cbl_raccorde_a,stt_cbl_be,local_apo';
+const CABLE_COLUMNS = '*';
 
 function mapCable(r: any): CableData {
   return {
