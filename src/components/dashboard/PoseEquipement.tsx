@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LabelList } from 'recharts';
-import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, Percent } from 'lucide-react';
+import { RotateCcw, CheckCircle2, Circle, Package, PackageCheck, PackageMinus, Percent, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { EquipementItem } from '@/hooks/use-equipement-data';
 
 interface Filters {
