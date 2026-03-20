@@ -36,6 +36,7 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
 
   const resetFilters = useCallback(() => {
     setFilters({ fnFilter: [], selectedFns: [], selectedLots: [], selectedMonths: [] });
+    setTablePage(0);
   }, []);
 
   const toggleFilter = useCallback((key: keyof Filters, value: string) => {
