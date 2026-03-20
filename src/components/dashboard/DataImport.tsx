@@ -202,7 +202,7 @@ export function DataImport() {
       queryClient.invalidateQueries({ queryKey: ['db-matieres'] });
       queryClient.invalidateQueries({ queryKey: ['db-cables'] });
 
-      setFiles({});
+      setStoredFiles({});
     } catch (err: any) {
       toast.error(err.message);
     } finally {
