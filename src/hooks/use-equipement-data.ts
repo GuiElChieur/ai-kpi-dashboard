@@ -6,8 +6,8 @@ export interface EquipementItem extends AppareilData {
   repereApp: string;
 }
 
-const OT_LIGNE_COLUMNS = 'identifiant_projet,repere,trigramme,lot';
-const APPAREIL_COLUMNS = 'resp_pose,fn,lot_mtg_app,local,lib_local,app,t_app,lib_design,resp_pret_a_poser,ind_pret_a_poser,ind_pose,date_fin_od,date_contrainte';
+const OT_LIGNE_COLUMNS = '*';
+const APPAREIL_COLUMNS = '*';
 
 async function fetchAllPages(table: string, columns: string, filters?: { column: string; op: string; value: string }[]): Promise<any[]> {
   let allData: any[] = [];
