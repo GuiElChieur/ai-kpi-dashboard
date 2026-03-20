@@ -6,12 +6,22 @@ export interface EquipementItem extends AppareilData {
   repereApp: string;
 }
 
-async function fetchAllPages(table: string): Promise<any[]> {
+const OT_LIGNE_COLUMNS = 'identifiant_projet,repere,trigramme,lot';
+const APPAREIL_COLUMNS = 'resp_pose,fn,lot_mtg_app,local,lib_local,app,t_app,lib_design,resp_pret_a_poser,ind_pret_a_poser,ind_pose,date_fin_od,date_contrainte';
+
+async function fetchAllPages(table: string, columns: string, filters?: { column: string; op: string; value: string }[]): Promise<any[]> {
   let allData: any[] = [];
   let from = 0;
-  const pageSize = 1000;
+  const pageSize = 5000;
   while (true) {
-    const { data, error } = await (supabase as any).from(table).select('*').range(from, from + pageSize - 1);
+    let query = (supabase as any).from(table).select(columns).range(from, from + pageSize - 1);
+    if (filters) {
+      for (const f of filters) {
+        if (f.op === 'ilike') query = query.ilike(f.column, f.value);
+        else if (f.op === 'eq') query = query.eq(f.column, f.value);
+      }
+    }
+    const { data, error } = await query;
     if (error) throw error;
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
@@ -60,14 +70,16 @@ interface OtLigneInfo {
 }
 
 async function loadEquipementH7P(): Promise<EquipementItem[]> {
-  // Step 1: Load OT Lignes, filter H7P
-  const otLignes = await fetchAllPages('ot_lignes');
+  // Step 1: Load ONLY H7P OT Lignes (server-side filter)
+  const otLignes = await fetchAllPages('ot_lignes', OT_LIGNE_COLUMNS, [
+    { column: 'identifiant_projet', op: 'ilike', value: '%H7P' },
+  ]);
+
   const h7pReperes = new Set<string>();
   const otInfoMap = new Map<string, OtLigneInfo>();
 
   for (const r of otLignes) {
     const idProjet = (r.identifiant_projet || '').trim().toUpperCase();
-    if (!idProjet.endsWith('H7P')) continue;
     const cleaned = cleanRepere(r.repere || '');
     if (!cleaned) continue;
     h7pReperes.add(cleaned);
@@ -85,8 +97,8 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
 
   console.log(`[use-equipement-data] H7P unique repères: ${h7pReperes.size}`);
 
-  // Step 2: Use pre-joined view instead of separate appareils + 118k enrichments
-  const allAppareils = await fetchAllPages('appareils_enriched');
+  // Step 2: Load appareils from enriched view (only needed columns)
+  const allAppareils = await fetchAllPages('appareils_enriched', APPAREIL_COLUMNS);
 
   // Step 3: Build lookup by normalized APP
   const appareilByApp = new Map<string, AppareilData>();
@@ -99,19 +111,16 @@ async function loadEquipementH7P(): Promise<EquipementItem[]> {
     }
   }
 
-  // Step 4: Also load enrichments for stubs (only the ones we need)
-  // We still need enrichment data for stubs not found in appareils
-  // But now we can filter: only load enrichments matching H7P repères
+  // Step 4: Load enrichments only for missing repères
   const enrichMap = new Map<string, any>();
   const missingReperes = [...h7pReperes].filter(r => !appareilByApp.has(r));
-  
+
   if (missingReperes.length > 0) {
-    // Fetch only needed enrichments in batches
     for (let i = 0; i < missingReperes.length; i += 50) {
       const batch = missingReperes.slice(i, i + 50);
       const { data } = await supabase
         .from('appareil_enrichments')
-        .select('*')
+        .select('match_key,app,resp_pose,fn,lot_mtg_app,local,lib_local,t_app,date_contrainte,y34_date_contrainte_calculated')
         .in('match_key', batch);
       if (data) {
         for (const e of data) {
