@@ -229,9 +229,9 @@ export function DataImport() {
               >
                 <FileText className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                 <p className="text-xs font-medium text-foreground">{type.label}</p>
-                {files[type.key] ? (
+                {storedFiles[type.key] ? (
                   <Badge variant="secondary" className="mt-1 text-[10px]">
-                    {files[type.key].name.substring(0, 20)}
+                    {storedFiles[type.key].name.substring(0, 20)}
                   </Badge>
                 ) : (
                   <p className="text-[10px] text-muted-foreground mt-1">{type.accept}</p>
