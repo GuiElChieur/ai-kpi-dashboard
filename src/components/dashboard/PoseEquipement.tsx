@@ -22,6 +22,8 @@ export function PoseEquipement({ allData }: { allData: EquipementItem[] }) {
     selectedLots: [],
     selectedMonths: [],
   });
+  const [tablePage, setTablePage] = useState(0);
+  const PAGE_SIZE = 100;
 
   // Derive available FN values from data
   const availableFns = useMemo(() => {
